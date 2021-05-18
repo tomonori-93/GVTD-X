@@ -1,0 +1,84 @@
+&input
+ nvp = 3
+ nup = 3
+ undef = -999.0
+ rvmax = 20.0e3
+ vmax = 0.0
+ c1u = 0.1
+ c2u = 3.0
+ vp = 0.0, 0.0, 0.0
+ up = 0.0, 0.0, 0.0
+ vpa = 0.0, 0.0, 0.0
+ upa = 0.0, 0.0, 0.0
+ us = 0.0
+ vs = 0.0
+ nrot = 0
+ ndiv = 0
+/
+&domain
+ nxd = 400
+ nyd = 400
+ nr_d = 400
+ nr_t = 25
+ nt_d = 400
+ nt_t = 400
+ nx_d = 400
+ ny_d = 400
+ nx_t = 400
+ ny_t = 400
+ xdmin = -60.0e3
+ xdmax = 60.0e3
+ ydmin = 0.0
+ ydmax = 120.0e3
+ x_dmin = -60.0e3
+ x_dmax = 60.0e3
+ y_dmin = 0.0
+ y_dmax = 120.0e3
+ x_tmin = -60.0e3
+ x_tmax = 60.0e3
+ y_tmin = -60.0e3
+ y_tmax = 40.0e3
+ r_dmin = 0.0
+ r_dmax = 100.0e3
+ t_dmin = 0.0
+ t_dmax = 360.0
+ r_tmin = 0.0 
+ r_tmax = 55.0e3
+ t_tmin = 0.0
+ t_tmax = 360.0
+/
+&pos_info
+ tc_xd = 0.0
+ tc_yd = 60.0e3
+ ra_xd = 0.0
+ ra_yd = 0.0
+/
+&draw_info
+ IWS = 1
+ tone_grid = 10
+ cmap = 4
+ col_rev = .false.
+ contour_num = 6
+ fixc_val = 0.0, 2.0, 4.0, 6.0, 8.0, 20.0
+ fixc_idx = 15, 15, 15, 15, 15, 15
+ fixc_typ = 1, 1, 1, 1, 1, 1
+ form_typec = '(f3.0)'
+ contour_num2 = 15
+ fixc_val2 = -20.0, -15.0, -10.0, -6.0, -4.0, -2.0, -1.0, 0.0, 1.0, 2.0, 4.0, 6.0, 10.0, 15.0, 20.0
+ fixc_idx2 = 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15
+ fixc_typ2 = 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1
+ form_typec2 = '(f4.0)'
+ contour_num3 = 13
+ fixc_val3 = -6.0, -5.0, -4.0, -3.0, -2.0, -1.0, 0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0
+ fixc_idx3 = 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15
+ fixc_typ3 = 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1
+ form_typec3 = '(f4.0)'
+ shade_num = 3
+ min_tab = 999
+ max_tab = 95999
+ fix_val = 100.0, 130.0, 150.0, 170.0
+ fix_col = 20999, 40999, 60999
+ form_types = '(f3.0)'
+ xax_fact = 1.0e-3
+ yax_fact = 1.0e-3
+/
