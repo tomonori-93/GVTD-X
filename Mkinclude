@@ -1,6 +1,6 @@
 # Mkinclude
-BIN	= /home/satoki/usr/bin
-DCLFC	= dclf90
+BIN	= /home/satoki/usr/local/bin
+DCLFC	= dclfrt
 
 AF90LIB	= dclaf90
 AF90LD	= /home/satoki/usr/local
@@ -11,7 +11,7 @@ STPKLD	= /home/satoki/usr/local
 LDFLAGS = /opt/intel/Compiler/11.1/069/lib/intel64
 LFLAGS	= iomp5
 
-GTHOME	= /home/satoki/usr/local/gtool5
+GTHOME	= /home/satoki/usr/gtool5
 GTLIB	= gtool5
 GTFC	= gt5frt
 
@@ -19,14 +19,14 @@ HDHOME	= /home/satoki/usr/local/hdf5-1.8.16_ifort
 HDLIB	= hdf5_fortran
 HDFC	= /home/satoki/usr/local/hdf5-1.8.16_ifort/bin/h5fc
 
-NCHOME	= /usr/local/netcdf_ifort
+NCHOME	= /home/satoki/usr/local/netcdf-4.1.3_ifort
 NCLIB	= netcdf
 NCFLIB	= netcdff
 
 # Intel Fortran Compiler (Ver.ifort)
 FC	= ifort
 #FFLAGS	= -assume byterecl -convert big_endian -openmp
-FFLAGS	= -g -assume byterecl -convert big_endian -openmp -auto -ftrapuv -check all -warn all -std -fpe0 -CB -check uninit -traceback -gen_interfaces -heap-array  # エンディアン関係のコンパイルオプション
+FFLAGS	= -assume byterecl -convert big_endian -openmp # -g -auto -ftrapuv -check all -warn all -std -fpe0 -CB -check uninit -traceback -gen_interfaces -heap-array  # エンディアン関係のコンパイルオプション
 #FFLAGS	= -assume byterecl -convert big_endian -openmp  # エンディアン関係のコンパイルオプション
 
 # Fujitsu Fortran Compiler (Ver.frt)

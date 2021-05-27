@@ -58,6 +58,7 @@ program test_Rankine
   real, allocatable, dimension(:) :: draw_xd, draw_yd
   real, allocatable, dimension(:,:) :: draw_Vt, draw_Vr, draw_Vt_ret, draw_Vr_ret
   real, allocatable, dimension(:,:) :: draw_Vra, draw_Vra_ret
+  character(20) :: cvmax
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
   &                us, vs, nrot, ndiv
@@ -250,7 +251,7 @@ end do
   &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
 
 !-- calculate the maximum difference between Vra_rt_t and Vratot_rt_t
-  call display_2valdiff_max( Vra_rt_t, Vratot_rt_t, undef=undef )
+  call display_2valdiff_max( Vra_rt_t, Vratot_rt_t, undef=undef, cout=cvmax )
 
 !-- DCL drawing
   call conv_d2r_1d( xd, draw_xd )
@@ -280,7 +281,8 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
 
   call DclOpenGraphics(IWS)
 
-  CALL SWCSET('FONTNAME', 'Nimbus Sans L 12')
+!  CALL SWSLFT("")
+  CALL SWCSET('FONTNAME', 'Nimbus Sans 12')
 
 !-- Draw Vt from TC center
 
@@ -468,7 +470,10 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &       (/0.2, 0.8/), c_num=(/contour_num3, shade_num/),  &
   &       no_tone=.true. )
 
-
+  call DclSetParm( "GRAPH:LCLIP", .false. )
+  call DclDrawTextNormalized( 0.82, 0.75, 'Max Diff.', centering=-1 )
+  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvmax))//'[m/s]', centering=-1 )
+  call DclSetParm( "GRAPH:LCLIP", .true. )
 
   call DclCloseGraphics
 

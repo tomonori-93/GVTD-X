@@ -3,7 +3,8 @@ module sub_mod
 contains
 
 subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
-  &                               Vt, Vr, Vt_pert, Vr_pert, Vt_pert_ang, Vr_pert_ang )
+  &                               Vt, Vr, Vt_pert, Vr_pert, Vt_pert_ang, Vr_pert_ang,  &
+  &                               ropt )
 !-- Producing vortex structure with rmax, vmax, and umax
   implicit none
   double precision, intent(in) :: r(:)  ! radius [m]
@@ -18,14 +19,21 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   double precision, intent(in), optional :: Vr_pert(:)  ! perturbations of radial wind [m s-1]
   double precision, intent(in), optional :: Vt_pert_ang(size(Vt_pert))  ! angles of tangential wind [rad]
   double precision, intent(in), optional :: Vr_pert_ang(size(Vr_pert))  ! angles of radial wind [rad]
+  logical, intent(in), optional :: ropt  ! option for radial variation of perturbation Vt and Vr
 
   integer :: nr, nt, i, j, k, nvtp, nvrp
-  double precision :: tmp_vtp, tmp_vrp
+  double precision :: tmp_vtp, tmp_vrp, rad_coef
+  logical rad_opt
 
   nr=size(r)
   nt=size(t)
   nvtp=size(Vt_pert)
   nvrp=size(Vr_pert)
+
+  rad_opt=.false.
+  if(present(ropt))then
+     rad_opt=ropt
+  end if
 
   do j=1,nt
      tmp_vtp=0.0d0
@@ -42,16 +50,23 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
      end if
      do i=1,nr
         if(r(i)<=rmax)then
-           Vt(i,j)=vmax*(r(i)/rmax)
+           rad_coef=r(i)/rmax
+           Vt(i,j)=vmax*rad_coef
            Vr(i,j)=c1u*dsqrt((rmax-r(i))*r(i))
            Vr(i,j)=Vr(i,j)*4.0*1.0e-3  ! 多分これが必要 [m] -> [km]
         else
-           Vt(i,j)=vmax*(rmax/r(i))
+           rad_coef=rmax/r(i)
+           Vt(i,j)=vmax*rad_coef
            Vr(i,j)=-c2u*dsqrt(r(i)-rmax)*(rmax/r(i))
            Vr(i,j)=Vr(i,j)/dsqrt(1000.0d0)  ! 多分これが必要 [m] -> [km]
         end if
-        Vt(i,j)=Vt(i,j)+tmp_vtp
-        Vr(i,j)=Vr(i,j)+tmp_vrp
+        if(rad_opt.eqv..true.)then
+           Vt(i,j)=Vt(i,j)+tmp_vtp*rad_coef
+           Vr(i,j)=Vr(i,j)+tmp_vrp*rad_coef
+        else
+           Vt(i,j)=Vt(i,j)+tmp_vtp
+           Vr(i,j)=Vr(i,j)+tmp_vrp
+        end if
      end do
   end do
 
@@ -184,11 +199,15 @@ double precision function line_integral( nr, rdh, gkrr, div_r, undef )
   double precision, intent(in), optional :: undef
   integer :: ii, jj
   double precision :: tmpval
+  double precision :: vareps(nr+1)
 
   tmpval=0.0d0
+  vareps=1.0d0
+  vareps(1)=0.5d0
+  vareps(nr+1)=0.5d0
 
   do ii=1,nr+1
-     tmpval=tmpval+rdh(ii)*gkrr(ii)*div_r(ii)
+     tmpval=tmpval+vareps(ii)*rdh(ii)*gkrr(ii)*div_r(ii)
   end do
 
   line_integral=tmpval
@@ -364,12 +383,52 @@ subroutine subst_2d( ioval, ival, undef )
 
 end subroutine subst_2d
 
-subroutine display_2valdiff_max( val1, val2, undef )
+subroutine rearrange_3d_2d( val3d, val2d )
+!-- rearrange 3d variable to 2d variable (k,i,j -> i*j,k)
+  implicit none
+  double precision, intent(in) :: val3d(:,:,:)
+  double precision, intent(out) :: val2d(size(val3d,2)*size(val3d,3),size(val3d,1))
+  integer :: ii, jj, kk, ni, nj, nk
+
+  nk=size(val3d,1)
+  ni=size(val3d,2)
+  nj=size(val3d,3)
+
+  do kk=1,nk
+     do jj=1,nj
+        do ii=1,ni
+           val2d(ni*(jj-1)+ii,kk)=val3d(kk,ii,jj)
+        end do
+     end do
+  end do
+
+end subroutine rearrange_3d_2d
+
+subroutine rearrange_2d_1d( val2d, val1d )
+!-- rearrange 2d variable to 1d variable (i,j -> i*j)
+  implicit none
+  double precision, intent(in) :: val2d(:,:)
+  double precision, intent(out) :: val1d(size(val2d,1)*size(val2d,2))
+  integer :: ii, jj, ni, nj
+
+  ni=size(val2d,1)
+  nj=size(val2d,2)
+
+  do jj=1,nj
+     do ii=1,ni
+        val1d(ni*(jj-1)+ii)=val2d(ii,jj)
+     end do
+  end do
+
+end subroutine rearrange_2d_1d
+
+subroutine display_2valdiff_max( val1, val2, undef, cout )
 !-- display the maximum of the difference between val1 and val2
   implicit none
   double precision, intent(inout) :: val1(:,:)
   double precision, intent(in) :: val2(size(val1,1),size(val1,2))
   double precision, intent(in), optional :: undef
+  character(*), intent(out), optional :: cout
   integer :: ii, jj, ni, nj, maxi, maxj
   double precision :: maxv, dval
 
@@ -407,6 +466,9 @@ subroutine display_2valdiff_max( val1, val2, undef )
 
   write(*,'(a21,1PE16.8,a5,i4,a1,i4,a2)') "Maximum difference = ", maxv,  &
   &                           " at (", maxi, ",", maxj, ")."
+  if(present(cout))then
+     write(cout,'(1PE8.1)') maxv
+  end if
 
 end subroutine display_2valdiff_max
 
