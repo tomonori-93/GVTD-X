@@ -105,8 +105,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
 
 !-- Calculate f_kij
   call calc_fkij( nrot, ndiv, nk, Vn, r_n, t, rh_n, td, f_kij, Vd )
-write(*,*) "checkf", f_kij
-stop
+!write(*,*) "checkf", f_kij
 
 !-- Calculate b_k
   call calc_fkijVd2bk( vmax, f_kij, Vd, b_k )
@@ -894,7 +893,7 @@ double precision function matrix_sum( aij, akj )
   double precision :: res
 
   ni=size(aij,1)
-  nj=size(akj,1)
+  nj=size(aij,2)
 
   res=0.0d0
 

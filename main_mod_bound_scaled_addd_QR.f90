@@ -114,7 +114,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   Vd_l=0.0d0
 
 !-- Calculate f_kij
-  call calc_fkij( nrot, ndiv, nk, Vn, vmax, r_n, t, rh_n, td, f_kij, Vd )
+  call calc_fkij( nrot, ndiv, nk, Vn, r_n, t, rh_n, td, f_kij, Vd )
 
 !-- Calculate b_k
   call calc_fkijVd2bk( vmax, f_kij, Vd, b_k )
@@ -158,13 +158,12 @@ end subroutine Retrieve_velocity
 !-- calculate f_kij
 !--------------------------------------------------
 
-subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, vmax, rd, theta, rdh, thetad, fkij, Vdij )
+subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij )
   implicit none
   integer, intent(in) :: nrot
   integer, intent(in) :: ndiv
   integer, intent(in) :: nnk
   double precision, intent(in) :: Vsrn
-  double precision, intent(in) :: vmax
   double precision, intent(in) :: rd(:)
   double precision, intent(in) :: theta(:)
   double precision, intent(in) :: rdh(size(rd)+1)
@@ -341,9 +340,9 @@ subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, vmax, rd, theta, rdh, thetad, fkij,
 
         Vdij(1,jj)  &
   &    =Vdij(1,jj)  &
-  &     -(Vsrn/vmax)*(-2.0d0*rd(1)*dr_inv  &
-  &                   *(sinen(1,jj)+cosinen(1,jj))*sines(1,jj)  &
-  &                  +(cosinen(1,jj)-sinen(1,jj))*cosines(1,jj))
+  &     -Vsrn*(-2.0d0*rd(1)*dr_inv  &
+  &            *(sinen(1,jj)+cosinen(1,jj))*sines(1,jj)  &
+  &           +(cosinen(1,jj)-sinen(1,jj))*cosines(1,jj))
      end do
 !$omp end do
 
@@ -936,7 +935,7 @@ double precision function matrix_sum( aij, akj )
   double precision :: res
 
   ni=size(aij,1)
-  nj=size(akj,1)
+  nj=size(aij,2)
 
   res=0.0d0
 

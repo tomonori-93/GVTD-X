@@ -889,7 +889,7 @@ double precision function matrix_sum( aij, akj )
   double precision :: res
 
   ni=size(aij,1)
-  nj=size(akj,1)
+  nj=size(aij,2)
 
   res=0.0d0
 

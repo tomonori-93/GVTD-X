@@ -44,6 +44,8 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   double precision, allocatable, dimension(:,:,:) :: f_kij  ! a_kp = sum_{i,j}(f_kij * f_pij)
   double precision, allocatable, dimension(:,:) :: f_lk     ! For QR decomp.
   double precision, allocatable, dimension(:) :: Vd_l       ! For QR decomp.
+  double precision, allocatable, dimension(:,:) :: tmpr
+  double precision, allocatable, dimension(:) :: tmpb
   double precision :: dundef, vmax
   double precision, dimension(size(r)) :: r_n               ! Nondimensional r
   double precision, dimension(size(rh)) :: rh_n             ! Nondimensional rh
@@ -87,6 +89,8 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   allocate(x_k(nk),stat=cstat)
   allocate(b_k(nk),stat=cstat)
   allocate(a_kp(nk,nk),stat=cstat)
+  allocate(tmpr(nk,nk),stat=cstat)
+  allocate(tmpb(nk),stat=cstat)
   allocate(f_kij(nk,nr,nt),stat=cstat)
   allocate(f_lk(nr*nt,nk),stat=cstat)
   allocate(Vd_l(nr*nt),stat=cstat)
@@ -105,6 +109,8 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   x_k=0.0d0
   b_k=0.0d0
   a_kp=0.0d0
+  tmpr=0.0d0
+  tmpb=0.0d0
   f_kij=0.0d0
   f_lk=0.0d0
   Vd_l=0.0d0
@@ -121,17 +127,28 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   call check_zero( a_kp )
 
 !-- Solve x_k
-do k=1,nr*nt
-write(*,*) k, Vd_l(k), f_lk(k,:)
-end do
+!do k=1,nr*nt
+!write(*,*) k, Vd_l(k), f_lk(k,:)
+!end do
 !  call tri_gauss( a_kp, b_k, x_k )
 !  call gausss( a_kp, b_k, x_k )
 !  call fp_gauss( a_kp, b_k, x_k )
   call rearrange_3d_2d( f_kij, f_lk )
-  call rearrange_2d_1d( Vd, Vd_l )
-!  call QR_Householder_decomp( f_lk, Vd_l, x_k )
-  call QR_Householder_decomp( a_kp, b_k, x_k )
+  call rearrange_2d_1d( Vd/vmax, Vd_l )
+  call QR_Householder_decomp( f_lk, Vd_l, x_k )
+!  call QR_Householder_decomp( a_kp, b_k, x_k, Ro=tmpr, Qtb=tmpb )
 !  call SOR_Gau_Sei( a_kp, b_k, 1.0d-5, 1.0d0, x_k )
+
+open(unit=12,file='testa.bin',recl=8*nk,access='direct',convert='little_endian',status='unknown')
+do k=1,nk
+!write(*,*) k, b_k(k), a_kp(k,1:nk)
+!write(12,rec=k) a_kp(k,1:nk)
+write(*,*) k, tmpr(k,1:nk), tmpb(k)
+end do
+close(12)
+open(unit=12,file='testb.bin',recl=8*nk,access='direct',convert='little_endian',status='unknown')
+write(12,rec=1) b_k(1:nk)
+close(12)
 
 !-- Set each unknown variable from x_k
   call set_xk2variables( nrot, ndiv, x_k, Vrott_r, Vdivr_r,  &
@@ -376,12 +393,14 @@ subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij 
   &                         *cosinen(kk,jj)*sines(ii,jj)  &
   &                        -(gkrr(kk,pp+1,ii+1)-gkrr(kk,pp+1,ii))  &
   &                         *sinen(kk,jj)*cosines(ii,jj))
+                 fkij(2+2*nrot+kk+ncyc*(pp-1),ii,jj)=fkij(2+2*nrot+kk+ncyc*(pp-1),ii,jj)*dble(nnr)
 
                  fkij(2+2*nrot+ndiv+kk+ncyc*(pp-1),ii,jj)  &
   &             =-rdh(pp+1)*(dble(kk)*dr*r_inv(ii)*gkrr(kk,pp+1,ii)  &
   &                         *sinen(kk,jj)*sines(ii,jj)  &
   &                        +(gkrr(kk,pp+1,ii+1)-gkrr(kk,pp+1,ii))  &
   &                         *cosinen(kk,jj)*cosines(ii,jj))
+                 fkij(2+2*nrot+ndiv+kk+ncyc*(pp-1),ii,jj)=fkij(2+2*nrot+ndiv+kk+ncyc*(pp-1),ii,jj)*dble(nnr)
               end do
            end do
         end do
@@ -412,6 +431,7 @@ subroutine calc_fkij2akp( fkij, akp )
   double precision, intent(out) :: akp(size(fkij,1),size(fkij,1))
   integer :: nnk, nni, nnj, ii, jj, kk, ll, cstat
   double precision, allocatable, dimension(:,:,:) :: fkl, fpl
+!  character(size(fkij,1)), dimension(size(fkij,2)*size(fkij,3)) :: checkc
 
 !-- OpenMP variables
 !$ integer :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
@@ -422,6 +442,17 @@ subroutine calc_fkij2akp( fkij, akp )
   nnk=size(fkij,1)
   nni=size(fkij,2)
   nnj=size(fkij,3)
+
+!  do kk=1,nni*nnj
+!     do ll=1,nnk
+!        checkc(kk)(ll:ll)='x'
+!     end do
+!  end do
+
+  if(size(akp,1)/=nnk.or.size(akp,2)/=nnk)then
+     call stdout( "Potentially invalid memory reference. stop.", "calc_fkij2akp", -1 )
+     stop
+  end if
 
   ompnum=1
   omppe=1
@@ -443,11 +474,27 @@ subroutine calc_fkij2akp( fkij, akp )
         fpl(1:nni,1:nnj,omppe)=fkij(ll,1:nni,1:nnj)
         akp(kk,ll)=matrix_sum( fkl(1:nni,1:nnj,omppe), fpl(1:nni,1:nnj,omppe) )
         akp(ll,kk)=akp(kk,ll)
+!if(abs(akp(kk,ll))>1.0d-5)then
+!checkc(ll)(kk:kk)='o'
+!checkc(kk)(ll:ll)='o'
+!end if
      end do
 !$omp end do
 !$omp end parallel
   end do
-
+!do jj=1,nnj
+!do ii=1,nni
+!do kk=1,nnk
+!if(abs(fkij(kk,ii,jj))>1.0d-5)then
+!checkc((nni)*(jj-1)+ii)(kk:kk)='o'
+!end if
+!end do
+!write(*,'(a6,1P6E16.8)') "check ", fkij(1:6,ii,jj)
+!end do
+!end do
+!do ll=1,nni*nnj
+!write(*,'(a)') checkc(ll)(1:nnk)
+!end do
   deallocate(fkl)
   deallocate(fpl)
 
@@ -477,6 +524,11 @@ subroutine calc_fkijVd2bk( vmax, fkij, Vdl, bk )
   nnk=size(fkij,1)
   nni=size(fkij,2)
   nnj=size(fkij,3)
+
+  if(size(Vdl,1)/=nni.or.size(Vdl,2)/=nnj)then
+     call stdout( "Potentially invalid memory reference. stop.", "calc_fkijVd2bk", -1 )
+     stop
+  end if
 
   ompnum=1
   omppe=1
@@ -528,11 +580,16 @@ subroutine set_xk2variables( nrot, ndiv, xk, VRT0, VDR0,  &
   nnr=size(VRT0)
   ncyc=2+2*(nrot+ndiv)
 
+  if(size(xk)/=ncyc*size(VRT0))then
+     call stdout( "Array size of xk is invalid.", "set_xk2variables", -1 )
+     stop
+  end if
+
 !-- Set VRT0 and VDR0
   do ii=1,nnr
      VRT0(ii)=xk(1+ncyc*(ii-1))
      VDR0(ii)=xk(2+ncyc*(ii-1))
-write(*,*) "check [VRT0, VDR0] = ", VRT0(ii), VDR0(ii), ii
+write(*,*) "check [VRT0, VDR0] = ", VRT0(ii), VDR0(ii), ii, 1+ncyc*(ii-1), 2+ncyc*(ii-1)
   end do
 
 !-- Set Phi_s and Phi_c
@@ -543,6 +600,7 @@ write(*,*) "check [VRT0, VDR0] = ", VRT0(ii), VDR0(ii), ii
         do kk=1,nrot
            phis_n(kk,ii)=xk(2+kk+ncyc*(ii-1))
            phic_n(kk,ii)=xk(2+nrot+kk+ncyc*(ii-1))
+!write(*,*) "check, ", kk, ii, 2+kk+ncyc*(ii-1), 2+nrot+kk+ncyc*(ii-1)
         end do
      end do
 !$omp end do
@@ -560,6 +618,7 @@ end do
         do kk=1,ndiv
            Ds_m(kk,ii)=xk(2+2*nrot+kk+ncyc*(ii-1))
            Dc_m(kk,ii)=xk(2+2*nrot+ndiv+kk+ncyc*(ii-1))
+!write(*,*) "check, ", kk, ii, 2+2*nrot+kk+ncyc*(ii-1), 2+2*nrot+ndiv+kk+ncyc*(ii-1)
         end do
      end do
 !$omp end do
@@ -806,13 +865,13 @@ subroutine calc_D2Vdiv( ndiv, vmax, rmax, rd, rdh, theta, VDR0_r,  &
      do jj=1,nnt
         do ii=1,nnr
            do kk=1,ndiv
-              VDT_mrt(kk,ii,jj)=-(dr*dble(kk)*r_inv(ii)*rmax_inv*vmax)  &
+              VDT_mrt(kk,ii,jj)=-(dr*dble(kk)*r_inv(ii)*rmax_inv*vmax*dble(nnr))  &
   &                              *(line_integral( nnr, rdh(1:nnr), gkrrh(kk,1:nnr,ii), Ds_mr(kk,1:nnr) )  &
   &                                *cosinen(kk,jj)  &
   &                               -line_integral( nnr, rdh(1:nnr), gkrrh(kk,1:nnr,ii), Dc_mr(kk,1:nnr) )  &
   &                                *sinen(kk,jj))
 
-              VDR_mrt(kk,ii,jj)=-(rmax_inv*vmax)  &
+              VDR_mrt(kk,ii,jj)=-(rmax_inv*vmax*dble(nnr))  &
   &                              *(line_integral( nnr, rdh(1:nnr), dgkrr(kk,1:nnr,ii), Ds_mr(kk,1:nnr) )  &
   &                               *sinen(kk,jj)  &
   &                              +line_integral( nnr, rdh(1:nnr), dgkrr(kk,1:nnr,ii), Dc_mr(kk,1:nnr) )  &
@@ -902,7 +961,7 @@ double precision function matrix_sum( aij, akj )
   double precision :: res
 
   ni=size(aij,1)
-  nj=size(akj,1)
+  nj=size(aij,2)
 
   res=0.0d0
 

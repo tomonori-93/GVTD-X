@@ -13,7 +13,7 @@ program test_Rankine
   integer, parameter :: nvp_max=100
 
 !-- namelist
-  integer :: nvp, nup, nr_d, nr_t, nt_d, nt_t
+  integer :: nvp, nup, nxd, nyd, nr_d, nr_t, nt_d, nt_t
   integer :: nrot, ndiv
   integer :: nx_d, ny_d, nx_t, ny_t
   integer :: IWS, tone_grid, cmap
@@ -58,7 +58,7 @@ program test_Rankine
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
   &                us, vs, nrot, ndiv, ropt
-  namelist /domain /nr_d, nr_t, nt_d, nt_t,  &
+  namelist /domain /nxd, nyd, nr_d, nr_t, nt_d, nt_t,  &
   &                 nx_d, ny_d, nx_t, ny_t,  &
   &                 xdmin, xdmax, ydmin, ydmax,  &
   &                 x_dmin, x_dmax, y_dmin, y_dmax,  &
@@ -82,6 +82,8 @@ program test_Rankine
   r2d=180.0d0/pi
 
 !-- Allocate and assign variables for coordinates
+  allocate(xd(nxd),stat=cstat)  ! Drawing area for x on X-Y coordinate
+  allocate(yd(nyd),stat=cstat)  ! Drawing area for y on X-Y coordinate
   allocate(r_d(nr_d+1),stat=cstat)  ! Radar range on radar R-T coordinate
   allocate(r_t(nr_t+1),stat=cstat)  ! Radius on TC R-T coordinate
   allocate(t_d(nt_d),stat=cstat)  ! Radar azimuthal angle on radar R-T coordinate
@@ -127,9 +129,8 @@ program test_Rankine
      call stdout( "Allocated variables.", "main", 0 )
   end if
 
-
-!  dxd=(xdmax-xdmin)/dble(nxd-1)
-!  dyd=(ydmax-ydmin)/dble(nyd-1)
+  dxd=(xdmax-xdmin)/dble(nxd-1)
+  dyd=(ydmax-ydmin)/dble(nyd-1)
   dr_d=(r_dmax-r_dmin)/dble(nr_d-1)
   dr_t=(r_tmax-r_tmin)/dble(nr_t-1)
   dt_d=(t_dmax-t_dmin)/dble(nt_d-1)
@@ -139,8 +140,8 @@ program test_Rankine
 !  dx_t=(x_tmax-x_tmin)/dble(nx_t-1)
 !  dy_t=(y_tmax-y_tmin)/dble(ny_t-1)
 
-!  xd=(/((xdmin+dxd*dble(i-1)),i=1,nxd)/)
-!  yd=(/((ydmin+dyd*dble(i-1)),i=1,nyd)/)
+  xd=(/((xdmin+dxd*dble(i-1)),i=1,nxd)/)
+  yd=(/((ydmin+dyd*dble(i-1)),i=1,nyd)/)
   r_d=(/((r_dmin+dr_d*dble(i-1)),i=1,nr_d+1)/)
   r_t=(/((r_tmin+dr_t*dble(i-1)),i=1,nr_t+1)/)
   t_d=(/((t_dmin+dt_d*dble(i-1)),i=1,nt_d)/)
@@ -234,7 +235,7 @@ program test_Rankine
 
   call DclOpenGraphics(IWS)
 
-  CALL SWCSET('FONTNAME', 'Nimbus Sans L 12')
+  CALL SWCSET('FONTNAME', 'Nimbus Sans 12')
 
 !-- Draw Vt from TC center
 
