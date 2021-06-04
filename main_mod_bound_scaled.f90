@@ -335,16 +335,20 @@ subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij 
         do jj=1,nnt
            do kk=2,nrot
               fkij(2+kk,1,jj)  &
-  &          =(dr_inv*sinen(kk,jj))  &
-  &           *(sines(1,jj))  &
-  &          +(0.5d0*dble(kk)*r_inv(1)*cosinen(kk,jj))  &
-  &           *(cosines(1,jj))
+  &          =(2.0d0*dr_inv*sinen(kk,jj))  &
+  &           *(sines(1,jj))
+!ORG  &          =(dr_inv*sinen(kk,jj))  &
+!ORG  &           *(sines(1,jj))  &
+!ORG  &          +(0.5d0*dble(kk)*r_inv(1)*cosinen(kk,jj))  &
+!ORG  &           *(cosines(1,jj))
 
               fkij(2+nrot+kk,1,jj)  &
-  &          =(dr_inv*cosinen(kk,jj))  &
-  &           *(sines(1,jj))  &
-  &          -(0.5d0*dble(kk)*r_inv(1)*sinen(kk,jj))  &
-  &           *(cosines(1,jj))
+  &          =(2.0d0*dr_inv*cosinen(kk,jj))  &
+  &           *(sines(1,jj))
+!ORG  &          =(dr_inv*cosinen(kk,jj))  &
+!ORG  &           *(sines(1,jj))  &
+!ORG  &          -(0.5d0*dble(kk)*r_inv(1)*sinen(kk,jj))  &
+!ORG  &           *(cosines(1,jj))
            end do
         end do
 !$omp end do
@@ -637,8 +641,8 @@ subroutine calc_phi2Vrot( nrot, vmax, rmax, rd, rdh, theta, VRT0_r,  &
               VRR_nrt(kk,ii,jj)=0.5d0*dble(kk)*r_inv(ii)  &
   &                            *((phis_nr(kk,ii)+phis_nr(kk,ii-1))*cosinen(kk,jj)  &
   &                             -(phic_nr(kk,ii)+phic_nr(kk,ii-1))*sinen(kk,jj))
-              VRT_nrt(kk,ii,jj)=VRT_nrt(kk,ii,jj)*rmax*vmax
-              VRR_nrt(kk,ii,jj)=VRR_nrt(kk,ii,jj)*rmax*vmax
+              VRT_nrt(kk,ii,jj)=VRT_nrt(kk,ii,jj)*vmax
+              VRR_nrt(kk,ii,jj)=VRR_nrt(kk,ii,jj)*vmax
            end do
         end do
      end do
@@ -654,8 +658,8 @@ subroutine calc_phi2Vrot( nrot, vmax, rmax, rd, rdh, theta, VRT0_r,  &
            VRR_nrt(kk,1,jj)=0.5d0*dble(kk)*r_inv(1)  &
   &                        *((phis_nr(kk,1))*cosinen(kk,jj)  &
   &                         -(phic_nr(kk,1))*sinen(kk,jj))
-           VRT_nrt(kk,1,jj)=VRT_nrt(kk,1,jj)*rmax*vmax
-           VRR_nrt(kk,1,jj)=VRR_nrt(kk,1,jj)*rmax*vmax
+           VRT_nrt(kk,1,jj)=VRT_nrt(kk,1,jj)*vmax
+           VRR_nrt(kk,1,jj)=VRR_nrt(kk,1,jj)*vmax
         end do
      end do
 !$omp end do
@@ -797,13 +801,13 @@ subroutine calc_D2Vdiv( ndiv, vmax, rmax, rd, rdh, theta, VDR0_r,  &
      do jj=1,nnt
         do ii=1,nnr
            do kk=1,ndiv
-              VDT_mrt(kk,ii,jj)=-(dr*dble(kk)*r_inv(ii)*rmax_inv*vmax)  &
-  &                              *(line_integral( nnr, rdh(1:nnr), gkrrh(kk,1:nnr,ii), Ds_mr(kk,1:nnr) )  &
+              VDT_mrt(kk,ii,jj)=-(dr*dble(kk)*r_inv(ii)*vmax)  &
+  &                              *(line_integral( nnr, rdh(1:nnr), gkrr(kk,1:nnr,ii), Ds_mr(kk,1:nnr) )  &
   &                                *cosinen(kk,jj)  &
-  &                               -line_integral( nnr, rdh(1:nnr), gkrrh(kk,1:nnr,ii), Dc_mr(kk,1:nnr) )  &
+  &                               -line_integral( nnr, rdh(1:nnr), gkrr(kk,1:nnr,ii), Dc_mr(kk,1:nnr) )  &
   &                                *sinen(kk,jj))
 
-              VDR_mrt(kk,ii,jj)=-(rmax_inv*vmax)  &
+              VDR_mrt(kk,ii,jj)=-(vmax)  &
   &                              *(line_integral( nnr, rdh(1:nnr), dgkrr(kk,1:nnr,ii), Ds_mr(kk,1:nnr) )  &
   &                               *sinen(kk,jj)  &
   &                              +line_integral( nnr, rdh(1:nnr), dgkrr(kk,1:nnr,ii), Dc_mr(kk,1:nnr) )  &

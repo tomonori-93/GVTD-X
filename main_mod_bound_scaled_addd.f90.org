@@ -699,8 +699,8 @@ subroutine calc_phi2Vrot( nrot, Vsrn, vmax, rmax, rd, rdh, theta, VRT0_r,  &
               VRR_nrt(kk,ii,jj)=0.5d0*dble(kk)*r_inv(ii)  &
   &                            *((phis_nr(kk,ii+1)+phis_nr(kk,ii))*cosinen(kk,jj)  &
   &                             -(phic_nr(kk,ii+1)+phic_nr(kk,ii))*sinen(kk,jj))
-              VRT_nrt(kk,ii,jj)=VRT_nrt(kk,ii,jj)*rmax*vmax
-              VRR_nrt(kk,ii,jj)=VRR_nrt(kk,ii,jj)*rmax*vmax
+              VRT_nrt(kk,ii,jj)=VRT_nrt(kk,ii,jj)*vmax
+              VRR_nrt(kk,ii,jj)=VRR_nrt(kk,ii,jj)*vmax
            end do
         end do
      end do
@@ -832,16 +832,16 @@ subroutine calc_D2Vdiv( ndiv, vmax, rmax, rd, rdh, theta, VDR0_r,  &
      do jj=1,nnt
         do ii=1,nnr
            do kk=1,ndiv
-              VDT_mrt(kk,ii,jj)=-(dr*dble(kk)*r_inv(ii)*rmax_inv*vmax)  &
-  &                              *(line_integral( nnr+1, rdh(1:nnr+1), gkrrh(kk,1:nnr+1,ii), Ds_mr(kk,1:nnr+1) )  &
+              VDT_mrt(kk,ii,jj)=-(dr*dble(kk)*r_inv(ii)*vmax)  &
+  &                              *(line_integral( nnr, rdh(1:nnr+1), gkrrh(kk,1:nnr+1,ii), Ds_mr(kk,1:nnr+1) )  &
   &                                *cosinen(kk,jj)  &
-  &                               -line_integral( nnr+1, rdh(1:nnr+1), gkrrh(kk,1:nnr+1,ii), Dc_mr(kk,1:nnr+1) )  &
+  &                               -line_integral( nnr, rdh(1:nnr+1), gkrrh(kk,1:nnr+1,ii), Dc_mr(kk,1:nnr+1) )  &
   &                                *sinen(kk,jj))
 
-              VDR_mrt(kk,ii,jj)=-(rmax_inv*vmax)  &
-  &                              *(line_integral( nnr+1, rdh(1:nnr+1), dgkrr(kk,1:nnr+1,ii), Ds_mr(kk,1:nnr+1) )  &
+              VDR_mrt(kk,ii,jj)=-(vmax)  &
+  &                              *(line_integral( nnr, rdh(1:nnr+1), dgkrr(kk,1:nnr+1,ii), Ds_mr(kk,1:nnr+1) )  &
   &                               *sinen(kk,jj)  &
-  &                              +line_integral( nnr+1, rdh(1:nnr+1), dgkrr(kk,1:nnr+1,ii), Dc_mr(kk,1:nnr+1) )  &
+  &                              +line_integral( nnr, rdh(1:nnr+1), dgkrr(kk,1:nnr+1,ii), Dc_mr(kk,1:nnr+1) )  &
   &                               *cosinen(kk,jj))
            end do
         end do

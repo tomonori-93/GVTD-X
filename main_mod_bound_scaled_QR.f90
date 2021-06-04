@@ -89,8 +89,8 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   allocate(x_k(nk),stat=cstat)
   allocate(b_k(nk),stat=cstat)
   allocate(a_kp(nk,nk),stat=cstat)
-  allocate(tmpr(nk,nk),stat=cstat)
-  allocate(tmpb(nk),stat=cstat)
+  allocate(tmpr(nr*nt,nk),stat=cstat)
+  allocate(tmpb(nr*nt),stat=cstat)
   allocate(f_kij(nk,nr,nt),stat=cstat)
   allocate(f_lk(nr*nt,nk),stat=cstat)
   allocate(Vd_l(nr*nt),stat=cstat)
@@ -135,15 +135,22 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
 !  call fp_gauss( a_kp, b_k, x_k )
   call rearrange_3d_2d( f_kij, f_lk )
   call rearrange_2d_1d( Vd/vmax, Vd_l )
-  call QR_Householder_decomp( f_lk, Vd_l, x_k )
+  call QR_Householder_decomp( f_lk, Vd_l, x_k, Ro=tmpr, Qtb=tmpb )
 !  call QR_Householder_decomp( a_kp, b_k, x_k, Ro=tmpr, Qtb=tmpb )
 !  call SOR_Gau_Sei( a_kp, b_k, 1.0d-5, 1.0d0, x_k )
+do j=1,nt
+do i=1,nr
+!write(*,'(2i3,1P100E10.2)') i, j, f_lk(nr*(j-1)+i,1:nk), Vd_l(nr*(j-1)+i)
+write(*,'(2i3,1P100E10.2)') i, j, tmpr(nr*(j-1)+i,1:nk), tmpb(nr*(j-1)+i)
+end do
+end do
 
 open(unit=12,file='testa.bin',recl=8*nk,access='direct',convert='little_endian',status='unknown')
-do k=1,nk
+!do k=1,nk
+do k=1,nr*nt
 !write(*,*) k, b_k(k), a_kp(k,1:nk)
+write(12,rec=k) f_lk(k,1:nk)
 !write(12,rec=k) a_kp(k,1:nk)
-write(*,*) k, tmpr(k,1:nk), tmpb(k)
 end do
 close(12)
 open(unit=12,file='testb.bin',recl=8*nk,access='direct',convert='little_endian',status='unknown')
@@ -705,8 +712,8 @@ subroutine calc_phi2Vrot( nrot, vmax, rmax, rd, rdh, theta, VRT0_r,  &
               VRR_nrt(kk,ii,jj)=0.5d0*dble(kk)*r_inv(ii)  &
   &                            *((phis_nr(kk,ii)+phis_nr(kk,ii-1))*cosinen(kk,jj)  &
   &                             -(phic_nr(kk,ii)+phic_nr(kk,ii-1))*sinen(kk,jj))
-              VRT_nrt(kk,ii,jj)=VRT_nrt(kk,ii,jj)*rmax*vmax
-              VRR_nrt(kk,ii,jj)=VRR_nrt(kk,ii,jj)*rmax*vmax
+              VRT_nrt(kk,ii,jj)=VRT_nrt(kk,ii,jj)*vmax
+              VRR_nrt(kk,ii,jj)=VRR_nrt(kk,ii,jj)*vmax
            end do
         end do
      end do
@@ -722,8 +729,8 @@ subroutine calc_phi2Vrot( nrot, vmax, rmax, rd, rdh, theta, VRT0_r,  &
            VRR_nrt(kk,1,jj)=0.5d0*dble(kk)*r_inv(1)  &
   &                        *((phis_nr(kk,1))*cosinen(kk,jj)  &
   &                         -(phic_nr(kk,1))*sinen(kk,jj))
-           VRT_nrt(kk,1,jj)=VRT_nrt(kk,1,jj)*rmax*vmax
-           VRR_nrt(kk,1,jj)=VRR_nrt(kk,1,jj)*rmax*vmax
+           VRT_nrt(kk,1,jj)=VRT_nrt(kk,1,jj)*vmax
+           VRR_nrt(kk,1,jj)=VRR_nrt(kk,1,jj)*vmax
         end do
      end do
 !$omp end do
@@ -865,16 +872,16 @@ subroutine calc_D2Vdiv( ndiv, vmax, rmax, rd, rdh, theta, VDR0_r,  &
      do jj=1,nnt
         do ii=1,nnr
            do kk=1,ndiv
-              VDT_mrt(kk,ii,jj)=-(dr*dble(kk)*r_inv(ii)*rmax_inv*vmax*dble(nnr))  &
-  &                              *(line_integral( nnr, rdh(1:nnr), gkrrh(kk,1:nnr,ii), Ds_mr(kk,1:nnr) )  &
+              VDT_mrt(kk,ii,jj)=-(dr*dble(kk)*r_inv(ii)*vmax*dble(nnr))  &
+  &                              *(line_integral( nnr-1, rdh(1:nnr), gkrr(kk,1:nnr,ii), Ds_mr(kk,1:nnr) )  &
   &                                *cosinen(kk,jj)  &
-  &                               -line_integral( nnr, rdh(1:nnr), gkrrh(kk,1:nnr,ii), Dc_mr(kk,1:nnr) )  &
+  &                               -line_integral( nnr-1, rdh(1:nnr), gkrr(kk,1:nnr,ii), Dc_mr(kk,1:nnr) )  &
   &                                *sinen(kk,jj))
 
-              VDR_mrt(kk,ii,jj)=-(rmax_inv*vmax*dble(nnr))  &
-  &                              *(line_integral( nnr, rdh(1:nnr), dgkrr(kk,1:nnr,ii), Ds_mr(kk,1:nnr) )  &
+              VDR_mrt(kk,ii,jj)=-(vmax*dble(nnr))  &
+  &                              *(line_integral( nnr-1, rdh(1:nnr), dgkrr(kk,1:nnr,ii), Ds_mr(kk,1:nnr) )  &
   &                               *sinen(kk,jj)  &
-  &                              +line_integral( nnr, rdh(1:nnr), dgkrr(kk,1:nnr,ii), Dc_mr(kk,1:nnr) )  &
+  &                              +line_integral( nnr-1, rdh(1:nnr), dgkrr(kk,1:nnr,ii), Dc_mr(kk,1:nnr) )  &
   &                               *cosinen(kk,jj))
            end do
         end do

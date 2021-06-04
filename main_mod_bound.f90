@@ -794,9 +794,9 @@ subroutine calc_D2Vdiv( ndiv, rd, rdh, theta, VDR0_r,  &
         do ii=1,nnr
            do kk=1,ndiv
               VDT_mrt(kk,ii,jj)=-(dr*dble(kk)*r_inv(ii)*rmax_inv)  &
-  &                              *(line_integral( nnr, rdh(1:nnr), gkrrh(kk,1:nnr,ii), Ds_mr(kk,1:nnr) )  &
+  &                              *(line_integral( nnr, rdh(1:nnr), gkrr(kk,1:nnr,ii), Ds_mr(kk,1:nnr) )  &
   &                                *cosinen(kk,jj)  &
-  &                               -line_integral( nnr, rdh(1:nnr), gkrrh(kk,1:nnr,ii), Dc_mr(kk,1:nnr) )  &
+  &                               -line_integral( nnr, rdh(1:nnr), gkrr(kk,1:nnr,ii), Dc_mr(kk,1:nnr) )  &
   &                                *sinen(kk,jj))
 
               VDR_mrt(kk,ii,jj)=-(rmax_inv)  &
