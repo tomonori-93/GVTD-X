@@ -43,6 +43,7 @@ program test_Rankine
   double precision, dimension(2) :: vx_new, vy_new
   double precision :: dxd, dyd, dr_d, dr_t, dt_d, dt_t, dx_d, dy_d, dx_t, dy_t
   double precision, allocatable, dimension(:) :: xd, yd, r_d, r_t, rh_t, t_d, t_t, x_d, y_d, x_t, y_t
+  double precision, allocatable, dimension(:,:) :: Vt_0, Vr_0
   double precision, allocatable, dimension(:,:) :: tdr_t
   double precision, allocatable, dimension(:,:) :: Vd_rt_d
   double precision, allocatable, dimension(:,:) :: Vra_rt_t, Vratot_rt_t, Vsra_rt_t
@@ -54,7 +55,7 @@ program test_Rankine
 
   real :: dundef
   real, allocatable, dimension(:) :: draw_rd, draw_td
-  real, allocatable, dimension(:,:) :: draw_Vt, draw_Vr, draw_Vt_ret, draw_Vr_ret
+  real, allocatable, dimension(:,:) :: draw_dVt, draw_dVr, draw_Vt, draw_Vr, draw_Vt_ret, draw_Vr_ret
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
   &                us, vs, nrot, ndiv, ropt
@@ -113,10 +114,14 @@ program test_Rankine
   allocate(Vsra_xyd(nxd,nyd),stat=cstat)  ! Environmental wind velocity along beam on X-Y coordinate
   allocate(Vx_rht_t(nr_t,nt_t),stat=cstat)  ! X component of wind on TC R-T coordinate
   allocate(Vy_rht_t(nr_t,nt_t),stat=cstat)  ! Y component of wind on TC R-T coordinate
+  allocate(Vt_0(nr_t,1),stat=cstat)  ! Axisymmetric component of Vt
+  allocate(Vr_0(nr_t,1),stat=cstat)  ! Axisymmetric component of Vr
 
   !-- For drawing variables
   allocate(draw_rd(nr_t),stat=cstat)
   allocate(draw_td(nt_t),stat=cstat)
+  allocate(draw_dVt(nr_t,nt_t),stat=cstat)
+  allocate(draw_dVr(nr_t,nt_t),stat=cstat)
   allocate(draw_Vt(nr_t,nt_t),stat=cstat)
   allocate(draw_Vr(nr_t,nt_t),stat=cstat)
   allocate(draw_Vt_ret(nr_t,nt_t),stat=cstat)
@@ -166,20 +171,21 @@ program test_Rankine
      call prod_vortex_structure( rh_t, t_t, rvmax, vmax, c1u, c2u,  &
   &                              Vt_rht_t, Ut_rht_t, vp(1:nvp), up(1:nup),  &
   &                              vpa(1:nvp)*d2r+t_t(k),  &
-  &                              upa(1:nup)*d2r+t_t(k), ropt=ropt )
+  &                              upa(1:nup)*d2r+t_t(k), ropt=ropt,  &
+  &                              Vt_0=Vt_0(1:nr_t,1), Vr_0=Vr_0(1:nr_t,1) )
 
 !-- Environmental wind
-  us0=us
-  vs0=vs
-  call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd )
-  call tangent_conv_scal( xd, yd, tc_xd, tc_yd, Vsra_xyd, rh_t, t_t, Vsra_rt_t,  &
-  &                       undef=undef, undefg=undef, undefgc='inc',  &
-  &                       stdopt=.true., axis='xy' )
+     us0=us
+     vs0=vs
+     call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd )
+     call tangent_conv_scal( xd, yd, tc_xd, tc_yd, Vsra_xyd, rh_t, t_t, Vsra_rt_t,  &
+  &                          undef=undef, undefg=undef, undefgc='inc',  &
+  &                          stdopt=.true., axis='xy' )
 !ORG  tc_ra_r=dsqrt((tc_xd-ra_xd)**2+(tc_yd-ra_yd)**2)
 !ORG  tc_ra_t=datan2((tc_yd-ra_yd),(tc_xd-ra_xd))
 !MOD  Vsrn=vs*dcos(tc_ra_t)-us*dsin(tc_ra_t)
 !ORG  Vsrn=vs*dcos(tc_ra_t+dasin(rh_t(1)/tc_ra_r))-us*dsin(tc_ra_t+dasin(rh_t(1)/tc_ra_r))
-  Vsrn=0.0d0
+     Vsrn=0.0d0
 
 !-- converting (Vr,Vt)(r_t,t_t) -> (Vx,Vy)(r_t,t_t)
 !  call conv_VtVr2VxVy( rh_t, t_t, Vt_rht_t, Ut_rht_t, Vx_rht_t, Vy_rht_t )
@@ -210,10 +216,14 @@ program test_Rankine
   &                          VDTm_rt_t, VDRm_rt_t, undef )
      call stdout( "Retrieved velocity.", "main", 0 )
 
-     call conv_d2r_2d( VRT0_rt_t(1:nr_t,1:1), draw_Vt(1:nr_t,k:k) )
-     call conv_d2r_2d( VDR0_rt_t(1:nr_t,1:1), draw_Vr(1:nr_t,k:k) )
      call conv_d2r_2d( VRT0_rt_t(1:nr_t,1:1), draw_Vt_ret(1:nr_t,k:k) )
      call conv_d2r_2d( VDR0_rt_t(1:nr_t,1:1), draw_Vr_ret(1:nr_t,k:k) )
+     call conv_d2r_2d( Vt_0(1:nr_t,1:1), draw_Vt(1:nr_t,k:k) )
+     call conv_d2r_2d( Vr_0(1:nr_t,1:1), draw_Vr(1:nr_t,k:k) )
+     draw_dVt(1:nr_t,k:k)=draw_Vt_ret(1:nr_t,k:k)
+     draw_dVr(1:nr_t,k:k)=draw_Vr_ret(1:nr_t,k:k)
+     call subst_2d_r( draw_dVt(1:nr_t,k:k), draw_Vt(1:nr_t,1:1), undef=real(undef) )  ! draw_Vt_ret - draw_Vt
+     call subst_2d_r( draw_dVr(1:nr_t,k:k), draw_Vr(1:nr_t,1:1), undef=real(undef) )  ! draw_Vr_ret - draw_Vr
 
   end do
 
@@ -250,10 +260,10 @@ program test_Rankine
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Vt for Analysis',  &
+  call Dcl_2D_cont_shade( 'Vt for Retrieval',  &
   &       draw_rd(1:nr_t), draw_td(1:nt_t),  &
-  &       draw_Vt(1:nr_t,1:nt_t),  &
-  &       draw_Vt(1:nr_t,1:nt_t),  &
+  &       draw_Vt_ret(1:nr_t,1:nt_t),  &
+  &       draw_Vt_ret(1:nr_t,1:nt_t),  &
   &       (/0.0, 1.0/), (/0.0, 1.0/),  &
   &       (/'R (km)   ', 'θ (\^{o})'/),  &
   &       (/form_typec, form_types/), (/0.2, 0.8/),  &
@@ -278,10 +288,10 @@ program test_Rankine
 
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
-  call contourl_setting( contour_num, val_spec=fixc_val(1:contour_num+1),  &
-  &                      idx_spec=fixc_idx(1:contour_num),  &
-  &                      typ_spec=fixc_typ(1:contour_num),  &
-  &                      formc=trim(adjustl(form_typec)) )
+  call contourl_setting( contour_num2, val_spec=fixc_val2(1:contour_num+1),  &
+  &                      idx_spec=fixc_idx2(1:contour_num),  &
+  &                      typ_spec=fixc_typ2(1:contour_num),  &
+  &                      formc=trim(adjustl(form_typec2)) )
 
   call color_setting( shade_num, (/0.0, 1.0/), min_tab=min_tab,  &
   &                   max_tab=max_tab, col_min=10999, col_max=89999,  &
@@ -289,14 +299,14 @@ program test_Rankine
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Vt for Retrieval',  &
+  call Dcl_2D_cont_shade( 'ΔVt (retrieval - analysis) ',  &
   &       draw_rd(1:nr_t), draw_td(1:nt_t),  &
-  &       draw_Vt_ret(1:nr_t,1:nt_t),  &
-  &       draw_Vt_ret(1:nr_t,1:nt_t),  &
+  &       draw_dVt(1:nr_t,1:nt_t),  &
+  &       draw_dVt(1:nr_t,1:nt_t),  &
   &       (/0.0, 1.0/), (/0.0, 1.0/),  &
   &       (/'R (km)   ', 'θ (\^{o})'/),  &
   &       (/form_typec, form_types/), (/0.2, 0.8/),  &
-  &       (/0.2, 0.8/), c_num=(/contour_num, shade_num/),  &
+  &       (/0.2, 0.8/), c_num=(/contour_num2, shade_num/),  &
   &       no_tone=.true. )
 
 !-- Draw Vr from TC center
@@ -312,10 +322,10 @@ program test_Rankine
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Vr for Analysis',  &
+  call Dcl_2D_cont_shade( 'Vr for Retrieval',  &
   &       draw_rd(1:nr_t), draw_td(1:nt_t),  &
-  &       draw_Vr(1:nr_t,1:nt_t),  &
-  &       draw_Vr(1:nr_t,1:nt_t),  &
+  &       draw_Vr_ret(1:nr_t,1:nt_t),  &
+  &       draw_Vr_ret(1:nr_t,1:nt_t),  &
   &       (/0.0, 1.0/), (/0.0, 1.0/),  &
   &       (/'R (km)   ', 'θ (\^{o})'/),  &
   &       (/form_typec2, form_types/), (/0.2, 0.8/),  &
@@ -351,10 +361,10 @@ program test_Rankine
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Vr for Retrieval',  &
+  call Dcl_2D_cont_shade( 'ΔVr (retrieval - analysis) ',  &
   &       draw_rd(1:nr_t), draw_td(1:nt_t),  &
-  &       draw_Vr_ret(1:nr_t,1:nt_t),  &
-  &       draw_Vr_ret(1:nr_t,1:nt_t),  &
+  &       draw_dVr(1:nr_t,1:nt_t),  &
+  &       draw_dVr(1:nr_t,1:nt_t),  &
   &       (/0.0, 1.0/), (/0.0, 1.0/),  &
   &       (/'R (km)   ', 'θ (\^{o})'/),  &
   &       (/form_typec2, form_types/), (/0.2, 0.8/),  &

@@ -4,7 +4,7 @@ contains
 
 subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   &                               Vt, Vr, Vt_pert, Vr_pert, Vt_pert_ang, Vr_pert_ang,  &
-  &                               ropt )
+  &                               ropt, Vt_0, Vr_0 )
 !-- Producing vortex structure with rmax, vmax, and umax
   implicit none
   double precision, intent(in) :: r(:)  ! radius [m]
@@ -20,9 +20,11 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   double precision, intent(in), optional :: Vt_pert_ang(size(Vt_pert))  ! angles of tangential wind [rad]
   double precision, intent(in), optional :: Vr_pert_ang(size(Vr_pert))  ! angles of radial wind [rad]
   logical, intent(in), optional :: ropt  ! option for radial variation of perturbation Vt and Vr
+  double precision, intent(out), optional :: Vt_0(size(r))  ! Radial profile of axisymmetric Vt [m s-1]
+  double precision, intent(out), optional :: Vr_0(size(r))  ! Radial profile of axisymmetric Vr [m s-1]
 
   integer :: nr, nt, i, j, k, nvtp, nvrp
-  double precision :: tmp_vtp, tmp_vrp, rad_coef
+  double precision :: tmp_vtp, tmp_vrp, rad_coef, radp_coef
   logical rad_opt
 
   nr=size(r)
@@ -40,29 +42,43 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
      tmp_vrp=0.0d0
      if(present(Vt_pert))then
         do k=1,nvtp
-           tmp_vtp=tmp_vtp+Vt_pert(k)*dcos(dble(k)*t(j)+Vt_pert_ang(k))
+           tmp_vtp=tmp_vtp+Vt_pert(k)*dcos(dble(k)*(t(j)+Vt_pert_ang(k)))
         end do
      end if
      if(present(Vr_pert))then
         do k=1,nvrp
-           tmp_vrp=tmp_vrp+Vr_pert(k)*dcos(dble(k)*t(j)+Vr_pert_ang(k))
+           tmp_vrp=tmp_vrp+Vr_pert(k)*dcos(dble(k)*(t(j)+Vr_pert_ang(k)))
         end do
      end if
      do i=1,nr
         if(r(i)<=rmax)then
            rad_coef=r(i)/rmax
+           radp_coef=r(i)/rmax
            Vt(i,j)=vmax*rad_coef
            Vr(i,j)=c1u*dsqrt((rmax-r(i))*r(i))
            Vr(i,j)=Vr(i,j)*4.0*1.0e-3  ! 多分これが必要 [m] -> [km]
         else
            rad_coef=rmax/r(i)
+           if((r(i)>rmax).and.(r(i)<=1.5d0*rmax))then
+              radp_coef=1.0d0
+           else
+              radp_coef=rmax/r(i)
+           end if
            Vt(i,j)=vmax*rad_coef
            Vr(i,j)=-c2u*dsqrt(r(i)-rmax)*(rmax/r(i))
            Vr(i,j)=Vr(i,j)/dsqrt(1000.0d0)  ! 多分これが必要 [m] -> [km]
         end if
+        if(j==1)then
+           if(present(Vt_0))then
+              Vt_0(i)=Vt(i,j)
+           end if
+           if(present(Vr_0))then
+              Vr_0(i)=Vr(i,j)
+           end if
+        end if
         if(rad_opt.eqv..true.)then
-           Vt(i,j)=Vt(i,j)+tmp_vtp*rad_coef
-           Vr(i,j)=Vr(i,j)+tmp_vrp*rad_coef
+           Vt(i,j)=Vt(i,j)+tmp_vtp*radp_coef
+           Vr(i,j)=Vr(i,j)+tmp_vrp*radp_coef
         else
            Vt(i,j)=Vt(i,j)+tmp_vtp
            Vr(i,j)=Vr(i,j)+tmp_vrp
@@ -382,6 +398,37 @@ subroutine subst_2d( ioval, ival, undef )
   end if
 
 end subroutine subst_2d
+
+subroutine subst_2d_r( ioval, ival, undef )
+!-- subtract ival
+  implicit none
+  real, intent(inout) :: ioval(:,:)
+  real, intent(in) :: ival(size(ioval,1),size(ioval,2))
+  real, intent(in), optional :: undef
+  integer :: ii, jj, ni, nj
+
+  ni=size(ioval,1)
+  nj=size(ioval,2)
+
+  if(present(undef))then
+     do jj=1,nj
+        do ii=1,ni
+           if(ioval(ii,jj)/=undef.and.ival(ii,jj)/=undef)then
+              ioval(ii,jj)=ioval(ii,jj)-real(ival(ii,jj))
+           else
+              ioval(ii,jj)=undef
+           end if
+        end do
+     end do
+  else
+     do jj=1,nj
+        do ii=1,ni
+           ioval(ii,jj)=ioval(ii,jj)-ival(ii,jj)
+        end do
+     end do
+  end if
+
+end subroutine subst_2d_r
 
 subroutine rearrange_3d_2d( val3d, val2d )
 !-- rearrange 3d variable to 2d variable (k,i,j -> i*j,k)
