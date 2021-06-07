@@ -297,37 +297,35 @@ subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij 
 
   if(nrot>0)then
 
-!-- Set coefficients for Phi_s and Phi_c at each (ii,jj)
-!$omp do schedule(runtime) private(kk,ii,jj)
+!-- Set coefficients for Phi_s and Phi_c at each (ii,jj) for wavenumber 1
+!$omp do schedule(runtime) private(ii,jj)
      do jj=1,nnt
         do ii=2,nnr
-           do kk=1,nrot
-              !-- Phi(s)*delta(s,i)
-              fkij(2+kk+ncyc*(ii-2),ii,jj)  &
-  &          =(dr_inv*sinen(kk,jj))  &
-  &           *(-sines(ii,jj))  &
-  &          +(0.5d0*dble(kk)*cosinen(kk,jj))  &
-  &           *(r_inv(ii)*cosines(ii,jj))
+           !-- Phi(s)*delta(s,i)
+           fkij(2+1+ncyc*(ii-2),ii,jj)  &
+  &       =(dr_inv*sinen(1,jj))  &
+  &        *(-sines(ii,jj))  &
+  &       +(0.5d0*dble(1)*cosinen(1,jj))  &
+  &        *(r_inv(ii)*cosines(ii,jj))
 
-              fkij(2+nrot+kk+ncyc*(ii-2),ii,jj)  &
-  &          =(dr_inv*cosinen(kk,jj))  &
-  &           *(-sines(ii,jj))  &
-  &          -(0.5d0*dble(kk)*sinen(kk,jj))  &
-  &           *(r_inv(ii)*cosines(ii,jj))
+           fkij(2+nrot+1+ncyc*(ii-2),ii,jj)  &
+  &       =(dr_inv*cosinen(1,jj))  &
+  &        *(-sines(ii,jj))  &
+  &       -(0.5d0*dble(1)*sinen(1,jj))  &
+  &        *(r_inv(ii)*cosines(ii,jj))
 
-              !-- Phi(s)*delta(s,i+1)
-              fkij(2+kk+ncyc*(ii-1),ii,jj)  &
-  &          =(dr_inv*sinen(kk,jj))  &
-  &           *(sines(ii,jj))  &
-  &          +(0.5d0*dble(kk)*cosinen(kk,jj))  &
-  &           *(r_inv(ii)*cosines(ii,jj))
+           !-- Phi(s)*delta(s,i+1)
+           fkij(2+1+ncyc*(ii-1),ii,jj)  &
+  &       =(dr_inv*sinen(1,jj))  &
+  &        *(sines(ii,jj))  &
+  &       +(0.5d0*dble(1)*cosinen(1,jj))  &
+  &        *(r_inv(ii)*cosines(ii,jj))
 
-              fkij(2+nrot+kk+ncyc*(ii-1),ii,jj)  &
-  &          =(dr_inv*cosinen(kk,jj))  &
-  &           *(sines(ii,jj))  &
-  &          -(0.5d0*dble(kk)*sinen(kk,jj))  &
-  &           *(r_inv(ii)*cosines(ii,jj))
-           end do
+           fkij(2+nrot+1+ncyc*(ii-1),ii,jj)  &
+  &       =(dr_inv*cosinen(1,jj))  &
+  &        *(sines(ii,jj))  &
+  &       -(0.5d0*dble(1)*sinen(1,jj))  &
+  &        *(r_inv(ii)*cosines(ii,jj))
         end do
      end do
 !$omp end do
@@ -358,20 +356,58 @@ subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij 
 
 !-- 2. For wavenumber >= 2
      if(nrot>1)then
+
+!-- Set coefficients for Phi_s and Phi_c at each (ii,jj)
+!$omp do schedule(runtime) private(kk,ii,jj)
+        do jj=1,nnt
+           do ii=1,nnr-1
+              do kk=2,nrot
+                 !-- Phi(s)*delta(s,i)
+                 fkij(2+kk+ncyc*(ii-1),ii,jj)  &
+  &             =(dr_inv*sinen(kk,jj))  &
+  &              *(-sines(ii,jj))  &
+  &             +(0.5d0*dble(kk)*cosinen(kk,jj))  &
+  &              *(r_inv(ii)*cosines(ii,jj))
+
+                 fkij(2+nrot+kk+ncyc*(ii-1),ii,jj)  &
+  &             =(dr_inv*cosinen(kk,jj))  &
+  &              *(-sines(ii,jj))  &
+  &             -(0.5d0*dble(kk)*sinen(kk,jj))  &
+  &              *(r_inv(ii)*cosines(ii,jj))
+
+                 !-- Phi(s)*delta(s,i+1)
+                 fkij(2+kk+ncyc*ii,ii,jj)  &
+  &             =(dr_inv*sinen(kk,jj))  &
+  &              *(sines(ii,jj))  &
+  &             +(0.5d0*dble(kk)*cosinen(kk,jj))  &
+  &              *(r_inv(ii)*cosines(ii,jj))
+
+                 fkij(2+nrot+kk+ncyc*ii,ii,jj)  &
+  &             =(dr_inv*cosinen(kk,jj))  &
+  &              *(sines(ii,jj))  &
+  &             -(0.5d0*dble(kk)*sinen(kk,jj))  &
+  &              *(r_inv(ii)*cosines(ii,jj))
+              end do
+           end do
+        end do
+!$omp end do
+
+!$omp barrier
+
 !$omp do schedule(runtime) private(kk,jj)
         do jj=1,nnt
            do kk=2,nrot
-              fkij(2+kk,1,jj)  &
-  &          =(dr_inv*sinen(kk,jj))  &
-  &           *(sines(1,jj))  &
-  &           +(0.5d0*dble(kk)*r_inv(1)*cosinen(kk,jj))  &
-  &           *(cosines(1,jj))
+              fkij(2+kk+ncyc*(nnr-1),nnr,jj)  &
+!  &          =(dr_inv*sinen(kk,jj))  &
+!  &           *(sines(nnr,jj))  &
+  &          =+(dble(kk)*r_inv(nnr)*cosinen(kk,jj))  &
+  &           *(cosines(nnr,jj))
 
-              fkij(2+nrot+kk,1,jj)  &
-  &          =(dr_inv*cosinen(kk,jj))  &
-  &           *(sines(1,jj))  &
-  &           -(0.5d0*dble(kk)*r_inv(1)*sinen(kk,jj))  &
-  &           *(cosines(1,jj))
+              fkij(2+nrot+kk+ncyc*(nnr-1),nnr,jj)  &
+!  &          =(dr_inv*cosinen(kk,jj))  &
+!  &           *(sines(nnr,jj))  &
+  &          =-(dble(kk)*r_inv(nnr)*sinen(kk,jj))  &
+  &           *(cosines(nnr,jj))
            end do
         end do
 !$omp end do
@@ -586,14 +622,23 @@ write(*,*) "check [VRT0, VDR0] = ", VRT0(ii), VDR0(ii), ii
 !-- Set Phi_s and Phi_c
   if(nrot>0)then
 !$omp parallel default(shared)
-!$omp do schedule(runtime) private(kk,ii)
-     do ii=1,nnr
-        do kk=1,nrot
-           phis_n(kk,ii+1)=xk(2+kk+ncyc*(ii-1))
-           phic_n(kk,ii+1)=xk(2+nrot+kk+ncyc*(ii-1))
+!$omp do schedule(runtime) private(ii)
+        do ii=1,nnr
+           phis_n(1,ii+1)=xk(2+1+ncyc*(ii-1))
+           phic_n(1,ii+1)=xk(2+nrot+1+ncyc*(ii-1))
         end do
-     end do
 !$omp end do
+!$omp barrier
+     if(nrot>1)then
+!$omp do schedule(runtime) private(kk,ii)
+        do ii=1,nnr
+           do kk=2,nrot
+              phis_n(kk,ii)=xk(2+kk+ncyc*(ii-1))
+              phic_n(kk,ii)=xk(2+nrot+kk+ncyc*(ii-1))
+           end do
+        end do
+!$omp end do
+     end if
 !$omp end parallel
 do ii=1,nnr
 write(*,*) "check [phis_n, phic_n] = ", phis_n(1:nrot,ii+1), phic_n(1:nrot,ii+1), ii+1
@@ -703,8 +748,12 @@ subroutine calc_phi2Vrot( nrot, Vsrn, vmax, rmax, rd, rdh, theta, VRT0_r,  &
      phic_nr(1,1)=Vsrn*rdh(1)-phic_nr(1,2)
 
      !-- set the innermost boundary for wavenumber 2
-!     phis_nr(2,1)=phis_nr(2,2)
-!     phic_nr(2,1)=phic_nr(2,2)
+     if(nrot>1)then
+        do kk=2,nrot
+           phis_nr(kk,nnr+1)=phis_nr(kk,nnr)
+           phic_nr(kk,nnr+1)=phic_nr(kk,nnr)
+        end do
+     end if
 
 !$omp parallel default(shared)
 !$omp do schedule(runtime) private(kk,ii,jj)
