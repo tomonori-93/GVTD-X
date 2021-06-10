@@ -1,5 +1,5 @@
 program test_Rankine
-!-- Lee et al. (1999) で与えられる解析的な台風渦分布を可視化するプログラム
+!-- A retrieval program for an analytical vortex
 
   use dcl
   use Dcl_Automatic
@@ -58,7 +58,7 @@ program test_Rankine
   real, allocatable, dimension(:) :: draw_xd, draw_yd
   real, allocatable, dimension(:,:) :: draw_Vt, draw_Vr, draw_Vt_ret, draw_Vr_ret
   real, allocatable, dimension(:,:) :: draw_Vra, draw_Vra_ret
-  character(20) :: cvmax
+  character(20) :: cvtmax, cvrmax, cvamax
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
   &                us, vs, nrot, ndiv, ropt
@@ -251,8 +251,10 @@ end do
   call Cart_conv_scal( rh_t, t_t, Vratot_rt_t, xd, yd, tc_xd, tc_yd, Vratot_xyd, undef=undef,  &
   &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
 
-!-- calculate the maximum difference between Vra_rt_t and Vratot_rt_t
-  call display_2valdiff_max( Vra_rt_t, Vratot_rt_t, undef=undef, cout=cvmax )
+!-- calculate the maximum difference between analysis and retrieval
+  call display_2valdiff_max( Vt_rht_t, VTtot_rt_t, undef=undef, cout=cvtmax )
+  call display_2valdiff_max( Ut_rht_t, VRtot_rt_t, undef=undef, cout=cvrmax )
+  call display_2valdiff_max( Vra_rt_t, Vratot_rt_t, undef=undef, cout=cvamax )
 
 !-- DCL drawing
   call conv_d2r_1d( xd, draw_xd )
@@ -347,6 +349,11 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &       (/0.2, 0.8/), c_num=(/contour_num, shade_num/),  &
   &       no_tone=.true. )
 
+  call DclSetParm( "GRAPH:LCLIP", .false. )
+  call DclDrawTextNormalized( 0.82, 0.75, 'Max Diff.', centering=-1 )
+  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvtmax))//'[m/s]', centering=-1 )
+  call DclSetParm( "GRAPH:LCLIP", .true. )
+
 !-- Draw Vr from TC center
 
   call contourl_setting( contour_num2, val_spec=fixc_val2(1:contour_num2+1),  &
@@ -408,6 +415,11 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &       (/form_typec2, form_types/), (/0.2, 0.8/),  &
   &       (/0.2, 0.8/), c_num=(/contour_num2, shade_num/),  &
   &       no_tone=.true. )
+
+  call DclSetParm( "GRAPH:LCLIP", .false. )
+  call DclDrawTextNormalized( 0.82, 0.75, 'Max Diff.', centering=-1 )
+  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvrmax))//'[m/s]', centering=-1 )
+  call DclSetParm( "GRAPH:LCLIP", .true. )
 
 !-- Draw Vt from radar
 
@@ -473,7 +485,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
 
   call DclSetParm( "GRAPH:LCLIP", .false. )
   call DclDrawTextNormalized( 0.82, 0.75, 'Max Diff.', centering=-1 )
-  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvmax))//'[m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvamax))//'[m/s]', centering=-1 )
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
   call DclCloseGraphics

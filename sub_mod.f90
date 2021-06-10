@@ -23,34 +23,85 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   double precision, intent(out), optional :: Vt_0(size(r))  ! Radial profile of axisymmetric Vt [m s-1]
   double precision, intent(out), optional :: Vr_0(size(r))  ! Radial profile of axisymmetric Vr [m s-1]
 
-  integer :: nr, nt, i, j, k, nvtp, nvrp
-  double precision :: tmp_vtp, tmp_vrp, rad_coef, radp_coef
+  integer :: nr, nt, i, j, k, nvtp, nvrp, nvpmax
+  double precision :: tmp_vtp1, tmp_vrp1, tmp_vtp2n, tmp_vrp2n, rad_coef, radp_coef, lin_coef, dr
+  double precision, allocatable, dimension(:,:) :: zetap
+  double precision, allocatable, dimension(:,:,:) :: gkrr, dgkrr
   logical rad_opt
 
   nr=size(r)
   nt=size(t)
   nvtp=size(Vt_pert)
   nvrp=size(Vr_pert)
+  nvpmax=max(nvtp,nvrp)
+  dr=r(2)-r(1)
 
   rad_opt=.false.
   if(present(ropt))then
      rad_opt=ropt
+     if(nvpmax>0)then
+        allocate(gkrr(nvpmax,nr+1,nr+1))
+        allocate(dgkrr(nvpmax,nr+1,nr+1))
+        allocate(zetap(nvpmax,nr+1))
+        gkrr=0.0d0
+        dgkrr=0.0d0
+        zetap=0.0d0
+        do k=1,nvpmax
+           do j=1,nr
+              do i=1,nr
+                 if(r(i)-0.5d0*dr<0.0d0)then
+                    gkrr(k,i,j)=green_func( 0.0d0, r(j), k )
+                 else
+                    gkrr(k,i,j)=green_func( r(i)-0.5d0*dr, r(j), k )
+                 end if
+              end do
+           end do
+           do j=1,nr
+              gkrr(k,nr+1,j)=green_func( r(nr)+0.5d0*dr, r(j), k )
+           end do
+           do i=1,nr
+              gkrr(k,i,nr+1)=green_func( r(i)+0.5d0*dr, r(nr)+dr, k )
+           end do
+           do j=1,nr
+              do i=1,nr+1
+                 dgkrr(k,i,j)=(gkrr(k,i,j+1)-gkrr(k,i,j))/dr
+              end do
+           end do
+           do i=1,nr
+!              if(r(i)<1.5d0*rmax)then
+!!              if(r(i)>=rmax.and.r(i)<1.5d0*rmax)then
+                 zetap(k,i)=abs(Vt_pert(k))/rmax
+!              end if
+           end do
+        end do
+     end if
   end if
 
   do j=1,nt
-     tmp_vtp=0.0d0
-     tmp_vrp=0.0d0
-     if(present(Vt_pert))then
-        do k=1,nvtp
-           tmp_vtp=tmp_vtp+Vt_pert(k)*dcos(dble(k)*(t(j)+Vt_pert_ang(k)))
-        end do
-     end if
-     if(present(Vr_pert))then
-        do k=1,nvrp
-           tmp_vrp=tmp_vrp+Vr_pert(k)*dcos(dble(k)*(t(j)+Vr_pert_ang(k)))
-        end do
-     end if
      do i=1,nr
+        tmp_vtp1=0.0d0
+        tmp_vrp1=0.0d0
+        tmp_vtp2n=0.0d0
+        tmp_vrp2n=0.0d0
+        if(present(Vt_pert))then
+           tmp_vtp1=Vt_pert(1)*dcos((t(j)+Vt_pert_ang(1)))
+           if(nvtp>1)then
+              do k=2,nvtp
+                 lin_coef=line_integral( nr-1, r, dgkrr(k,1:nr,i), zetap(k,1:nr) )*dr
+                 tmp_vtp2n=tmp_vtp2n+(-lin_coef*dcos(dble(k)*(t(j)+Vt_pert_ang(k))))
+              end do
+           end if
+        end if
+        if(present(Vr_pert))then
+           tmp_vrp1=Vr_pert(1)*dcos((t(j)+Vr_pert_ang(1)))
+           if(nvrp>1)then
+              do k=1,nvrp
+                 lin_coef=line_integral( nr-1, r, gkrr(k,1:nr,i), zetap(k,1:nr) )*dr
+                 tmp_vrp2n=tmp_vrp2n+(-lin_coef*dsin(dble(k)*(t(j)+Vt_pert_ang(k)))/r(i))  ! same as Vt_pert_ang
+              end do
+           end if
+        end if
+
         if(r(i)<=rmax)then
            rad_coef=r(i)/rmax
            radp_coef=r(i)/rmax
@@ -77,14 +128,22 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
            end if
         end if
         if(rad_opt.eqv..true.)then
-           Vt(i,j)=Vt(i,j)+tmp_vtp*radp_coef
-           Vr(i,j)=Vr(i,j)+tmp_vrp*radp_coef
+           Vt(i,j)=Vt(i,j)+tmp_vtp1*radp_coef+tmp_vtp2n
+           Vr(i,j)=Vr(i,j)+tmp_vrp1*radp_coef+tmp_vrp2n
         else
-           Vt(i,j)=Vt(i,j)+tmp_vtp
-           Vr(i,j)=Vr(i,j)+tmp_vrp
+           Vt(i,j)=Vt(i,j)+tmp_vtp1+tmp_vtp2n
+           Vr(i,j)=Vr(i,j)+tmp_vrp1+tmp_vrp2n
         end if
      end do
   end do
+
+  if(present(ropt))then
+     if(nvpmax>0)then
+        deallocate(gkrr)
+        deallocate(dgkrr)
+        deallocate(zetap)
+     end if
+  end if
 
 end subroutine prod_vortex_structure
 

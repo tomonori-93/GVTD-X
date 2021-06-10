@@ -204,12 +204,12 @@ subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij 
 
   if(rdh(1)==0.0d0)then
      if(nnk/=ncyc*nnr)then
-        call stdout( "nnk is not identical to (2+2N+2M)(m-1). stop.", "calc_fkij", -1 )
+        call stdout( "nnk is not identical to (2+2N+M)(m-1). stop.", "calc_fkij", -1 )
         stop
      end if
   else
-     if(nnk/=ncyc*nnr+2*ndiv)then
-        call stdout( "nnk is not identical to (2+2N+2M)(m-1)+2M. stop.", "calc_fkij", -1 )
+     if(nnk/=ncyc*nnr+ndiv)then
+        call stdout( "nnk is not identical to (2+2N+M)(m-1)+M. stop.", "calc_fkij", -1 )
         stop
      end if
   end if
