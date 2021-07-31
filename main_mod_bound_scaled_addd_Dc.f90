@@ -6,7 +6,7 @@ module main_mod
 contains
 
 subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
-  &                           VRT0, VDR0, VRTn, VRRn, VDTm, VDRm, undef )
+  &                           VRT0, VDR0, VRTn, VRRn, VDTm, VDRm, undef, phi1 )
 !-- solve unknown variables and return wind velocity on R-T coordinates.
   implicit none
   !-- input/output
@@ -27,6 +27,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   double precision, intent(out) :: VDTm(ndiv,size(r),size(t))  ! retrieved tangential component of divergent wind [m s-1]
   double precision, intent(out) :: VDRm(ndiv,size(r),size(t))  ! retrieved radial component of divergent wind [m s-1]
   double precision, intent(in), optional :: undef  ! undefined value for Vd
+  double precision, intent(out), optional :: phi1(size(r)+1,size(t))  ! retrieved WN-1 stream function [m2 s-1]
 
   !-- internal variables
   integer :: i, j, k, p, cstat  ! dummy indexes
@@ -148,6 +149,16 @@ end do
   call calc_Vn2Vtot( nrot, ndiv, VRT0, VRTn, VDTm, VT )
   call calc_Vn2Vtot( nrot, ndiv, VDR0, VRRn, VDRm, VR )
 
+!-- monitor variables
+  if((present(phi1)).and.(nrot>0))then
+     do j=1,nt
+     do i=1,nr+1
+     phi1(i,j)=phis_nr(1,i)*dsin(t(j))+phic_nr(1,i)*dcos(t(j))
+     phi1(i,j)=phi1(i,j)*vmax*rh(nr+1)
+     end do
+     end do
+  end if
+
   call stdout( "Finish procedure.", "Retrieve_velocity", 0 )
 
 end subroutine Retrieve_velocity
@@ -183,7 +194,7 @@ subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij 
   nnr=size(rd)
   nnt=size(theta)
   ncyc=2+2*nrot+ndiv  ! unknown variable number at a certain radius
-  nmax=max(max(0,nrot),ndiv)   ! maximum wave number for rotating and divergent components
+  nmax=max(nrot,ndiv)   ! maximum wave number for rotating and divergent components
   fkij=0.0d0
   vareps=1.0d0
   vareps(1)=0.5d0
@@ -608,6 +619,7 @@ end do
         do kk=1,ndiv
            Ds_m(kk,ii+1)=xk(2+2*nrot+kk+ncyc*(ii-1))
 !           Dc_m(kk,ii+1)=xk(2+2*nrot+ndiv+kk+ncyc*(ii-1))
+!           Dc_m(kk,ii+1)=xk(2+2*nrot+kk+ncyc*(ii-1))
         end do
      end do
 !$omp end do
@@ -617,6 +629,7 @@ end do
         do kk=1,ndiv
            Ds_m(kk,1)=xk(kk+ncyc*nnr)  ! nnr = m - 1
 !           Dc_m(kk,1)=xk(ndiv+kk+ncyc*nnr)
+!           Dc_m(kk,1)=xk(kk+ncyc*nnr)  ! nnr = m - 1
         end do
 !$omp end do
      else  ! At innermost radius (with center)

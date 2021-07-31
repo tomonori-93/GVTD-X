@@ -39,7 +39,7 @@ program test_Rankine
 !-- internal
   integer :: i, j, k, cstat
   double precision :: d2r, r2d
-  double precision :: Vsrn
+  double precision :: Vsrn, Vra1d
   double precision, dimension(2) :: vx_new, vy_new
   double precision :: dxd, dyd, dr_d, dr_t, dt_d, dt_t, dx_d, dy_d, dx_t, dy_t
   double precision, allocatable, dimension(:) :: xd, yd, r_d, r_t, rh_t, t_d, t_t, x_d, y_d, x_t, y_t
@@ -52,12 +52,15 @@ program test_Rankine
   double precision, allocatable, dimension(:,:) :: Vx_xyd_t, Vy_xyd_t
   double precision, allocatable, dimension(:,:) :: VRT0_rt_t, VDR0_rt_t, VTtot_rt_t, VRtot_rt_t
   double precision, allocatable, dimension(:,:) :: us0, vs0, us0_rht_t, vs0_rht_t
+  double precision, allocatable, dimension(:,:) :: div_rht_t, rot_rht_t, div_xyd, rot_xyd
+  double precision, allocatable, dimension(:,:) :: phi1_rt_t, phi1_xyd
   double precision, allocatable, dimension(:,:,:) :: VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t
 
   real :: dundef
   real, allocatable, dimension(:) :: draw_xd, draw_yd
   real, allocatable, dimension(:,:) :: draw_Vt, draw_Vr, draw_Vt_ret, draw_Vr_ret
-  real, allocatable, dimension(:,:) :: draw_Vra, draw_Vra_ret
+  real, allocatable, dimension(:,:) :: draw_Vra, draw_Vra_ret, draw_rot, draw_div
+  real, allocatable, dimension(:,:) :: draw_dVt, draw_dVr, draw_dVra, draw_phi1
   character(20) :: cvtmax, cvrmax, cvamax
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
@@ -129,6 +132,12 @@ program test_Rankine
   allocate(vs0(nxd,nyd),stat=cstat)  ! Y-component of homogeneous wind on X-Y coordinate
   allocate(us0_rht_t(nr_t,nt_t),stat=cstat)  ! X-component of homogeneous wind on R-T coordinate
   allocate(vs0_rht_t(nr_t,nt_t),stat=cstat)  ! Y-component of homogeneous wind on R-T coordinate
+  allocate(div_rht_t(nr_t,nt_t),stat=cstat)  ! divergence on R-T coordinate
+  allocate(rot_rht_t(nr_t,nt_t),stat=cstat)  ! rotation on R-T coordinate
+  allocate(phi1_rt_t(nr_t+1,nt_t),stat=cstat)  ! phi1 on R-T coordinate
+  allocate(div_xyd(nxd,nyd),stat=cstat)  ! divergence on X-Y coordinate
+  allocate(rot_xyd(nxd,nyd),stat=cstat)  ! rotation on X-Y coordinate
+  allocate(phi1_xyd(nxd,nyd),stat=cstat)  ! phi1 on X-Y coordinate
 
   !-- For drawing variables
   allocate(draw_xd(nxd),stat=cstat)
@@ -137,8 +146,14 @@ program test_Rankine
   allocate(draw_Vr(nxd,nyd),stat=cstat)
   allocate(draw_Vt_ret(nxd,nyd),stat=cstat)
   allocate(draw_Vr_ret(nxd,nyd),stat=cstat)
+  allocate(draw_dVt(nxd,nyd),stat=cstat)
+  allocate(draw_dVr(nxd,nyd),stat=cstat)
+  allocate(draw_dVra(nxd,nyd),stat=cstat)
   allocate(draw_Vra(nxd,nyd),stat=cstat)
   allocate(draw_Vra_ret(nxd,nyd),stat=cstat)
+  allocate(draw_div(nxd,nyd),stat=cstat)
+  allocate(draw_rot(nxd,nyd),stat=cstat)
+  allocate(draw_phi1(nxd,nyd),stat=cstat)
 
   if(cstat/=0)then
      call stdout( "Failed to allocate variables. stop.", "main", -1 )
@@ -234,9 +249,11 @@ program test_Rankine
 
 !-- Retrieving all components of horizontal winds (VRT, VRR, VDT, and VDR) from Vd
   call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )  ! Vd - proj(Vs)
+  call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
+write(*,*) "val check", Vra1d
   call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t, Vsrn,  &
   &                       VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
-  &                       VDTm_rt_t, VDRm_rt_t, undef )
+  &                       VDTm_rt_t, VDRm_rt_t, undef, phi1=phi1_rt_t )
   call stdout( "Retrieved velocity.", "main", 0 )
 
 do i=1,nr_t
@@ -249,6 +266,16 @@ end do
   call Cart_conv_scal( rh_t, t_t, VRtot_rt_t, xd, yd, tc_xd, tc_yd, Utott_xyd, undef=undef,  &
   &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
   call Cart_conv_scal( rh_t, t_t, Vratot_rt_t, xd, yd, tc_xd, tc_yd, Vratot_xyd, undef=undef,  &
+  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
+
+!-- calculate divergence and rotation for the retrieved VR and VT
+  call div_curl_2d( rh_t, t_t, Ut_rht_t, Vt_rht_t, div_rht_t, rot_rht_t )
+!  call div_curl_2d( rh_t, t_t, VRtot_rt_t, VTtot_rt_t, div_rht_t, rot_rht_t )
+  call Cart_conv_scal( rh_t, t_t, div_rht_t, xd, yd, tc_xd, tc_yd, div_xyd, undef=undef,  &
+  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
+  call Cart_conv_scal( rh_t, t_t, rot_rht_t, xd, yd, tc_xd, tc_yd, rot_xyd, undef=undef,  &
+  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
+  call Cart_conv_scal( r_t, t_t, phi1_rt_t, xd, yd, tc_xd, tc_yd, phi1_xyd, undef=undef,  &
   &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
 
 !-- calculate the maximum difference between analysis and retrieval
@@ -267,6 +294,15 @@ end do
   call conv_d2r_2d( Utott_xyd, draw_Vr_ret )
   call conv_d2r_2d( Vra_xyd, draw_Vra )
   call conv_d2r_2d( Vratot_xyd, draw_Vra_ret )
+  call conv_d2r_2d( div_xyd, draw_div )
+  call conv_d2r_2d( rot_xyd, draw_rot )
+  draw_dVt=draw_Vt_ret
+  draw_dVr=draw_Vr_ret
+  draw_dVra=draw_Vra_ret
+  call subst_2d_r( draw_dVt, draw_Vt, undef=real(undef) )
+  call subst_2d_r( draw_dVr, draw_Vr, undef=real(undef) )
+  call subst_2d_r( draw_dVra, draw_Vra, undef=real(undef) )
+  call conv_d2r_2d( phi1_xyd, draw_phi1 )
 
 write(*,*) "checkVt0", VRT0_rt_t(:,1)
 write(*,*) "checkUt0", VDR0_rt_t(:,1)
@@ -294,11 +330,11 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &                      typ_spec=fixc_typ(1:contour_num),  &
   &                      formc=trim(adjustl(form_typec)) )
 
-  call color_setting( shade_num, (/0.0, 1.0/), min_tab=min_tab,  &
-  &                   max_tab=max_tab, col_min=10999, col_max=89999,  &
-  &                   col_tab=cmap, reverse=col_rev,  &
-  &                   val_spec=fix_val(1:shade_num+1),  &
-  &                   col_spec=fix_col(1:shade_num) )
+  call color_setting( 1, (/0.0, 1.0/), min_tab=10999,  &
+  &                   max_tab=89999, col_min=10999, col_max=89999,  &
+  &                   col_tab=14, reverse=col_rev,  &
+  &                   val_spec=(/-1000.0,1000.0/),  &
+  &                   col_spec=(/55999/) )
 
   call Dcl_2D_cont_shade( 'Vt for Analysis',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
@@ -342,7 +378,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   call Dcl_2D_cont_shade( 'Vt for Retrieval',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vt_ret(1:nxd,1:nyd),  &
-  &       draw_Vt_ret(1:nxd,1:nyd),  &
+  &       draw_dVt(1:nxd,1:nyd),  &
   &       (/0.0, 1.0/), (/0.0, 1.0/),  &
   &       (/'X (km)', 'Y (km)'/),  &
   &       (/form_typec, form_types/), (/0.2, 0.8/),  &
@@ -352,6 +388,13 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   call DclSetParm( "GRAPH:LCLIP", .false. )
   call DclDrawTextNormalized( 0.82, 0.75, 'Max Diff.', centering=-1 )
   call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvtmax))//'[m/s]', centering=-1 )
+  call tone_bar( shade_num, (/0.0, 1.0/), (/0.825,0.85/),  &
+  &              (/0.2,0.5/), trim(form_types),  &
+!  &              col_mem_num=tone_grid,  &
+  &              col_spec=fix_val(1:shade_num+1),  &
+  &              val_spec=fix_col(1:shade_num),  &
+  &              dir='t', trigle='a' )
+  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV [m/s]', centering=-1 )
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
 !-- Draw Vr from TC center
@@ -361,11 +404,11 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &                      typ_spec=fixc_typ2(1:contour_num2),  &
   &                      formc=trim(adjustl(form_typec2)) )
 
-  call color_setting( shade_num, (/0.0, 1.0/), min_tab=min_tab,  &
-  &                   max_tab=max_tab, col_min=10999, col_max=89999,  &
-  &                   col_tab=cmap, reverse=col_rev,  &
-  &                   val_spec=fix_val(1:shade_num+1),  &
-  &                   col_spec=fix_col(1:shade_num) )
+  call color_setting( 1, (/0.0, 1.0/), min_tab=10999,  &
+  &                   max_tab=89999, col_min=10999, col_max=89999,  &
+  &                   col_tab=14, reverse=col_rev,  &
+  &                   val_spec=(/-100.0,100.0/),  &
+  &                   col_spec=(/55999/) )
 
   call Dcl_2D_cont_shade( 'Vr for Analysis',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
@@ -409,7 +452,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   call Dcl_2D_cont_shade( 'Vr for Retrieval',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vr_ret(1:nxd,1:nyd),  &
-  &       draw_Vr_ret(1:nxd,1:nyd),  &
+  &       draw_dVr(1:nxd,1:nyd),  &
   &       (/0.0, 1.0/), (/0.0, 1.0/),  &
   &       (/'X (km)', 'Y (km)'/),  &
   &       (/form_typec2, form_types/), (/0.2, 0.8/),  &
@@ -419,20 +462,27 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   call DclSetParm( "GRAPH:LCLIP", .false. )
   call DclDrawTextNormalized( 0.82, 0.75, 'Max Diff.', centering=-1 )
   call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvrmax))//'[m/s]', centering=-1 )
+  call tone_bar( shade_num, (/0.0, 1.0/), (/0.825,0.85/),  &
+  &              (/0.2,0.5/), trim(form_types),  &
+!  &              col_mem_num=tone_grid,  &
+  &              col_spec=fix_val(1:shade_num+1),  &
+  &              val_spec=fix_col(1:shade_num),  &
+  &              dir='t', trigle='a' )
+  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV [m/s]', centering=-1 )
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
 !-- Draw Vt from radar
 
-  call contourl_setting( contour_num3, val_spec=fixc_val3(1:contour_num2+1),  &
+  call contourl_setting( contour_num3, val_spec=fixc_val3(1:contour_num3+1),  &
   &                      idx_spec=fixc_idx3(1:contour_num3),  &
   &                      typ_spec=fixc_typ3(1:contour_num3),  &
   &                      formc=trim(adjustl(form_typec3)) )
 
-  call color_setting( shade_num, (/0.0, 1.0/), min_tab=min_tab,  &
-  &                   max_tab=max_tab, col_min=10999, col_max=89999,  &
-  &                   col_tab=cmap, reverse=col_rev,  &
-  &                   val_spec=fix_val(1:shade_num+1),  &
-  &                   col_spec=fix_col(1:shade_num) )
+  call color_setting( 1, (/0.0, 1.0/), min_tab=10999,  &
+  &                   max_tab=89999, col_min=10999, col_max=89999,  &
+  &                   col_tab=14, reverse=col_rev,  &
+  &                   val_spec=(/-1000.0,1000.0/),  &
+  &                   col_spec=(/55999/) )
 
   call Dcl_2D_cont_shade( 'Velocity along beam for Analysis',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
@@ -462,7 +512,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
 
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
-  call contourl_setting( contour_num3, val_spec=fixc_val3(1:contour_num2+1),  &
+  call contourl_setting( contour_num3, val_spec=fixc_val3(1:contour_num3+1),  &
   &                      idx_spec=fixc_idx3(1:contour_num3),  &
   &                      typ_spec=fixc_typ3(1:contour_num3),  &
   &                      formc=trim(adjustl(form_typec3)) )
@@ -476,7 +526,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   call Dcl_2D_cont_shade( 'Velocity along beam for Retrieval',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vra_ret(1:nxd,1:nyd),  &
-  &       draw_Vra_ret(1:nxd,1:nyd),  &
+  &       draw_dVra(1:nxd,1:nyd),  &
   &       (/0.0, 1.0/), (/0.0, 1.0/),  &
   &       (/'X (km)', 'Y (km)'/),  &
   &       (/form_typec3, form_types/), (/0.2, 0.8/),  &
@@ -486,6 +536,91 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   call DclSetParm( "GRAPH:LCLIP", .false. )
   call DclDrawTextNormalized( 0.82, 0.75, 'Max Diff.', centering=-1 )
   call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvamax))//'[m/s]', centering=-1 )
+  call tone_bar( shade_num, (/0.0, 1.0/), (/0.825,0.85/),  &
+  &              (/0.2,0.5/), trim(form_types),  &
+!  &              col_mem_num=tone_grid,  &
+  &              col_spec=fix_val(1:shade_num+1),  &
+  &              val_spec=fix_col(1:shade_num),  &
+  &              dir='t', trigle='a' )
+  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV [m/s]', centering=-1 )
+  call DclSetParm( "GRAPH:LCLIP", .true. )
+
+  contour_num3=1
+  fixc_val3(1:contour_num3+1)=(/-998.0,-997.0/)
+  fixc_idx3(1:1)=(/133/)
+  fixc_typ3(1:1)=(/1/)
+  form_typec3='(f3.0)'
+  shade_num=9
+  fix_val(1:shade_num+1)=(/-1.0, -0.5, -0.2, -0.1, -0.03, 0.03, 0.1, 0.2, 0.5, 1.0/)*1.0e-3
+  fix_col(1:shade_num)=(/15999, 25999, 35999, 45999, 55999, 65999, 75999, 85999, 90999/)
+  call contourl_setting( contour_num3, val_spec=fixc_val3(1:contour_num3+1),  &
+  &                      idx_spec=fixc_idx3(1:contour_num3),  &
+  &                      typ_spec=fixc_typ3(1:contour_num3),  &
+  &                      formc=trim(adjustl(form_typec3)) )
+
+  call color_setting( shade_num, (/0.0, 1.0/), min_tab=min_tab,  &
+  &                   max_tab=max_tab, col_min=10999, col_max=89999,  &
+  &                   col_tab=cmap, reverse=col_rev,  &
+  &                   val_spec=fix_val(1:shade_num+1),  &
+  &                   col_spec=fix_col(1:shade_num) )
+
+  call Dcl_2D_cont_shade( 'Divergence of retrieved wind',  &
+  &       draw_xd(1:nxd), draw_yd(1:nyd),  &
+  &       draw_div(1:nxd,1:nyd),  &
+  &       draw_div(1:nxd,1:nyd),  &
+  &       (/0.0, 1.0/), (/0.0, 1.0/),  &
+  &       (/'X (km)', 'Y (km)'/),  &
+  &       (/form_typec3, form_types/), (/0.2, 0.8/),  &
+  &       (/0.2, 0.8/), c_num=(/contour_num3, shade_num/),  &
+  &       no_tone=.true. )
+
+  call DclSetParm( "GRAPH:LCLIP", .true. )
+
+  call Dcl_2D_cont_shade( 'Rotation of retrieved wind',  &
+  &       draw_xd(1:nxd), draw_yd(1:nyd),  &
+  &       draw_rot(1:nxd,1:nyd),  &
+  &       draw_rot(1:nxd,1:nyd),  &
+  &       (/0.0, 1.0/), (/0.0, 1.0/),  &
+  &       (/'X (km)', 'Y (km)'/),  &
+  &       (/form_typec3, form_types/), (/0.2, 0.8/),  &
+  &       (/0.2, 0.8/), c_num=(/contour_num3, shade_num/),  &
+  &       no_tone=.true. )
+
+  write(*,*) "rot", draw_rot
+  write(*,*) "div", draw_div
+
+  call DclSetParm( "GRAPH:LCLIP", .true. )
+
+write(*,*) "draw_phi", draw_phi1(1:nxd,nyd/2)
+  contour_num3=9
+  fixc_val3(1:contour_num3)=(/-20.0,-10.0,-5.0,-2.5,0.0,2.5,5.0,10.0,20.0/)*1.e4
+  fixc_idx3(1:contour_num3)=(/13,13,13,13,13,13,13,13,13,13/)
+  fixc_typ3(1:contour_num3)=(/2,2,2,2,1,1,1,1,1/)
+  form_typec3='(1PE8.1)'
+  shade_num=1
+  fix_val(1:shade_num+1)=(/-1000.0, 1000.0/)*1.0e9
+  fix_col(1:shade_num)=(/55999/)
+  call contourl_setting( contour_num3, val_spec=fixc_val3(1:contour_num3+1),  &
+  &                      idx_spec=fixc_idx3(1:contour_num3),  &
+  &                      typ_spec=fixc_typ3(1:contour_num3),  &
+  &                      formc=trim(adjustl(form_typec3)) )
+
+  call color_setting( shade_num, (/0.0, 1.0/), min_tab=min_tab,  &
+  &                   max_tab=max_tab, col_min=10999, col_max=89999,  &
+  &                   col_tab=cmap, reverse=col_rev,  &
+  &                   val_spec=fix_val(1:shade_num+1),  &
+  &                   col_spec=fix_col(1:shade_num) )
+
+  call Dcl_2D_cont_shade( 'Φ\_{1} in retrieved wind',  &
+  &       draw_xd(1:nxd), draw_yd(1:nyd),  &
+  &       draw_phi1(1:nxd,1:nyd),  &
+  &       draw_phi1(1:nxd,1:nyd),  &
+  &       (/0.0, 1.0/), (/0.0, 1.0/),  &
+  &       (/'X (km)', 'Y (km)'/),  &
+  &       (/form_typec3, form_types/), (/0.2, 0.8/),  &
+  &       (/0.2, 0.8/), c_num=(/contour_num3, shade_num/),  &
+  &       no_tone=.true. )
+
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
   call DclCloseGraphics

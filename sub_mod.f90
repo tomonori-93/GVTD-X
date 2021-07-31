@@ -68,10 +68,10 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
               end do
            end do
            do i=1,nr
-!              if(r(i)<1.5d0*rmax)then
-!!              if(r(i)>=rmax.and.r(i)<1.5d0*rmax)then
+!              if(r(i)<2.0d0*rmax)then
+              if(r(i)>=0.1d0*rmax.and.r(i)<2.0d0*rmax)then
                  zetap(k,i)=abs(Vt_pert(k))/rmax
-!              end if
+              end if
            end do
         end do
      end if
@@ -86,7 +86,9 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
         if(present(Vt_pert))then
            tmp_vtp1=Vt_pert(1)*dcos((t(j)+Vt_pert_ang(1)))
            if(nvtp>1)then
-              do k=2,nvtp
+              tmp_vtp1=0.0d0
+!              do k=2,nvtp
+              do k=1,nvtp
                  lin_coef=line_integral( nr-1, r, dgkrr(k,1:nr,i), zetap(k,1:nr) )*dr
                  tmp_vtp2n=tmp_vtp2n+(-lin_coef*dcos(dble(k)*(t(j)+Vt_pert_ang(k))))
               end do
@@ -95,9 +97,12 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
         if(present(Vr_pert))then
            tmp_vrp1=Vr_pert(1)*dcos((t(j)+Vr_pert_ang(1)))
            if(nvrp>1)then
+              tmp_vrp1=0.0d0
+!              do k=2,nvrp
               do k=1,nvrp
                  lin_coef=line_integral( nr-1, r, gkrr(k,1:nr,i), zetap(k,1:nr) )*dr
-                 tmp_vrp2n=tmp_vrp2n+(-lin_coef*dsin(dble(k)*(t(j)+Vt_pert_ang(k)))/r(i))  ! same as Vt_pert_ang
+                 tmp_vrp2n=tmp_vrp2n+(-dble(k)*lin_coef*dsin(dble(k)*(t(j)+Vt_pert_ang(k)))/r(i))  ! same as Vt_pert_ang
+!ORG                 tmp_vrp2n=tmp_vrp2n+Vr_pert(k)*(-lin_coef*dsin(dble(k)*(t(j)+Vt_pert_ang(k)))/r(i))  ! same as Vt_pert_ang
               end do
            end if
         end if
@@ -394,6 +399,108 @@ double precision function green_func( rc, r, nval )
 
 end function green_func
 
+subroutine div_curl_2d( r, t, ur, vt, divr, curl )
+!-- def: drv_r/rdr + dvt/rdt  (divr)
+!-- def: drv_t/rdr - dvr/rdt  (curl)
+  implicit none
+  double precision, intent(in) :: r(:)  ! radius [m]
+  double precision, intent(in) :: t(:)  ! angle [rad]
+  double precision, intent(in) :: ur(size(r),size(t))  ! Ur [m/s]
+  double precision, intent(in) :: vt(size(r),size(t))  ! Vt [m/s]
+  double precision, intent(out) :: divr(size(r),size(t))  ! divergence [1/s]
+  double precision, intent(out) :: curl(size(r),size(t))  ! rotation [1/s]
+  integer :: ii, jj, ni, nj
+  double precision :: dr, dt
+
+  ni=size(r)
+  nj=size(t)
+  dr=r(2)-r(1)
+  dt=t(2)-t(1)
+  divr=0.0d0
+  curl=0.0d0
+
+  do jj=2,nj-1
+     do ii=2,ni-1
+        divr(ii,jj)=0.5d0*(ur(ii+1,jj)-ur(ii-1,jj))/dr  &
+  &                +ur(ii,jj)/r(ii)  &
+  &                +0.5d0*(vt(ii,jj+1)-vt(ii,jj-1))/(r(ii)*dt)
+        curl(ii,jj)=0.5d0*(vt(ii+1,jj)-vt(ii-1,jj))/dr  &
+  &                +vt(ii,jj)/r(ii)  &
+  &                -0.5d0*(ur(ii,jj+1)-ur(ii,jj-1))/(r(ii)*dt)
+     end do
+  end do
+
+  if(r(1)>0.0d0)then
+     do jj=2,nj-1
+        divr(1,jj)=(ur(2,jj)-ur(1,jj))/dr  &
+  &                +ur(1,jj)/r(1)  &
+  &                +0.5d0*(vt(1,jj+1)-vt(1,jj-1))/(r(1)*dt)
+        curl(1,jj)=(vt(2,jj)-vt(1,jj))/dr  &
+  &                +vt(1,jj)/r(1)  &
+  &                -0.d50*(ur(1,jj+1)-ur(1,jj-1))/(r(1)*dt)
+        divr(ni,jj)=(ur(ni,jj)-ur(ni-1,jj))/dr  &
+  &                +ur(ni,jj)/r(ni)  &
+  &                +0.5d0*(vt(ni,jj+1)-vt(ni,jj-1))/(r(ni)*dt)
+        curl(ni,jj)=(vt(ni,jj)-vt(ni-1,jj))/dr  &
+  &                +vt(ni,jj)/r(ni)  &
+  &                -0.5d0*(ur(ni,jj+1)-ur(ni,jj-1))/(r(ni)*dt)
+     end do
+  else
+     do jj=2,nj-1
+        divr(ni,jj)=(ur(ni,jj)-ur(ni-1,jj))/dr  &
+  &                +ur(ni,jj)/r(ni)  &
+  &                +0.5d0*(vt(ni,jj+1)-vt(ni,jj-1))/(r(ni)*dt)
+        curl(ni,jj)=(vt(ni,jj)-vt(ni-1,jj))/dr  &
+  &                +vt(ni,jj)/r(ni)  &
+  &                -0.5d0*(ur(ni,jj+1)-ur(ni,jj-1))/(r(ni)*dt)
+     end do
+  end if
+
+  do ii=2,ni-1
+     divr(ii,1)=0.5d0*(ur(ii+1,1)-ur(ii-1,1))/dr  &
+  &             +ur(ii,1)/r(ii)  &
+  &             +(vt(ii,2)-vt(ii,1))/(r(ii)*dt)
+     curl(ii,1)=0.5d0*(vt(ii+1,1)-vt(ii-1,1))/dr  &
+  &             +vt(ii,1)/r(ii)  &
+  &             -(ur(ii,2)-ur(ii,1))/(r(ii)*dt)
+     divr(ii,nj)=0.5d0*(ur(ii+1,nj)-ur(ii-1,nj))/dr  &
+  &             +ur(ii,nj)/r(ii)  &
+  &             +(vt(ii,nj)-vt(ii,nj-1))/(r(ii)*dt)
+     curl(ii,nj)=0.5d0*(vt(ii+1,nj)-vt(ii-1,nj))/dr  &
+  &             +vt(ii,nj)/r(ii)  &
+  &             -(ur(ii,nj)-ur(ii,nj-1))/(r(ii)*dt)
+  end do
+
+  if(r(1)>0.0d0)then
+     divr(1,1)=(ur(2,1)-ur(1,1))/dr  &
+  &           +ur(1,1)/r(1)  &
+  &           +(vt(1,2)-vt(1,1))/(r(1)*dt)
+     curl(1,1)=(vt(2,1)-vt(1,1))/dr  &
+  &           +vt(1,1)/r(1)  &
+  &           -(ur(1,2)-ur(1,1))/(r(1)*dt)
+     divr(1,nj)=(ur(2,nj)-ur(1,nj))/dr  &
+  &           +ur(1,nj)/r(1)  &
+  &           +(vt(1,nj)-vt(1,nj-1))/(r(1)*dt)
+     curl(1,nj)=(vt(2,nj)-vt(1,nj))/dr  &
+  &           +vt(1,nj)/r(1)  &
+  &           -(ur(1,nj)-ur(1,nj-1))/(r(1)*dt)
+  end if
+
+  divr(ni,1)=(ur(ni,1)-ur(ni-1,1))/dr  &
+  &          +ur(ni,1)/r(ni)  &
+  &          +(vt(ni,2)-vt(ni,1))/(r(ni)*dt)
+  curl(ni,1)=(vt(ni,1)-vt(ni-1,1))/dr  &
+  &          +vt(ni,1)/r(ni)  &
+  &          -(ur(ni,2)-ur(ni,1))/(r(ni)*dt)
+  divr(ni,nj)=(ur(ni,nj)-ur(ni-1,nj))/dr  &
+  &          +ur(ni,nj)/r(ni)  &
+  &          +(vt(ni,nj)-vt(ni,nj-1))/(r(ni)*dt)
+  curl(ni,nj)=(vt(ni,nj)-vt(ni-1,nj))/dr  &
+  &          +vt(ni,nj)/r(ni)  &
+  &          -(ur(ni,nj)-ur(ni,nj-1))/(r(ni)*dt)
+
+end subroutine div_curl_2d
+
 subroutine conv_d2r_1d( ival, oval )
 !-- convert double to real
   implicit none
@@ -427,6 +534,70 @@ subroutine conv_d2r_2d( ival, oval )
 
 end subroutine conv_d2r_2d
 
+subroutine sum_1d( val, res, undef )
+!-- calculation of sum for 1D variable
+  implicit none
+  double precision, intent(in) :: val(:)  ! input
+  double precision, intent(out) :: res  ! output
+  double precision, intent(in), optional :: undef
+  integer :: ii, ni, icount
+
+  ni=size(val)
+  icount=0
+  res=0.0d0
+
+  if(present(undef))then
+     do ii=1,ni
+        if(val(ii)/=undef)then
+           res=res+val(ii)
+           icount=icount+1
+        end if
+     end do
+     if(icount>0)then
+        res=res/dble(icount)
+     else
+        res=undef
+     end if
+  else
+     do ii=1,ni
+        res=res+val(ii)
+     end do
+     res=res/dble(ni)
+  end if
+
+end subroutine sum_1d
+
+subroutine add_2d( ioval, ival, undef )
+!-- add ival
+  implicit none
+  double precision, intent(inout) :: ioval(:,:)
+  double precision, intent(in) :: ival(size(ioval,1),size(ioval,2))
+  double precision, intent(in), optional :: undef
+  integer :: ii, jj, ni, nj
+
+  ni=size(ioval,1)
+  nj=size(ioval,2)
+
+  if(present(undef))then
+     do jj=1,nj
+        do ii=1,ni
+           if(ioval(ii,jj)/=undef.and.ival(ii,jj)/=undef)then
+              ioval(ii,jj)=ioval(ii,jj)+ival(ii,jj)
+           else
+              ioval(ii,jj)=undef
+           end if
+        end do
+     end do
+  else
+     do jj=1,nj
+        do ii=1,ni
+           ioval(ii,jj)=ioval(ii,jj)+ival(ii,jj)
+        end do
+     end do
+  end if
+
+end subroutine add_2d
+
 subroutine subst_2d( ioval, ival, undef )
 !-- subtract ival
   implicit none
@@ -442,7 +613,7 @@ subroutine subst_2d( ioval, ival, undef )
      do jj=1,nj
         do ii=1,ni
            if(ioval(ii,jj)/=undef.and.ival(ii,jj)/=undef)then
-              ioval(ii,jj)=ioval(ii,jj)-real(ival(ii,jj))
+              ioval(ii,jj)=ioval(ii,jj)-ival(ii,jj)
            else
               ioval(ii,jj)=undef
            end if
@@ -473,7 +644,7 @@ subroutine subst_2d_r( ioval, ival, undef )
      do jj=1,nj
         do ii=1,ni
            if(ioval(ii,jj)/=undef.and.ival(ii,jj)/=undef)then
-              ioval(ii,jj)=ioval(ii,jj)-real(ival(ii,jj))
+              ioval(ii,jj)=ioval(ii,jj)-ival(ii,jj)
            else
               ioval(ii,jj)=undef
            end if

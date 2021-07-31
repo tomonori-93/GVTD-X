@@ -6,7 +6,7 @@ module main_mod
 contains
 
 subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
-  &                           VRT0, VDR0, VRTn, VRRn, VDTm, VDRm, undef )
+  &                           VRT0, VDR0, VRTn, VRRn, VDTm, VDRm, undef, phi1 )
 !-- solve unknown variables and return wind velocity on R-T coordinates.
   implicit none
   !-- input/output
@@ -27,6 +27,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   double precision, intent(out) :: VDTm(ndiv,size(r),size(t))  ! retrieved tangential component of divergent wind [m s-1]
   double precision, intent(out) :: VDRm(ndiv,size(r),size(t))  ! retrieved radial component of divergent wind [m s-1]
   double precision, intent(in), optional :: undef  ! undefined value for Vd
+  double precision, intent(out), optional :: phi1(size(r)+1,size(t))  ! retrieved WN-1 stream function [m2 s-1]
 
   !-- internal variables
   integer :: i, j, k, p, cstat  ! dummy indexes
@@ -36,8 +37,8 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   double precision, allocatable, dimension(:) :: Vrott_r    ! axisymmetric rotating wind (VRT0(r))
   double precision, allocatable, dimension(:,:) :: phis_nr  ! asymmetric (sine) stream function (Phi_S(n,r))
   double precision, allocatable, dimension(:,:) :: phic_nr  ! asymmetric (cosine) stream function (Phi_C(n,r))
-  double precision, allocatable, dimension(:,:) :: divs_mr  ! asymmetric (sine) stream function (D_S(n,r))
-!  double precision, allocatable, dimension(:,:) :: divc_mr  ! asymmetric (cosine) stream function (D_C(n,r))
+!  double precision, allocatable, dimension(:,:) :: divs_mr  ! asymmetric (sine) stream function (D_S(n,r))
+  double precision, allocatable, dimension(:,:) :: divc_mr  ! asymmetric (cosine) stream function (D_C(n,r))
   double precision, allocatable, dimension(:) :: x_k        ! unknown vector for retrieved coefficients
   double precision, allocatable, dimension(:) :: b_k        ! known vector given by observed values
   double precision, allocatable, dimension(:,:) :: a_kp     ! coefficient matrix for x_k
@@ -84,8 +85,8 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   allocate(Vrott_r(nr),stat=cstat)
   allocate(phis_nr(nrot,nr+1),stat=cstat)
   allocate(phic_nr(nrot,nr+1),stat=cstat)
-  allocate(divs_mr(ndiv,nr+1),stat=cstat)
-!  allocate(divc_mr(ndiv,nr+1),stat=cstat)
+!  allocate(divs_mr(ndiv,nr+1),stat=cstat)
+  allocate(divc_mr(ndiv,nr+1),stat=cstat)
   allocate(x_k(nk),stat=cstat)
   allocate(b_k(nk),stat=cstat)
   allocate(a_kp(nk,nk),stat=cstat)
@@ -100,8 +101,8 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   Vrott_r=0.0d0
   phis_nr=0.0d0
   phic_nr=0.0d0
-  divs_mr=0.0d0
-!  divc_mr=0.0d0
+!  divs_mr=0.0d0
+  divc_mr=0.0d0
   x_k=0.0d0
   b_k=0.0d0
   a_kp=0.0d0
@@ -124,9 +125,9 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   call check_zero( a_kp )
 
 !-- Solve x_k
-do k=1,nk
-write(*,'(i3,1P200E10.2)') k, a_kp(:,k), b_k(k)
-end do
+!do k=1,nk
+!write(*,'(i3,1P200E10.2)') k, a_kp(:,k), b_k(k)
+!end do
 !  call tri_gauss( a_kp, b_k, x_k )
 !  call gausss( a_kp, b_k, x_k )
   call fp_gauss( a_kp, b_k, x_k )
@@ -134,19 +135,29 @@ end do
 
 !-- Set each unknown variable from x_k
   call set_xk2variables( nrot, ndiv, x_k, Vrott_r, Vdivr_r,  &
-  &                      phis_nr, phic_nr, divs_mr, undef=dundef )
+  &                      phis_nr, phic_nr, divc_mr, undef=dundef )
 !  &                      phis_nr, phic_nr, divs_mr, divc_mr, undef=dundef )
 
 !-- Calculate Vr and Vt components of rotating wind
   call calc_phi2Vrot( nrot, Vn, vmax, r(nr), r_n, rh_n, t, Vrott_r, VRT0, VRTn, VRRn, phis_nr, phic_nr, undef=dundef )
 
 !-- Calculate Vr and Vt components of divergent wind
-  call calc_D2Vdiv( ndiv, vmax, r(nr), r_n, rh_n, t, Vdivr_r, VDR0, VDTm, VDRm, divs_mr, undef=dundef )
+  call calc_D2Vdiv( ndiv, vmax, r(nr), r_n, rh_n, t, Vdivr_r, VDR0, VDTm, VDRm, divc_mr, undef=dundef )
 !  call calc_D2Vdiv( ndiv, vmax, r(nr), r_n, rh_n, t, Vdivr_r, VDR0, VDTm, VDRm, divs_mr, divc_mr, undef=dundef )
 
 !-- Calculate total retrieved Vr and Vt
   call calc_Vn2Vtot( nrot, ndiv, VRT0, VRTn, VDTm, VT )
   call calc_Vn2Vtot( nrot, ndiv, VDR0, VRRn, VDRm, VR )
+
+!-- monitor variables
+  if((present(phi1)).and.(nrot>0))then
+     do j=1,nt
+     do i=1,nr+1
+     phi1(i,j)=phis_nr(1,i)*dsin(t(j))+phic_nr(1,i)*dcos(t(j))
+     phi1(i,j)=phi1(i,j)*vmax*rh(nr+1)
+     end do
+     end do
+  end if
 
   call stdout( "Finish procedure.", "Retrieve_velocity", 0 )
 
@@ -653,6 +664,7 @@ end do
         do kk=1,ndiv
            Ds_m(kk,ii+1)=xk(2+2*nrot+kk+ncyc*(ii-1))
 !           Dc_m(kk,ii+1)=xk(2+2*nrot+ndiv+kk+ncyc*(ii-1))
+!           Dc_m(kk,ii+1)=xk(2+2*nrot+kk+ncyc*(ii-1))
         end do
      end do
 !$omp end do
@@ -662,6 +674,7 @@ end do
         do kk=1,ndiv
            Ds_m(kk,1)=xk(kk+ncyc*nnr)  ! nnr = m - 1
 !           Dc_m(kk,1)=xk(ndiv+kk+ncyc*nnr)
+!           Dc_m(kk,1)=xk(kk+ncyc*nnr)  ! nnr = m - 1
         end do
 !$omp end do
      else  ! At innermost radius (with center)
@@ -670,7 +683,7 @@ end do
      end if
 !$omp end parallel
 do ii=1,nnr+1
-write(*,*) "check [Ds_m] = ", Ds_m(1:ndiv,ii), ii
+write(*,*) "check [Dc_m] = ", Ds_m(1:ndiv,ii), ii
 !write(*,*) "check [Ds_m, Dc_m] = ", Ds_m(1:ndiv,ii), Dc_m(1:ndiv,ii), ii
 end do
   end if

@@ -6,7 +6,7 @@ module main_mod
 contains
 
 subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
-  &                           VRT0, VDR0, VRTn, VRRn, VDTm, VDRm, undef )
+  &                           VRT0, VDR0, VRTn, VRRn, VDTm, VDRm, undef, phi1 )
 !-- solve unknown variables and return wind velocity on R-T coordinates.
   implicit none
   !-- input/output
@@ -27,6 +27,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   double precision, intent(out) :: VDTm(ndiv,size(r),size(t))  ! retrieved tangential component of divergent wind [m s-1]
   double precision, intent(out) :: VDRm(ndiv,size(r),size(t))  ! retrieved radial component of divergent wind [m s-1]
   double precision, intent(in), optional :: undef  ! undefined value for Vd
+  double precision, intent(out), optional :: phi1(size(r)+1,size(t))  ! retrieved WN-1 stream function [m2 s-1]
 
   !-- internal variables
   integer :: i, j, k, p, cstat  ! dummy indexes
@@ -137,6 +138,16 @@ end do
 !-- Calculate total retrieved Vr and Vt
   call calc_Vn2Vtot( nrot, ndiv, VRT0, VRTn, VDTm, VT )
   call calc_Vn2Vtot( nrot, ndiv, VDR0, VRRn, VDRm, VR )
+
+!-- monitor variables
+  if((present(phi1)).and.(nrot>0))then
+     do j=1,nt
+     do i=1,nr+1
+     phi1(i,j)=phis_nr(1,i)*dsin(t(j))+phic_nr(1,i)*dcos(t(j))
+     phi1(i,j)=phi1(i,j)*vmax*rh(nr+1)
+     end do
+     end do
+  end if
 
   call stdout( "Finish procedure.", "Retrieve_velocity", 0 )
 
