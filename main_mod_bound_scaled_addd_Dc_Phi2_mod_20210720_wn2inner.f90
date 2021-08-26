@@ -432,7 +432,7 @@ subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij 
 !-- Set coefficients for Phi_s and Phi_c at each (ii,jj)
 !$omp do schedule(runtime) private(kk,ii,jj)
         do jj=1,nnt
-           do ii=1,nnr-2
+           do ii=1,nnr-3
               do kk=2,nrot
                  !-- Phi(s)*delta(s,i)
                  fkij(2+kk+ncyc*(ii-1),ii,jj)  &
@@ -460,6 +460,41 @@ subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij 
   &             -(0.5d0*dble(kk)*sinen(kk,jj))  &
   &              *(r_inv(ii)*cosines(ii,jj))
               end do
+           end do
+        end do
+!$omp end do
+
+!$omp barrier
+
+!-- Set coefficients for Phi_s and Phi_c at two inner radius from the outermost (nnr-2,jj)
+!$omp do schedule(runtime) private(kk,jj)
+        do jj=1,nnt
+           do kk=2,nrot
+              !-- Phi(s)*delta(s,i)
+              fkij(2+kk+ncyc*(nnr-3),nnr-2,jj)  &
+  &          =(dr_inv*sinen(kk,jj))  &
+  &           *(-sines(nnr-2,jj))  &
+  &          +(0.5d0*dble(kk)*cosinen(kk,jj))  &
+  &           *(r_inv(nnr-2)*cosines(nnr-2,jj))
+
+              fkij(2+nrot+kk+ncyc*(nnr-3),nnr-2,jj)  &
+  &          =(dr_inv*cosinen(kk,jj))  &
+  &           *(-sines(nnr-2,jj))  &
+  &          -(0.5d0*dble(kk)*sinen(kk,jj))  &
+  &           *(r_inv(nnr-2)*cosines(nnr-2,jj))
+
+              !-- Phi(s)*delta(s,i+1)
+              fkij(2+(kk-1)+ncyc*(nnr-2),nnr-2,jj)  &
+  &          =(dr_inv*sinen(kk,jj))  &
+  &           *(sines(nnr-2,jj))  &
+  &          +(0.5d0*dble(kk)*cosinen(kk,jj))  &
+  &           *(r_inv(nnr-2)*cosines(nnr-2,jj))
+
+              fkij(2+(nrot-1)+(kk-1)+ncyc*(nnr-2),nnr-2,jj)  &
+  &          =(dr_inv*cosinen(kk,jj))  &
+  &           *(sines(nnr-2,jj))  &
+  &          -(0.5d0*dble(kk)*sinen(kk,jj))  &
+  &           *(r_inv(nnr-2)*cosines(nnr-2,jj))
            end do
         end do
 !$omp end do
