@@ -1,7 +1,7 @@
-module main_mod
+module ToRMHOWe_main
 
   use matrix_calc
-  use sub_mod
+  use ToRMHOWe_sub
 
 contains
 
@@ -43,6 +43,10 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   double precision, allocatable, dimension(:) :: b_k        ! known vector given by observed values
   double precision, allocatable, dimension(:,:) :: a_kp     ! coefficient matrix for x_k
   double precision, allocatable, dimension(:,:,:) :: f_kij  ! a_kp = sum_{i,j}(f_kij * f_pij)
+  double precision, allocatable, dimension(:,:) :: f_lk     ! For QR decomp.
+  double precision, allocatable, dimension(:) :: Vd_l       ! For QR decomp.
+  double precision, allocatable, dimension(:,:) :: tmpr
+  double precision, allocatable, dimension(:) :: tmpb
   double precision :: dundef, vmax
   double precision, dimension(size(r)) :: r_n               ! Nondimensional r
   double precision, dimension(size(rh)) :: rh_n             ! Nondimensional rh
@@ -90,7 +94,11 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   allocate(x_k(nk),stat=cstat)
   allocate(b_k(nk),stat=cstat)
   allocate(a_kp(nk,nk),stat=cstat)
+  allocate(tmpr(nr*nt,nk),stat=cstat)
+  allocate(tmpb(nk),stat=cstat)
   allocate(f_kij(nk,nr,nt),stat=cstat)
+  allocate(f_lk(nr*nt,nk),stat=cstat)
+  allocate(Vd_l(nr*nt),stat=cstat)
 
   if(cstat/=0)then
      call stdout( "Failed to allocate variables. stop.", "Retrieve_velocity", -1 )
@@ -106,7 +114,11 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   x_k=0.0d0
   b_k=0.0d0
   a_kp=0.0d0
+  tmpr=0.0d0
+  tmpb=0.0d0
   f_kij=0.0d0
+  f_lk=0.0d0
+  Vd_l=0.0d0
 
 !-- Calculate f_kij
   call calc_fkij( nrot, ndiv, nk, Vn, r_n, t, rh_n, td, f_kij, Vd )
@@ -125,13 +137,32 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   call check_zero( a_kp )
 
 !-- Solve x_k
-!do k=1,nk
-!write(*,'(i3,1P100E10.2)') k, a_kp(:,k), b_k(k)
-!end do
 !  call tri_gauss( a_kp, b_k, x_k )
 !  call gausss( a_kp, b_k, x_k )
-  call fp_gauss( a_kp, b_k, x_k )
+!  call fp_gauss( a_kp, b_k, x_k )
+  call rearrange_3d_2d( f_kij, f_lk )
+  call rearrange_2d_1d( Vd/vmax, Vd_l )
+  call QR_Householder_decomp( f_lk, Vd_l, x_k )
+!  call QR_Householder_decomp( f_lk, Vd_l, x_k, Ro=tmpr, Qtb=tmpb )
 !  call SOR_Gau_Sei( a_kp, b_k, 1.0d-5, 1.0d0, x_k )
+!do j=1,nt
+!do i=1,nr
+!write(*,'(2i3,1P100E10.2)') i, j, f_lk(nr*(j-1)+i,1:nk), Vd_l(nr*(j-1)+i)
+!write(*,'(2i3,1P100E10.2)') i, j, tmpr(nr*(j-1)+i,1:nk), tmpb(nr*(j-1)+i)
+!end do
+!end do
+
+open(unit=12,file='testa.bin',recl=8*nk,access='direct',convert='little_endian',status='unknown')
+do k=1,nk
+!do k=1,nr*nt
+!write(*,*) k, b_k(k), a_kp(k,1:nk)
+!write(12,rec=k) f_lk(k,1:nk)
+write(12,rec=k) a_kp(k,1:nk)
+end do
+close(12)
+open(unit=12,file='testb.bin',recl=8*nk,access='direct',convert='little_endian',status='unknown')
+write(12,rec=1) b_k(1:nk)
+close(12)
 
 !-- Set each unknown variable from x_k
   call set_xk2variables( nrot, ndiv, x_k, Vrott_r, Vdivr_r,  &
@@ -371,16 +402,12 @@ subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij 
         do jj=1,nnt
            do kk=2,nrot
               fkij(2+kk,1,jj)  &
-!ORG  &          =(2.0d0*dr_inv*sinen(kk,jj))  &
-!ORG  &           *(sines(1,jj))
   &          =(dr_inv*sinen(kk,jj))  &
   &           *(sines(1,jj))  &
   &          +(0.5d0*dble(kk)*r_inv(1)*cosinen(kk,jj))  &
   &           *(cosines(1,jj))
 
               fkij(2+nrot+kk,1,jj)  &
-!ORG  &          =(2.0d0*dr_inv*cosinen(kk,jj))  &
-!ORG  &           *(sines(1,jj))
   &          =(dr_inv*cosinen(kk,jj))  &
   &           *(sines(1,jj))  &
   &          -(0.5d0*dble(kk)*r_inv(1)*sinen(kk,jj))  &
@@ -713,10 +740,6 @@ subroutine calc_phi2Vrot( nrot, Vsrn, vmax, rmax, rd, rdh, theta, VRT0_r,  &
      phis_nr(1,1)=Vsrn*rdh(1)-phis_nr(1,2)
      phic_nr(1,1)=Vsrn*rdh(1)-phic_nr(1,2)
 
-     !-- set the innermost boundary for wavenumber 2
-!     phis_nr(2,1)=-phis_nr(2,2)
-!     phic_nr(2,1)=-phic_nr(2,2)
-
 !$omp parallel default(shared)
 !$omp do schedule(runtime) private(kk,ii,jj)
      do jj=1,nnt
@@ -1010,4 +1033,4 @@ subroutine check_zero( a )
 
 end subroutine check_zero
 
-end module main_mod
+end module ToRMHOWe_main

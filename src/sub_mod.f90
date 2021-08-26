@@ -1,4 +1,4 @@
-module sub_mod
+module ToRMHOWe_sub
 
 contains
 
@@ -779,4 +779,4 @@ subroutine stdout( message, routine_name, mtype )
 
 end subroutine stdout
 
-end module sub_mod
+end module ToRMHOWe_sub
