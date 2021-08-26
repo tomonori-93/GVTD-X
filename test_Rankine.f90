@@ -251,7 +251,7 @@ program test_Rankine
   call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )  ! Vd - proj(Vs)
   call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
 write(*,*) "val check", Vra1d
-  call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t, Vsrn,  &
+  call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t, (/Vsrn,0.0d0/),  &
   &                       VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
   &                       VDTm_rt_t, VDRm_rt_t, undef, phi1=phi1_rt_t )
   call stdout( "Retrieved velocity.", "main", 0 )
@@ -586,12 +586,12 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &       (/0.2, 0.8/), c_num=(/contour_num3, shade_num/),  &
   &       no_tone=.true. )
 
-  write(*,*) "rot", draw_rot
-  write(*,*) "div", draw_div
+!  write(*,*) "rot", draw_rot
+!  write(*,*) "div", draw_div
 
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
-write(*,*) "draw_phi", draw_phi1(1:nxd,nyd/2)
+!write(*,*) "draw_phi", draw_phi1(1:nxd,nyd/2)
   contour_num3=9
   fixc_val3(1:contour_num3)=(/-20.0,-10.0,-5.0,-2.5,0.0,2.5,5.0,10.0,20.0/)*1.e4
   fixc_idx3(1:contour_num3)=(/13,13,13,13,13,13,13,13,13,13/)

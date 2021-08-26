@@ -210,7 +210,7 @@ program test_Rankine
 
 !-- Retrieving all components of horizontal winds (VRT, VRR, VDT, and VDR) from Vd
      call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )  ! Vd - proj(Vs)
-     call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t, Vsrn,  &
+     call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t, (/Vsrn,0.0d0/),  &
   &                          VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                          VRTn_rt_t, VRRn_rt_t,  &
   &                          VDTm_rt_t, VDRm_rt_t, undef )
