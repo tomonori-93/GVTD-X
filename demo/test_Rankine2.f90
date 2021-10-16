@@ -5,8 +5,8 @@ program test_Rankine
   use Dcl_Automatic
   use Math_Const
   use typhoon_analy
-  use sub_mod
-  use main_mod
+  use ToRMHOWe_sub
+  use ToRMHOWe_main
 
   implicit none
 

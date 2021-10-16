@@ -2,7 +2,7 @@
 
 include ./Mkinclude
 
-SUBDIR1	= src
+SUBDIR1	= src demo
 
 all:
 	@for i in $(SUBDIR1) ; do \
