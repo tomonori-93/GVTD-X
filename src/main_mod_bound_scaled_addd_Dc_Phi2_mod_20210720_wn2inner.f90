@@ -5,7 +5,7 @@ module ToRMHOWe_main
 
 contains
 
-subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
+subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, VT, VR,  &
   &                           VRT0, VDR0, VRTn, VRRn, VDTm, VDRm, undef, phi1 )
 !-- solve unknown variables and return wind velocity on R-T coordinates.
   implicit none
@@ -17,6 +17,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   double precision, intent(in) :: rh(size(r)+1)  ! radial coordinate on which Phi (staggered for Vd) is defined [m]
   double precision, intent(in) :: td(size(r),size(t))  ! radar azimuthal angle defined at Vd(r,t) [rad]
   double precision, intent(inout) :: Vd(size(r),size(t))  ! Doppler velocity defined on r-t [m s-1]
+  double precision, intent(in) :: Un(2)                ! Parallel component to radar in environmental wind, defined on r-t [m s-1]
   double precision, intent(in) :: Vn(2)                ! Normal component to radar in environmental wind, defined on r-t [m s-1]
   double precision, intent(out) :: VT(size(r),size(t))  ! retrieved total tangential wind [m s-1]
   double precision, intent(out) :: VR(size(r),size(t))  ! retrieved total radial wind [m s-1]
@@ -76,7 +77,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
      nrot2=0
   end if
 
-!-- Nondimensionalize r and rh
+!-- Normalized r and rh
   r_n=r/rh(nr+1)
   rh_n=rh/rh(nr+1)
 
@@ -116,7 +117,8 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
   f_kij=0.0d0
 
 !-- Calculate f_kij
-  call calc_fkij( nrot, ndiv, nk, Vn, r_n, t, rh_n, td, f_kij, Vd )
+!-- ** normalized radius is used in r_n **
+  call calc_fkij( nrot, ndiv, nk, Un, Vn, r_n, t, rh_n, td, f_kij, Vd )
 !do j=1,nt
 !do i=1,nr
 !write(*,'(2i3,1P100E10.2)') i, j, f_kij(1:nk,i,j), Vd(i,j)
@@ -146,7 +148,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Vn, VT, VR,  &
 !  &                      phis_nr, phic_nr, divs_mr, divc_mr, undef=dundef )
 
 !-- Calculate Vr and Vt components of rotating wind
-  call calc_phi2Vrot( nrot, Vn, vmax, r(nr), r_n, rh_n, t, Vrott_r, VRT0, VRTn, VRRn, phis_nr, phic_nr, undef=dundef )
+  call calc_phi2Vrot( nrot, Un, Vn, vmax, r(nr), r_n, rh_n, t, Vrott_r, VRT0, VRTn, VRRn, phis_nr, phic_nr, undef=dundef )
 
 !-- Calculate Vr and Vt components of divergent wind
   call calc_D2Vdiv( ndiv, vmax, r(nr), r_n, rh_n, t, Vdivr_r, VDR0, VDTm, VDRm, divc_mr, undef=dundef )
@@ -174,13 +176,14 @@ end subroutine Retrieve_velocity
 !-- calculate f_kij
 !--------------------------------------------------
 
-subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij )
+subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rd, theta, rdh, thetad, fkij, Vdij )
   implicit none
   integer, intent(in) :: nrot
   integer, intent(in) :: ndiv
   integer, intent(in) :: nnk
+  double precision, intent(in) :: Usrn(2)
   double precision, intent(in) :: Vsrn(2)
-  double precision, intent(in) :: rd(:)
+  double precision, intent(in) :: rd(:)  ! Normalized radius
   double precision, intent(in) :: theta(:)
   double precision, intent(in) :: rdh(size(rd)+1)
   double precision, intent(in) :: thetad(size(rd),size(theta))
@@ -397,9 +400,12 @@ subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij 
 
         Vdij(1,jj)  &
   &    =Vdij(1,jj)  &
-  &    +Vsrn(1)*rad1_in_coef  &
-  &     *(rd(1)*(sinen(1,jj)+cosinen(1,jj))*sines(1,jj)  &
-  &      +0.5d0*dr*(cosinen(1,jj)-sinen(1,jj))*cosines(1,jj))
+  &    +rad1_in_coef  &
+  &     *(4.0d0*rd(1)*(-Usrn(1)*sinen(1,jj)+Vsrn(1)*cosinen(1,jj))*sines(1,jj)  &
+  &      +2.0d0*dr*(Usrn(1)*cosinen(1,jj)-Vsrn(1)*sinen(1,jj))*cosines(1,jj))
+!  &    +Vsrn(1)*rad1_in_coef  &
+!  &     *(rd(1)*(sinen(1,jj)+cosinen(1,jj))*sines(1,jj)  &
+!  &      +0.5d0*dr*(cosinen(1,jj)-sinen(1,jj))*cosines(1,jj))
      end do
 !$omp end do
 
@@ -532,18 +538,18 @@ subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij 
            do pp=2,nnr-1
               do kk=1,ndiv
                  fkij(2+2*nrot+kk+ncyc*(pp-2),ii,jj)  &
-  &             =vareps(pp)*rdh(pp)  &  ! For Ds
-  &                       *(dble(kk)*dr*r_inv(ii)*gkrr(kk,pp,ii)  &
-  &                       *cosinen(kk,jj)*sines(ii,jj)  &
-  &                      -(gkrr(kk,pp,ii+1)-gkrr(kk,pp,ii))  &
-  &                       *sinen(kk,jj)*cosines(ii,jj))
+!  &             =vareps(pp)*rdh(pp)  &  ! For Ds
+!  &                       *(dble(kk)*dr*r_inv(ii)*gkrr(kk,pp,ii)  &
+!  &                       *cosinen(kk,jj)*sines(ii,jj)  &
+!  &                      -(gkrr(kk,pp,ii+1)-gkrr(kk,pp,ii))  &
+!  &                       *sinen(kk,jj)*cosines(ii,jj))
 !
 !                 fkij(2+2*nrot+ndiv+kk+ncyc*(pp-2),ii,jj)  &
-!  &             =-vareps(pp)*rdh(pp)  &  ! For Dc
-!  &                      *(dble(kk)*dr*r_inv(ii)*gkrr(kk,pp,ii)  &
-!  &                       *sinen(kk,jj)*sines(ii,jj)  &
-!  &                      +(gkrr(kk,pp,ii+1)-gkrr(kk,pp,ii))  &
-!  &                       *cosinen(kk,jj)*cosines(ii,jj))
+  &             =-vareps(pp)*rdh(pp)  &  ! For Dc
+  &                      *(dble(kk)*dr*r_inv(ii)*gkrr(kk,pp,ii)  &
+  &                       *sinen(kk,jj)*sines(ii,jj)  &
+  &                      +(gkrr(kk,pp,ii+1)-gkrr(kk,pp,ii))  &
+  &                       *cosinen(kk,jj)*cosines(ii,jj))
               end do
            end do
         end do
@@ -558,18 +564,18 @@ subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij 
         do ii=1,nnr
            do kk=1,ndiv
               fkij(2+2*nrot2+kk+ncyc*(nnr-2),ii,jj)  &
-  &          =vareps(nnr)*rdh(nnr)  &  ! For Ds
-  &                    *(dble(kk)*dr*r_inv(ii)*gkrr(kk,nnr,ii)  &
-  &                    *cosinen(kk,jj)*sines(ii,jj)  &
-  &                   -(gkrr(kk,nnr,ii+1)-gkrr(kk,nnr,ii))  &
-  &                    *sinen(kk,jj)*cosines(ii,jj))
+!  &          =vareps(nnr)*rdh(nnr)  &  ! For Ds
+!  &                    *(dble(kk)*dr*r_inv(ii)*gkrr(kk,nnr,ii)  &
+!  &                    *cosinen(kk,jj)*sines(ii,jj)  &
+!  &                   -(gkrr(kk,nnr,ii+1)-gkrr(kk,nnr,ii))  &
+!  &                    *sinen(kk,jj)*cosines(ii,jj))
 !
 !              fkij(2+2*nrot2+ndiv+kk+ncyc*(nnr-2),ii,jj)  &
-!  &          =-vareps(nnr)*rdh(nnr)  &  ! For Dc
-!  &                   *(dble(kk)*dr*r_inv(ii)*gkrr(kk,nnr,ii)  &
-!  &                    *sinen(kk,jj)*sines(ii,jj)  &
-!  &                   +(gkrr(kk,nnr,ii+1)-gkrr(kk,nnr,ii))  &
-!  &                    *cosinen(kk,jj)*cosines(ii,jj))
+  &          =-vareps(nnr)*rdh(nnr)  &  ! For Dc
+  &                   *(dble(kk)*dr*r_inv(ii)*gkrr(kk,nnr,ii)  &
+  &                    *sinen(kk,jj)*sines(ii,jj)  &
+  &                   +(gkrr(kk,nnr,ii+1)-gkrr(kk,nnr,ii))  &
+  &                    *cosinen(kk,jj)*cosines(ii,jj))
            end do
         end do
      end do
@@ -583,18 +589,18 @@ subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij 
         do ii=1,nnr
            do kk=1,ndiv
               fkij(2+kk+ncyc*(nnr-2)+ncyc2,ii,jj)  &
-  &          =vareps(nnr+1)*rdh(nnr+1)  &  ! For Ds
-  &                    *(dble(kk)*dr*r_inv(ii)*gkrr(kk,nnr+1,ii)  &
-  &                    *cosinen(kk,jj)*sines(ii,jj)  &
-  &                   -(gkrr(kk,nnr+1,ii+1)-gkrr(kk,nnr+1,ii))  &
-  &                    *sinen(kk,jj)*cosines(ii,jj))
+!  &          =vareps(nnr+1)*rdh(nnr+1)  &  ! For Ds
+!  &                    *(dble(kk)*dr*r_inv(ii)*gkrr(kk,nnr+1,ii)  &
+!  &                    *cosinen(kk,jj)*sines(ii,jj)  &
+!  &                   -(gkrr(kk,nnr+1,ii+1)-gkrr(kk,nnr+1,ii))  &
+!  &                    *sinen(kk,jj)*cosines(ii,jj))
 !
 !              fkij(2+ndiv+kk+ncyc*(nnr-2)+ncyc2,ii,jj)  &
-!  &          =-vareps(nnr+1)*rdh(nnr+1)  &  ! For Dc
-!  &                   *(dble(kk)*dr*r_inv(ii)*gkrr(kk,nnr+1,ii)  &
-!  &                    *sinen(kk,jj)*sines(ii,jj)  &
-!  &                   +(gkrr(kk,nnr+1,ii+1)-gkrr(kk,nnr+1,ii))  &
-!  &                    *cosinen(kk,jj)*cosines(ii,jj))
+  &          =-vareps(nnr+1)*rdh(nnr+1)  &  ! For Dc
+  &                   *(dble(kk)*dr*r_inv(ii)*gkrr(kk,nnr+1,ii)  &
+  &                    *sinen(kk,jj)*sines(ii,jj)  &
+  &                   +(gkrr(kk,nnr+1,ii+1)-gkrr(kk,nnr+1,ii))  &
+  &                    *cosinen(kk,jj)*cosines(ii,jj))
            end do
         end do
      end do
@@ -609,18 +615,18 @@ subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rd, theta, rdh, thetad, fkij, Vdij 
            do ii=1,nnr
               do kk=1,ndiv
                  fkij(2+ndiv+ncyc*(nnr-2)+ncyc2+kk,ii,jj)  &
-  &             =vareps(1)*rdh(1)  &  ! For Ds
-  &                       *(dble(kk)*dr*r_inv(ii)*gkrr(kk,1,ii)  &
-  &                       *cosinen(kk,jj)*sines(ii,jj)  &
-  &                      -(gkrr(kk,1,ii+1)-gkrr(kk,1,ii))  &
-  &                       *sinen(kk,jj)*cosines(ii,jj))
+!  &             =vareps(1)*rdh(1)  &  ! For Ds
+!  &                       *(dble(kk)*dr*r_inv(ii)*gkrr(kk,1,ii)  &
+!  &                       *cosinen(kk,jj)*sines(ii,jj)  &
+!  &                      -(gkrr(kk,1,ii+1)-gkrr(kk,1,ii))  &
+!  &                       *sinen(kk,jj)*cosines(ii,jj))
 !
 !                 fkij(2+2*ndiv+ncyc*(nnr-2)+ncyc2+ndiv+kk,ii,jj)  &
-!  &             =-vareps(1)*rdh(1)  &  ! For Dc
-!  &                      *(dble(kk)*dr*r_inv(ii)*gkrr(kk,1,ii)  &
-!  &                       *sinen(kk,jj)*sines(ii,jj)  &
-!  &                      +(gkrr(kk,1,ii+1)-gkrr(kk,1,ii))  &
-!  &                       *cosinen(kk,jj)*cosines(ii,jj))
+  &             =-vareps(1)*rdh(1)  &  ! For Dc
+  &                      *(dble(kk)*dr*r_inv(ii)*gkrr(kk,1,ii)  &
+  &                       *sinen(kk,jj)*sines(ii,jj)  &
+  &                      +(gkrr(kk,1,ii+1)-gkrr(kk,1,ii))  &
+  &                       *cosinen(kk,jj)*cosines(ii,jj))
               end do
            end do
         end do
@@ -870,15 +876,16 @@ end subroutine set_xk2variables
 !-- Calculate Vr and Vt components of rotating wind
 !--------------------------------------------------
 
-subroutine calc_phi2Vrot( nrot, Vsrn, vmax, rmax, rd, rdh, theta, VRT0_r,  &
+subroutine calc_phi2Vrot( nrot, Usrn, Vsrn, vmax, rmax, rd, rdh, theta, VRT0_r,  &
   &                       VRT0_rt, VRT_nrt, VRR_nrt,  &
   &                       phis_nr, phic_nr, undef )
   implicit none
   integer, intent(in) :: nrot
+  double precision, intent(in) :: Usrn(2)
   double precision, intent(in) :: Vsrn(2)
   double precision, intent(in) :: vmax
   double precision, intent(in) :: rmax
-  double precision, intent(in) :: rd(:)
+  double precision, intent(in) :: rd(:)  ! Normalized radius
   double precision, intent(in) :: rdh(size(rd)+1)
   double precision, intent(in) :: theta(:)
   double precision, intent(in) :: VRT0_r(size(rd))
@@ -890,7 +897,7 @@ subroutine calc_phi2Vrot( nrot, Vsrn, vmax, rmax, rd, rdh, theta, VRT0_r,  &
   double precision, intent(in), optional :: undef
 
   integer :: ii, jj, kk, nnr, nnt, cstat
-  double precision :: dr_inv, dr
+  double precision :: dr_inv, dr, Usrn_n(2), Vsrn_n(2)
   double precision, dimension(size(rd)) :: r_inv
   double precision, allocatable, dimension(:,:) :: cosinen, sinen
 
@@ -921,6 +928,8 @@ subroutine calc_phi2Vrot( nrot, Vsrn, vmax, rmax, rd, rdh, theta, VRT0_r,  &
   dr=rd(2)-rd(1)
   dr_inv=1.0d0/(rd(2)-rd(1))
   r_inv(1:nnr)=1.0d0/rd(1:nnr)
+  Usrn_n(1:2)=Usrn(1:2)/vmax
+  Vsrn_n(1:2)=Vsrn(1:2)/vmax
 
   do ii=1,nnr
      VRT0_rt(ii,1:nnt)=VRT0_r(ii)*vmax
@@ -932,14 +941,14 @@ subroutine calc_phi2Vrot( nrot, Vsrn, vmax, rmax, rd, rdh, theta, VRT0_r,  &
      VRR_nrt=0.0d0
 
      !-- set the innermost boundary for wavenumber 1
-     phis_nr(1,1)=((2.0d0*rd(1)+dr)*phis_nr(1,2)+Vsrn(1)*rd(1)*dr)/(2.0d0*rd(1)-dr)
-     phic_nr(1,1)=((2.0d0*rd(1)+dr)*phic_nr(1,2)+Vsrn(1)*rd(1)*dr)/(2.0d0*rd(1)-dr)
+     phis_nr(1,1)=((2.0d0*rd(1)+dr)*phis_nr(1,2)-4.0d0*Usrn_n(1)*rd(1)*dr)/(2.0d0*rd(1)-dr)
+     phic_nr(1,1)=((2.0d0*rd(1)+dr)*phic_nr(1,2)+4.0d0*Vsrn_n(1)*rd(1)*dr)/(2.0d0*rd(1)-dr)
 
      !-- set the outermost boundary for wavenumber 1
-     phis_nr(1,nnr+1)=-Vsrn(2)*dr
-     phic_nr(1,nnr+1)=-Vsrn(2)*dr
-     phis_nr(1,nnr)=Vsrn(2)*dr
-     phic_nr(1,nnr)=Vsrn(2)*dr
+     phis_nr(1,nnr+1)=-Vsrn_n(2)*dr
+     phic_nr(1,nnr+1)=-Vsrn_n(2)*dr
+     phis_nr(1,nnr)=Vsrn_n(2)*dr
+     phic_nr(1,nnr)=Vsrn_n(2)*dr
 
      !-- set the outermost boundary for wavenumber 2
      if(nrot>1)then
@@ -1110,14 +1119,18 @@ subroutine calc_D2Vdiv( ndiv, vmax, rmax, rd, rdh, theta, VDR0_r,  &
         do ii=1,nnr
            do kk=1,ndiv
               VDT_mrt(kk,ii,jj)=-(dr*dble(kk)*r_inv(ii)*vmax)  &
-  &                              *(line_integral( nnr, rdh(1:nnr+1), gkrr(kk,1:nnr+1,ii), Ds_mr(kk,1:nnr+1) )  &
-  &                                *cosinen(kk,jj)) ! &
+!  &                              *(line_integral( nnr, rdh(1:nnr+1), gkrr(kk,1:nnr+1,ii), Ds_mr(kk,1:nnr+1) )  &
+!  &                                *cosinen(kk,jj)) ! &
+  &                               *(-line_integral( nnr, rdh(1:nnr+1), gkrr(kk,1:nnr+1,ii), Ds_mr(kk,1:nnr+1) )  &
+  &                                 *sinen(kk,jj))
 !  &                               *(-line_integral( nnr, rdh(1:nnr+1), gkrr(kk,1:nnr+1,ii), Dc_mr(kk,1:nnr+1) )  &
 !  &                                 *sinen(kk,jj))
 
               VDR_mrt(kk,ii,jj)=-(vmax)  &
-  &                              *(line_integral( nnr, rdh(1:nnr+1), dgkrr(kk,1:nnr+1,ii), Ds_mr(kk,1:nnr+1) )  &
-  &                               *sinen(kk,jj)) ! &
+!  &                              *(line_integral( nnr, rdh(1:nnr+1), dgkrr(kk,1:nnr+1,ii), Ds_mr(kk,1:nnr+1) )  &
+!  &                               *sinen(kk,jj)) ! &
+  &                              *(+line_integral( nnr, rdh(1:nnr+1), dgkrr(kk,1:nnr+1,ii), Ds_mr(kk,1:nnr+1) )  &
+  &                                 *cosinen(kk,jj))
 !  &                              *(+line_integral( nnr, rdh(1:nnr+1), dgkrr(kk,1:nnr+1,ii), Dc_mr(kk,1:nnr+1) )  &
 !  &                                 *cosinen(kk,jj))
            end do
