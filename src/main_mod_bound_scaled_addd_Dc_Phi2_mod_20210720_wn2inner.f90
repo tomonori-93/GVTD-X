@@ -398,14 +398,16 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rd, theta, rdh, thetad, fkij,
   &     *(cosinen(1,jj)*sines(1,jj)  &
   &      +sinen(1,jj)*cosines(1,jj))
 
+write(*,*) "before Vd at the inner", Vdij(1,jj), jj
         Vdij(1,jj)  &
   &    =Vdij(1,jj)  &
-  &    +rad1_in_coef  &
-  &     *(4.0d0*rd(1)*(-Usrn(1)*sinen(1,jj)+Vsrn(1)*cosinen(1,jj))*sines(1,jj)  &
-  &      +2.0d0*dr*(Usrn(1)*cosinen(1,jj)-Vsrn(1)*sinen(1,jj))*cosines(1,jj))
+  &    -rad1_in_coef  &
+  &     *(4.0d0*rd(1)*(Usrn(1)*sinen(1,jj)-Vsrn(1)*cosinen(1,jj))*sines(1,jj)  &
+  &      -2.0d0*dr*(Usrn(1)*cosinen(1,jj)-Vsrn(1)*sinen(1,jj))*cosines(1,jj))
 !  &    +Vsrn(1)*rad1_in_coef  &
 !  &     *(rd(1)*(sinen(1,jj)+cosinen(1,jj))*sines(1,jj)  &
 !  &      +0.5d0*dr*(cosinen(1,jj)-sinen(1,jj))*cosines(1,jj))
+write(*,*) "after Vd at the inner", Vdij(1,jj), jj
      end do
 !$omp end do
 
@@ -423,10 +425,14 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rd, theta, rdh, thetad, fkij,
   &    =-dr_inv*cosinen(1,jj)*sines(nnr-1,jj)  &
   &     -0.5d0*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj)
 
+write(*,*) "before Vd at the outer", Vdij(nnr-1,jj), jj
         Vdij(nnr-1,jj)  &
   &    =Vdij(nnr-1,jj)  &
-  &    -Vsrn(2)*((sinen(1,jj)+cosinen(1,jj))*sines(1,jj)  &
-  &             +0.5d0*dr*r_inv(nnr-1)*(cosinen(1,jj)-sinen(1,jj))*cosines(1,jj))
+  &    +Usrn(2)*(sinen(1,jj)*sines(nnr-1,jj)  &
+  &             +0.5d0*dr*r_inv(nnr-1)*cosinen(1,jj)*cosines(nnr-1,jj)) &
+  &    -Vsrn(2)*(cosinen(1,jj)*sines(nnr-1,jj)  &
+  &             -0.5d0*dr*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj))
+write(*,*) "after Vd at the outer", Vdij(nnr-1,jj), jj
      end do
 !$omp end do
 
@@ -945,9 +951,9 @@ subroutine calc_phi2Vrot( nrot, Usrn, Vsrn, vmax, rmax, rd, rdh, theta, VRT0_r, 
      phic_nr(1,1)=((2.0d0*rd(1)+dr)*phic_nr(1,2)+4.0d0*Vsrn_n(1)*rd(1)*dr)/(2.0d0*rd(1)-dr)
 
      !-- set the outermost boundary for wavenumber 1
-     phis_nr(1,nnr+1)=-Vsrn_n(2)*dr
+     phis_nr(1,nnr+1)=Usrn_n(2)*dr
      phic_nr(1,nnr+1)=-Vsrn_n(2)*dr
-     phis_nr(1,nnr)=Vsrn_n(2)*dr
+     phis_nr(1,nnr)=-Usrn_n(2)*dr
      phic_nr(1,nnr)=Vsrn_n(2)*dr
 
      !-- set the outermost boundary for wavenumber 2
