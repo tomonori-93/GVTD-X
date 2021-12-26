@@ -1,5 +1,5 @@
 program test_Rankine
-!-- A retrieval program for an analytical vortex
+!-- A retrieval program for a 2-dim analytical vortex
 
   use dcl
   use Dcl_Automatic
@@ -39,10 +39,10 @@ program test_Rankine
 !-- internal
   integer :: i, j, k, cstat
   double precision :: d2r, r2d
-  double precision :: Vsrn, Vra1d
+  double precision :: Vsrn, Vra1d, thetad_tc
   double precision, dimension(2) :: vx_new, vy_new
   double precision :: dxd, dyd, dr_d, dr_t, dt_d, dt_t, dx_d, dy_d, dx_t, dy_t
-  double precision, allocatable, dimension(:) :: xd, yd, r_d, r_t, rh_t, t_d, t_t, x_d, y_d, x_t, y_t
+  double precision, allocatable, dimension(:) :: xd, yd, r_d, r_t, rh_t, t_d, t_t, t_ref_t, x_d, y_d, x_t, y_t
   double precision, allocatable, dimension(:,:) :: tdr_t
   double precision, allocatable, dimension(:,:) :: Vd_rt_d, Ut_xyd, Vt_xyd, Vra_xyd, Vsra_xyd, Vratot_xyd
   double precision, allocatable, dimension(:,:) :: Utott_xyd, Vtott_xyd, Vra_rt_t, Vratot_rt_t, Vsra_rt_t
@@ -95,6 +95,7 @@ program test_Rankine
   allocate(r_t(nr_t+1),stat=cstat)  ! Radius on TC R-T coordinate
   allocate(t_d(nt_d),stat=cstat)  ! Radar azimuthal angle on radar R-T coordinate
   allocate(t_t(nt_t),stat=cstat)  ! Azimuthal angle on TC R-T coordinate
+  allocate(t_ref_t(nt_t),stat=cstat)  ! Reference angle on TC R-T coordinate
   allocate(x_d(nx_d),stat=cstat)  ! X coordinate for each (r_d, t_d)
   allocate(y_d(ny_d),stat=cstat)  ! Y coordinate for each (r_d, t_d)
   allocate(x_t(nx_t),stat=cstat)  ! X coordinate for each (r_t, t_t)
@@ -162,7 +163,6 @@ program test_Rankine
      call stdout( "Allocated variables.", "main", 0 )
   end if
 
-
   dxd=(xdmax-xdmin)/dble(nxd-1)
   dyd=(ydmax-ydmin)/dble(nyd-1)
   dr_d=(r_dmax-r_dmin)/dble(nr_d-1)
@@ -187,6 +187,7 @@ program test_Rankine
 
   t_d=t_d*d2r
   t_t=t_t*d2r
+  t_ref_t=t_t
 
   rh_t(1:nr_t)=r_t(1:nr_t)+0.5d0*dr_t
   do j=1,nt_t
@@ -195,8 +196,18 @@ program test_Rankine
      end do
   end do
 
+!-- Making relative angle to the storm center (tdr_r - thetad_tc)
+  thetad_tc=datan2((tc_yd-ra_yd),(tc_xd-ra_xd))
+  write(*,*) "thetad_tc is ", thetad_tc
+  do j=1,nt_t
+     do i=1,nr_t
+        tdr_t(i,j)=tdr_t(i,j)-thetad_tc
+     end do
+  end do
+  t_t=t_ref_t-thetad_tc
+
 !-- producing vortex profiles at vector points
-  call prod_vortex_structure( rh_t, t_t, rvmax, vmax, c1u, c2u,  &
+  call prod_vortex_structure( rh_t, t_ref_t, rvmax, vmax, c1u, c2u,  &
   &                           Vt_rht_t, Ut_rht_t, vp(1:nvp), up(1:nup),  &
   &                           vpa(1:nvp)*d2r, upa(1:nup)*d2r, ropt=ropt )
 
@@ -204,7 +215,7 @@ program test_Rankine
   us0=us
   vs0=vs
   call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd )
-  call tangent_conv_scal( xd, yd, tc_xd, tc_yd, Vsra_xyd, rh_t, t_t, Vsra_rt_t,  &
+  call tangent_conv_scal( xd, yd, tc_xd, tc_yd, Vsra_xyd, rh_t, t_ref_t, Vsra_rt_t,  &
   &                       undef=undef, undefg=undef, undefgc='inc',  &
   &                       stdopt=.true., axis='xy' )
 !ORG  tc_ra_r=dsqrt((tc_xd-ra_xd)**2+(tc_yd-ra_yd)**2)
@@ -213,21 +224,21 @@ program test_Rankine
 !ORG  Vsrn=vs*dcos(tc_ra_t+dasin(rh_t(1)/tc_ra_r))-us*dsin(tc_ra_t+dasin(rh_t(1)/tc_ra_r))
   Vsrn=0.0d0
 
-!-- Environmental wind (Us, Vs) -> Vsr(r_t,t_t), Vst(r_t,t_t) for only drawing
-  ! (Us, Vs)(xd,yd) -> (Us, Vs)(r_t,t_t) -> (Vsr,Vst)(r_t,t_t)
-  call tangent_conv_scal( xd, yd, tc_xd, tc_yd, us0, rh_t, t_t, us0_rht_t,  &
+!-- Environmental wind (Us, Vs) -> Vsr(r_t,t_ref_t), Vst(r_t,t_ref_t) for only drawing
+  ! (Us, Vs)(xd,yd) -> (Us, Vs)(r_t,t_ref_t) -> (Vsr,Vst)(r_t,t_ref_t)
+  call tangent_conv_scal( xd, yd, tc_xd, tc_yd, us0, rh_t, t_ref_t, us0_rht_t,  &
   &                       undef=undef, undefg=undef, undefgc='inc',  &
   &                       stdopt=.true., axis='xy' )
-  call tangent_conv_scal( xd, yd, tc_xd, tc_yd, vs0, rh_t, t_t, vs0_rht_t,  &
+  call tangent_conv_scal( xd, yd, tc_xd, tc_yd, vs0, rh_t, t_ref_t, vs0_rht_t,  &
   &                       undef=undef, undefg=undef, undefgc='inc',  &
   &                       stdopt=.true., axis='xy' )
-  call conv_VxVy2VtVr( rh_t, t_t, us0_rht_t, vs0_rht_t, Vst_rht_t, Usr_rht_t )
+  call conv_VxVy2VtVr( rh_t, t_ref_t, us0_rht_t, vs0_rht_t, Vst_rht_t, Usr_rht_t )
 
-!-- converting (Vr,Vt)(r_t,t_t) -> (Vx,Vy)(r_t,t_t)
-  call conv_VtVr2VxVy( rh_t, t_t, Vt_rht_t, Ut_rht_t, Vx_rht_t, Vy_rht_t )
-  call Cart_conv_scal( rh_t, t_t, Vx_rht_t, xd, yd, tc_xd, tc_yd, Vx_xyd_t, undef=undef,  &
+!-- converting (Vr,Vt)(r_t,t_ref_t) -> (Vx,Vy)(r_t,t_ref_t)
+  call conv_VtVr2VxVy( rh_t, t_ref_t, Vt_rht_t, Ut_rht_t, Vx_rht_t, Vy_rht_t )
+  call Cart_conv_scal( rh_t, t_ref_t, Vx_rht_t, xd, yd, tc_xd, tc_yd, Vx_xyd_t, undef=undef,  &
   &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
-  call Cart_conv_scal( rh_t, t_t, Vy_rht_t, xd, yd, tc_xd, tc_yd, Vy_xyd_t, undef=undef,  &
+  call Cart_conv_scal( rh_t, t_ref_t, Vy_rht_t, xd, yd, tc_xd, tc_yd, Vy_xyd_t, undef=undef,  &
   &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
   call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, Vx_xyd_t, Vy_xyd_t, Vra_xyd, undef=undef )
   call proj_VtVr2Vrart( rh_t, t_t, tdr_t, Vt_rht_t, Ut_rht_t, Vra_rt_t, undef=undef )
@@ -240,9 +251,9 @@ program test_Rankine
 !-- converting (r_t,t_t) -> (xd,yd)
   call subst_2d( Vt_rht_t, Vst_rht_t, undef=undef )
   call subst_2d( Ut_rht_t, Usr_rht_t, undef=undef )
-  call Cart_conv_scal( rh_t, t_t, Vt_rht_t, xd, yd, tc_xd, tc_yd, Vt_xyd, undef=undef,  &
+  call Cart_conv_scal( rh_t, t_ref_t, Vt_rht_t, xd, yd, tc_xd, tc_yd, Vt_xyd, undef=undef,  &
   &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
-  call Cart_conv_scal( rh_t, t_t, Ut_rht_t, xd, yd, tc_xd, tc_yd, Ut_xyd, undef=undef,  &
+  call Cart_conv_scal( rh_t, t_ref_t, Ut_rht_t, xd, yd, tc_xd, tc_yd, Ut_xyd, undef=undef,  &
   &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
 
   call stdout( "Converted r-t -> x-y.", "main", 0 )
@@ -251,7 +262,7 @@ program test_Rankine
   call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )  ! Vd - proj(Vs)
   call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
 write(*,*) "val check", Vra1d
-  call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t, (/Vsrn,0.0d0/),  &
+  call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t, (/Vsrn,0.0d0/), (/0.0d0,0.0d0/),  &
   &                       VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
   &                       VDTm_rt_t, VDRm_rt_t, undef, phi1=phi1_rt_t )
   call stdout( "Retrieved velocity.", "main", 0 )
@@ -259,23 +270,23 @@ write(*,*) "val check", Vra1d
 do i=1,nr_t
 write(*,'(a6,1P3E22.15)') "check ", rh_t(i), Vt_rht_t(i,1), VRT0_rt_t(i,1)
 end do
-!-- converting (r_t,t_t) -> (xd,yd)
+!-- converting (r_t,t_ref_t) -> (xd,yd)
   call proj_VtVr2Vrart( rh_t, t_t, tdr_t, VTtot_rt_t, VRtot_rt_t, Vratot_rt_t, undef=undef )
-  call Cart_conv_scal( rh_t, t_t, VTtot_rt_t, xd, yd, tc_xd, tc_yd, Vtott_xyd, undef=undef,  &
+  call Cart_conv_scal( rh_t, t_ref_t, VTtot_rt_t, xd, yd, tc_xd, tc_yd, Vtott_xyd, undef=undef,  &
   &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
-  call Cart_conv_scal( rh_t, t_t, VRtot_rt_t, xd, yd, tc_xd, tc_yd, Utott_xyd, undef=undef,  &
+  call Cart_conv_scal( rh_t, t_ref_t, VRtot_rt_t, xd, yd, tc_xd, tc_yd, Utott_xyd, undef=undef,  &
   &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
-  call Cart_conv_scal( rh_t, t_t, Vratot_rt_t, xd, yd, tc_xd, tc_yd, Vratot_xyd, undef=undef,  &
+  call Cart_conv_scal( rh_t, t_ref_t, Vratot_rt_t, xd, yd, tc_xd, tc_yd, Vratot_xyd, undef=undef,  &
   &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
 
 !-- calculate divergence and rotation for the retrieved VR and VT
-  call div_curl_2d( rh_t, t_t, Ut_rht_t, Vt_rht_t, div_rht_t, rot_rht_t )
+  call div_curl_2d( rh_t, t_ref_t, Ut_rht_t, Vt_rht_t, div_rht_t, rot_rht_t )
 !  call div_curl_2d( rh_t, t_t, VRtot_rt_t, VTtot_rt_t, div_rht_t, rot_rht_t )
-  call Cart_conv_scal( rh_t, t_t, div_rht_t, xd, yd, tc_xd, tc_yd, div_xyd, undef=undef,  &
+  call Cart_conv_scal( rh_t, t_ref_t, div_rht_t, xd, yd, tc_xd, tc_yd, div_xyd, undef=undef,  &
   &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
-  call Cart_conv_scal( rh_t, t_t, rot_rht_t, xd, yd, tc_xd, tc_yd, rot_xyd, undef=undef,  &
+  call Cart_conv_scal( rh_t, t_ref_t, rot_rht_t, xd, yd, tc_xd, tc_yd, rot_xyd, undef=undef,  &
   &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
-  call Cart_conv_scal( r_t, t_t, phi1_rt_t, xd, yd, tc_xd, tc_yd, phi1_xyd, undef=undef,  &
+  call Cart_conv_scal( r_t, t_ref_t, phi1_rt_t, xd, yd, tc_xd, tc_yd, phi1_xyd, undef=undef,  &
   &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
 
 !-- calculate the maximum difference between analysis and retrieval

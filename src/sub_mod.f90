@@ -152,6 +152,39 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
 
 end subroutine prod_vortex_structure
 
+subroutine prod_vortex_structure_L06( r, t, rmax, zmax, epsr, Vt_pert_ang, Vt, Vr )
+!-- Producing vortex structure with rmax, vmax, and umax in Lee et al. (2006)
+  implicit none
+  double precision, intent(in) :: r(:)  ! radius [m]
+  double precision, intent(in) :: t(:)  ! azimuthal angle [rad]
+  double precision, intent(in) :: rmax  ! radius of maximum tangential wind speed [m]
+  double precision, intent(in) :: zmax  ! constant vorticity in the eye [s-1]
+  double precision, intent(in) :: epsr  ! distance of epsilon for WN2 [m]
+  double precision, intent(in) :: Vt_pert_ang  ! angles of tangential wind [rad]
+  double precision, intent(out) :: Vt(size(r),size(t))  ! Profile of tangential wind
+  double precision, intent(out) :: Vr(size(r),size(t))  ! Profile of radial wind
+
+  integer :: nr, nt, i, j
+  double precision :: R_ell
+
+  nr=size(r)
+  nt=size(t)
+
+  do j=1,nt
+     R_ell=rmax+epsr*dcos(2.0d0*t(j)+Vt_pert_ang)
+     do i=1,nr
+        if(r(i)<=R_ell)then
+           Vt(i,j)=0.5d0*zmax*r(i)*(1.0d0+(epsr/rmax)*dcos(2.0d0*t(j)+Vt_pert_ang))
+           Vr(i,j)=0.5d0*zmax*r(i)*((epsr/rmax)*dsin(2.0d0*t(j)+Vt_pert_ang))
+        else
+           Vt(i,j)=0.5d0*zmax*(rmax**2/r(i))*(1.0d0-epsr*(rmax/(r(i)**2))*dcos(2.0d0*t(j)+Vt_pert_ang))
+           Vr(i,j)=0.5d0*zmax*(rmax**2/r(i))*(epsr*(rmax/(r(i)**2))*dsin(2.0d0*t(j)+Vt_pert_ang))
+        end if
+     end do
+  end do
+
+end subroutine prod_vortex_structure_L06
+
 subroutine prod_radar_along_vel()
   implicit none
 

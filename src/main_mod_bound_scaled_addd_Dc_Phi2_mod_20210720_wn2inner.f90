@@ -48,6 +48,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, VT, VR,  &
   double precision :: dundef, vmax
   double precision, dimension(size(r)) :: r_n               ! Nondimensional r
   double precision, dimension(size(rh)) :: rh_n             ! Nondimensional rh
+  logical, allocatable, dimension(:,:) :: undeflag ! Flag for Vd grid with undef
 
   call stdout( "Enter procedure.", "Retrieve_velocity", 0 )
 
@@ -58,7 +59,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, VT, VR,  &
   if(present(undef))then
      dundef=undef
   else
-     dundef=-1.0e35
+     dundef=-1.0d35
   end if
 
 !-- Check retrieved asymmetric wave number
@@ -99,6 +100,11 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, VT, VR,  &
   allocate(b_k(nk),stat=cstat)
   allocate(a_kp(nk,nk),stat=cstat)
   allocate(f_kij(nk,nr,nt),stat=cstat)
+  allocate(undeflag(nr,nt),stat=cstat)
+
+  undeflag=.false.
+
+  call check_undef_grid( Vd, dundef, undeflag )
 
   if(cstat/=0)then
      call stdout( "Failed to allocate variables. stop.", "Retrieve_velocity", -1 )
@@ -118,7 +124,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, VT, VR,  &
 
 !-- Calculate f_kij
 !-- ** normalized radius is used in r_n **
-  call calc_fkij( nrot, ndiv, nk, Un, Vn, r_n, t, rh_n, td, f_kij, Vd )
+  call calc_fkij( nrot, ndiv, nk, Un, Vn, r_n, t, rh_n, td, f_kij, Vd, undeflag )
 !do j=1,nt
 !do i=1,nr
 !write(*,'(2i3,1P100E10.2)') i, j, f_kij(1:nk,i,j), Vd(i,j)
@@ -126,7 +132,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, VT, VR,  &
 !end do
 
 !-- Calculate b_k
-  call calc_fkijVd2bk( vmax, f_kij, Vd, b_k )
+  call calc_fkijVd2bk( vmax, f_kij, Vd, b_k, undeflag )
 
 !-- Calculate a_kp
   call calc_fkij2akp( f_kij, a_kp )
@@ -158,6 +164,24 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, VT, VR,  &
   call calc_Vn2Vtot( nrot, ndiv, VRT0, VRTn, VDTm, VT )
   call calc_Vn2Vtot( nrot, ndiv, VDR0, VRRn, VDRm, VR )
 
+!-- Set undef in each output variable at undefined grids
+  call set_undef_value( undeflag, dundef, VRT0 )
+  call set_undef_value( undeflag, dundef, VDR0 )
+  call set_undef_value( undeflag, dundef, VT )
+  call set_undef_value( undeflag, dundef, VR )
+  if(nrot>0)then
+     do k=1,nrot
+        call set_undef_value( undeflag, dundef, VRTn )
+        call set_undef_value( undeflag, dundef, VRRn )
+     end do
+  end if
+  if(ndiv>0)then
+     do k=1,ndiv
+        call set_undef_value( undeflag, dundef, VDTm )
+        call set_undef_value( undeflag, dundef, VDRm )
+     end do
+  end if
+
 !-- monitor variables
   if((present(phi1)).and.(nrot>0))then
      do j=1,nt
@@ -176,7 +200,8 @@ end subroutine Retrieve_velocity
 !-- calculate f_kij
 !--------------------------------------------------
 
-subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rd, theta, rdh, thetad, fkij, Vdij )
+subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rd, theta, rdh, thetad,  &
+  &                   fkij, Vdij, undeflag )
   implicit none
   integer, intent(in) :: nrot
   integer, intent(in) :: ndiv
@@ -189,6 +214,7 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rd, theta, rdh, thetad, fkij,
   double precision, intent(in) :: thetad(size(rd),size(theta))
   double precision, intent(out) :: fkij(nnk,size(rd),size(theta))
   double precision, intent(inout) :: Vdij(size(rd),size(theta))
+  logical, intent(in) :: undeflag(size(rd),size(theta))
 
   !-- internal variables
   integer :: nnr, nnt, ii, jj, kk, pp, nmax, cstat, ncyc, ncyc2, nrot2
@@ -398,16 +424,18 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rd, theta, rdh, thetad, fkij,
   &     *(cosinen(1,jj)*sines(1,jj)  &
   &      +sinen(1,jj)*cosines(1,jj))
 
+        if(undeflag(1,jj).eqv..false.)then
 write(*,*) "before Vd at the inner", Vdij(1,jj), jj
-        Vdij(1,jj)  &
-  &    =Vdij(1,jj)  &
-  &    -rad1_in_coef  &
-  &     *(4.0d0*rd(1)*(Usrn(1)*sinen(1,jj)-Vsrn(1)*cosinen(1,jj))*sines(1,jj)  &
-  &      -2.0d0*dr*(Usrn(1)*cosinen(1,jj)-Vsrn(1)*sinen(1,jj))*cosines(1,jj))
-!  &    +Vsrn(1)*rad1_in_coef  &
-!  &     *(rd(1)*(sinen(1,jj)+cosinen(1,jj))*sines(1,jj)  &
-!  &      +0.5d0*dr*(cosinen(1,jj)-sinen(1,jj))*cosines(1,jj))
+           Vdij(1,jj)  &
+  &       =Vdij(1,jj)  &
+  &       -rad1_in_coef  &
+  &        *(4.0d0*rd(1)*(Usrn(1)*sinen(1,jj)-Vsrn(1)*cosinen(1,jj))*sines(1,jj)  &
+  &         -2.0d0*dr*(Usrn(1)*cosinen(1,jj)-Vsrn(1)*sinen(1,jj))*cosines(1,jj))
+!  &       +Vsrn(1)*rad1_in_coef  &
+!  &        *(rd(1)*(sinen(1,jj)+cosinen(1,jj))*sines(1,jj)  &
+!  &         +0.5d0*dr*(cosinen(1,jj)-sinen(1,jj))*cosines(1,jj))
 write(*,*) "after Vd at the inner", Vdij(1,jj), jj
+        end if
      end do
 !$omp end do
 
@@ -425,14 +453,16 @@ write(*,*) "after Vd at the inner", Vdij(1,jj), jj
   &    =-dr_inv*cosinen(1,jj)*sines(nnr-1,jj)  &
   &     -0.5d0*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj)
 
+        if(undeflag(nnr-1,jj).eqv..false.)then
 write(*,*) "before Vd at the outer", Vdij(nnr-1,jj), jj
-        Vdij(nnr-1,jj)  &
-  &    =Vdij(nnr-1,jj)  &
-  &    +Usrn(2)*(sinen(1,jj)*sines(nnr-1,jj)  &
-  &             +0.5d0*dr*r_inv(nnr-1)*cosinen(1,jj)*cosines(nnr-1,jj)) &
-  &    -Vsrn(2)*(cosinen(1,jj)*sines(nnr-1,jj)  &
-  &             -0.5d0*dr*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj))
+           Vdij(nnr-1,jj)  &
+  &       =Vdij(nnr-1,jj)  &
+  &       +Usrn(2)*(sinen(1,jj)*sines(nnr-1,jj)  &
+  &                +0.5d0*dr*r_inv(nnr-1)*cosinen(1,jj)*cosines(nnr-1,jj)) &
+  &       -Vsrn(2)*(cosinen(1,jj)*sines(nnr-1,jj)  &
+  &                -0.5d0*dr*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj))
 write(*,*) "after Vd at the outer", Vdij(nnr-1,jj), jj
+        end if
      end do
 !$omp end do
 
@@ -710,12 +740,13 @@ end subroutine calc_fkij2akp
 !-- calculate b_k from f_kij and Vd
 !--------------------------------------------------
 
-subroutine calc_fkijVd2bk( vmax, fkij, Vdl, bk )
+subroutine calc_fkijVd2bk( vmax, fkij, Vdl, bk, undeflag )
   implicit none
   double precision, intent(in) :: vmax
   double precision, intent(in) :: fkij(:,:,:)
   double precision, intent(in) :: Vdl(size(fkij,2),size(fkij,3))
   double precision, intent(out) :: bk(size(fkij,1))
+  logical, intent(in) :: undeflag(size(fkij,2),size(fkij,3))
   integer :: nnk, nni, nnj, ii, jj, kk, ll, cstat
   double precision, allocatable, dimension(:,:,:) :: fkl
 
@@ -743,7 +774,8 @@ subroutine calc_fkijVd2bk( vmax, fkij, Vdl, bk )
   do kk=1,nnk
 !$   omppe=OMP_GET_THREAD_NUM()+1
      fkl(1:nni,1:nnj,omppe)=fkij(kk,1:nni,1:nnj)
-     bk(kk)=matrix_sum( Vdl(1:nni,1:nnj), fkl(1:nni,1:nnj,omppe) )/vmax
+     bk(kk)=matrix_sum( Vdl(1:nni,1:nnj), fkl(1:nni,1:nnj,omppe),  &
+  &                     undeflag(1:nni,1:nnj) )/vmax
   end do
 !$omp end do
 !$omp end parallel
@@ -900,7 +932,7 @@ subroutine calc_phi2Vrot( nrot, Usrn, Vsrn, vmax, rmax, rd, rdh, theta, VRT0_r, 
   double precision, intent(out), optional :: VRR_nrt(nrot,size(rd),size(theta))
   double precision, intent(inout), optional :: phis_nr(nrot,size(rd)+1)
   double precision, intent(inout), optional :: phic_nr(nrot,size(rd)+1)
-  double precision, intent(in), optional :: undef
+  double precision, intent(in), optional :: undef  ! No use
 
   integer :: ii, jj, kk, nnr, nnt, cstat
   double precision :: dr_inv, dr, Usrn_n(2), Vsrn_n(2)
@@ -1216,10 +1248,11 @@ end subroutine calc_Vn2Vtot
 !-- calculate product for a component in a matrix
 !--------------------------------------------------
 
-double precision function matrix_sum( aij, akj )
+double precision function matrix_sum( aij, akj, undeflag )
   implicit none
   double precision, intent(in) :: aij(:,:)
   double precision, intent(in) :: akj(size(aij,1),size(aij,2))
+  logical, intent(in), optional :: undeflag(size(aij,1),size(aij,2))
   integer :: ii, jj, ni, nj
   double precision :: res
 
@@ -1228,11 +1261,21 @@ double precision function matrix_sum( aij, akj )
 
   res=0.0d0
 
-  do jj=1,nj
-     do ii=1,ni
-        res=res+aij(ii,jj)*akj(ii,jj)
+  if(present(undeflag))then
+     do jj=1,nj
+        do ii=1,ni
+           if(undeflag(ii,jj).eqv..false.)then
+              res=res+aij(ii,jj)*akj(ii,jj)
+           end if
+        end do
      end do
-  end do
+  else
+     do jj=1,nj
+        do ii=1,ni
+           res=res+aij(ii,jj)*akj(ii,jj)
+        end do
+     end do
+  end if
 
   matrix_sum=res
 
@@ -1266,5 +1309,52 @@ subroutine check_zero( a )
   end do
 
 end subroutine check_zero
+
+!--------------------------------------------------
+!--------------------------------------------------
+
+subroutine check_undef_grid( vval, undefv, undeflag )
+  implicit none
+  double precision, intent(in) :: vval(:,:)
+  double precision, intent(in) :: undefv
+  logical, intent(out) :: undeflag(size(vval,1),size(vval,2))
+  integer :: ii, jj, nni, nnj
+
+  nni=size(vval,1)
+  nnj=size(vval,2)
+  undeflag=.false.
+
+  do jj=1,nnj
+     do ii=1,nni
+        if(vval(ii,jj)==undefv)then
+           undeflag(ii,jj)=.true.
+        end if
+     end do
+  end do
+
+end subroutine check_undef_grid
+
+!--------------------------------------------------
+!--------------------------------------------------
+
+subroutine set_undef_value( undeflag, undefv, vval )
+  implicit none
+  logical, intent(in) :: undeflag(:,:)
+  double precision, intent(in) :: undefv
+  double precision, intent(inout) :: vval(size(undeflag,1),size(undeflag,2))
+  integer :: ii, jj, nni, nnj
+
+  nni=size(undeflag,1)
+  nnj=size(undeflag,2)
+
+  do jj=1,nnj
+     do ii=1,nni
+        if(undeflag(ii,jj)==.true.)then
+           vval(ii,jj)=undefv
+        end if
+     end do
+  end do
+
+end subroutine set_undef_value
 
 end module ToRMHOWe_main
