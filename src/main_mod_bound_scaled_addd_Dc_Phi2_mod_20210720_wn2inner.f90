@@ -1349,7 +1349,7 @@ subroutine set_undef_value( undeflag, undefv, vval )
 
   do jj=1,nnj
      do ii=1,nni
-        if(undeflag(ii,jj)==.true.)then
+        if(undeflag(ii,jj).eqv..true.)then
            vval(ii,jj)=undefv
         end if
      end do
