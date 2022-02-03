@@ -135,7 +135,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, VT, VR,  &
   call calc_fkijVd2bk( vmax, f_kij, Vd, b_k, undeflag )
 
 !-- Calculate a_kp
-  call calc_fkij2akp( f_kij, a_kp )
+  call calc_fkij2akp( f_kij, a_kp, undeflag )
 
   call check_zero( a_kp )
 
@@ -687,10 +687,11 @@ end subroutine calc_fkij
 !-- calculate a_kp from f_kij
 !--------------------------------------------------
 
-subroutine calc_fkij2akp( fkij, akp )
+subroutine calc_fkij2akp( fkij, akp, undeflag )
   implicit none
   double precision, intent(in) :: fkij(:,:,:)
   double precision, intent(out) :: akp(size(fkij,1),size(fkij,1))
+  logical, intent(in) :: undeflag(size(fkij,2),size(fkij,3))
   integer :: nnk, nni, nnj, ii, jj, kk, ll, cstat
   double precision, allocatable, dimension(:,:,:) :: fkl, fpl
 
@@ -722,7 +723,8 @@ subroutine calc_fkij2akp( fkij, akp )
 !$      omppe=OMP_GET_THREAD_NUM()+1
         fkl(1:nni,1:nnj,omppe)=fkij(kk,1:nni,1:nnj)
         fpl(1:nni,1:nnj,omppe)=fkij(ll,1:nni,1:nnj)
-        akp(kk,ll)=matrix_sum( fkl(1:nni,1:nnj,omppe), fpl(1:nni,1:nnj,omppe) )
+        akp(kk,ll)=matrix_sum( fkl(1:nni,1:nnj,omppe), fpl(1:nni,1:nnj,omppe),  &
+  &                            undeflag(1:nni,1:nnj) )
         akp(ll,kk)=akp(kk,ll)
      end do
 !$omp end do
