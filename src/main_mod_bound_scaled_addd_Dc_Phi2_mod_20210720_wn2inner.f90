@@ -200,8 +200,8 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, VT, VR,  &
   call calc_Vn2Vtot( nrot, ndiv, VDR0, VRRn, VDRm, VR )
 
 !-- Set undef in each output variable at undefined grids
-  call set_undef_value( undeflag, dundef, VRT0 )
-  call set_undef_value( undeflag, dundef, VDR0 )
+!  call set_undef_value( undeflag, dundef, VRT0 )
+!  call set_undef_value( undeflag, dundef, VDR0 )
   call set_undef_value( undeflag, dundef, VT )
   call set_undef_value( undeflag, dundef, VR )
   if(nrot>0)then

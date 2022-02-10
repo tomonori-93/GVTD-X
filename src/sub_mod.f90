@@ -296,7 +296,9 @@ subroutine proj_VtVr2Vrart( r, t, td, Vt, Vr, Vra, undef )
 
   do j=1,nt
      do i=1,nr
-        Vra(i,j)=-Vt(i,j)*dsin(t(j)-td(i,j))+Vr(i,j)*dcos(t(j)-td(i,j))
+        if(Vt(i,j)/=undef.and.Vr(i,j)/=undef.and.td(i,j)/=undef)then
+           Vra(i,j)=-Vt(i,j)*dsin(t(j)-td(i,j))+Vr(i,j)*dcos(t(j)-td(i,j))
+        end if
      end do
   end do
 
