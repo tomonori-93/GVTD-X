@@ -17,12 +17,15 @@ module ToRMHOWe_main
   private :: check_zero
   private :: check_undef_grid
   private :: set_undef_value
+  private :: calc_pseudo_GVTD0
+  private :: calc_phi2sc
 
 contains
 
 subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
   &                           VT, VR, VRT0, VDR0, VRTn, VRRn, VDTm, VDRm,  &
-  &                           undef, phi1 )
+  &                           undef, phi1, VRT0_GVTD, VDR0_GVTD,  &
+  &                           VRTns, VRTnc, VRRns, VRRnc )
 !-- solve unknown variables and return wind velocity on R-T coordinates.
 !-------------------------------------------------------
 !-- [relationship between r and rh] --
@@ -54,6 +57,12 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
   double precision, intent(out) :: VDRm(ndiv,size(r),size(t))  ! retrieved radial component of divergent wind [m s-1]
   double precision, intent(in), optional :: undef  ! undefined value for Vd
   double precision, intent(out), optional :: phi1(size(r)+1,size(t))  ! retrieved WN-1 stream function [m2 s-1]
+  double precision, intent(out), optional :: VRT0_GVTD(size(r),size(t))  ! retrieved axisymmetric radial component of pseudo-GVTD tangential wind [m s-1]
+  double precision, intent(out), optional :: VDR0_GVTD(size(r),size(t))  ! retrieved axisymmetric tangential component of pseudo-GVTD tangential wind [m s-1]
+  double precision, intent(out), optional :: VRTns(nrot,size(r),size(t))  ! Sine component of retrieved asymmetric radial wind [m s-1]
+  double precision, intent(out), optional :: VRTnc(nrot,size(r),size(t))  ! Cosine component of retrieved asymmetric radial wind [m s-1]
+  double precision, intent(out), optional :: VRRns(nrot,size(r),size(t))  ! Sine component of retrieved asymmetric tangential wind [m s-1]
+  double precision, intent(out), optional :: VRRnc(nrot,size(r),size(t))  ! Cosine component of retrieved asymmetric tangential wind [m s-1]
 
   !-- internal variables
   integer :: i, j, k, p, cstat  ! dummy indexes
@@ -66,6 +75,12 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
   double precision, allocatable, dimension(:,:) :: phic_nr  ! asymmetric (cosine) stream function (Phi_C(n,r))
 !  double precision, allocatable, dimension(:,:) :: divs_mr  ! asymmetric (sine) stream function (D_S(n,r))
   double precision, allocatable, dimension(:,:) :: divc_mr  ! asymmetric (cosine) stream function (D_C(n,r))
+  double precision, allocatable, dimension(:) :: GVTDU_r    ! axisymmetric radial wind for pseudo-GVTD
+  double precision, allocatable, dimension(:) :: GVTDV_r    ! axisymmetric tangential wind for pseudo-GVTD
+  double precision, allocatable, dimension(:,:) :: VRTns_r  ! sine component of tangential wind
+  double precision, allocatable, dimension(:,:) :: VRTnc_r  ! cosine component of tangential wind
+  double precision, allocatable, dimension(:,:) :: VRRns_r  ! sine component of radial wind
+  double precision, allocatable, dimension(:,:) :: VRRnc_r  ! cosine component of radial wind
   double precision, allocatable, dimension(:) :: x_k        ! unknown vector for retrieved coefficients
   double precision, allocatable, dimension(:) :: b_k        ! known vector given by observed values
   double precision, allocatable, dimension(:,:) :: a_kp     ! coefficient matrix for x_k
@@ -101,6 +116,24 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
 
   if(present(phi1))then
      phi1=dundef
+  end if
+  if(present(VRT0_GVTD))then
+     VRT0_GVTD=dundef
+     allocate(GVTDV_r(nr),stat=cstat)
+  end if
+  if(present(VDR0_GVTD))then
+     VDR0_GVTD=dundef
+     allocate(GVTDU_r(nr),stat=cstat)
+  end if
+  if(present(VRTns))then
+     VRTns=dundef
+     VRTnc=dundef
+     VRRns=dundef
+     VRRnc=dundef
+     allocate(VRTns_r(nrot,nr),stat=cstat)
+     allocate(VRTnc_r(nrot,nr),stat=cstat)
+     allocate(VRRns_r(nrot,nr),stat=cstat)
+     allocate(VRRnc_r(nrot,nr),stat=cstat)
   end if
 
 !-- Check retrieved asymmetric wave number
@@ -247,6 +280,29 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
      phi1(i,j)=phis_nr(1,i)*dsin(t(j))+phic_nr(1,i)*dcos(t(j))
      phi1(i,j)=phi1(i,j)*vmax*rh(nr+1)
      end do
+     end do
+  end if
+
+  if(present(VRT0_GVTD).and.(nrot>0))then
+     call calc_pseudo_GVTD0( nrot, vmax, rtc_n, r_n, rh_n, VRT0(1:nr,1), VDR0(1:nr,1),  &
+  &                          phis_nr, phic_nr, GVTDV_r(1:nr), GVTDU_r(1:nr) )
+     do i=1,nr
+        VRT0_GVTD(i,1:nt)=GVTDV_r(i)
+        VDR0_GVTD(i,1:nt)=GVTDU_r(i)
+     end do
+  end if
+
+  if(present(VRTns).and.(nrot>0))then
+     call calc_phi2sc( nrot, vmax, r_n, rh_n, phis_nr, phic_nr,  &
+  &                    VRTns_r(1:nrot,1:nr), VRTnc_r(1:nrot,1:nr),  &
+  &                    VRRns_r(1:nrot,1:nr), VRRnc_r(1:nrot,1:nr) )
+     do k=1,nrot
+        do i=1,nr
+           VRTns(k,i,1:nt)=VRTns_r(k,i)
+           VRTnc(k,i,1:nt)=VRTnc_r(k,i)
+           VRRns(k,i,1:nt)=VRRns_r(k,i)
+           VRRnc(k,i,1:nt)=VRRnc_r(k,i)
+        end do
      end do
   end if
 
@@ -1446,5 +1502,149 @@ subroutine set_undef_value( undeflag, undefv, vval )
   end do
 
 end subroutine set_undef_value
+
+!--------------------------------------------------
+! Calculate pseudo retrieval of VT and VR for GVTD
+!--------------------------------------------------
+
+subroutine calc_pseudo_GVTD0( nrot, vmax, rtc, rd, rdh, VRT0_r, VDR0_r,  &
+  &                           phis_nr, phic_nr, VRT0_GVTD_r, VDR0_GVTD_r )
+  implicit none
+  integer, intent(in) :: nrot
+  double precision, intent(in) :: vmax
+  double precision, intent(in) :: rtc  ! Normalized radius
+  double precision, intent(in) :: rd(:)  ! Normalized radius
+  double precision, intent(in) :: rdh(size(rd)+1)  ! Normalized radius
+  double precision, intent(in) :: VRT0_r(size(rd))
+  double precision, intent(in) :: VDR0_r(size(rd))
+  double precision, intent(in) :: phis_nr(nrot,size(rd)+1)
+  double precision, intent(in) :: phic_nr(nrot,size(rd)+1)
+  double precision, intent(out) :: VRT0_GVTD_r(size(rd))
+  double precision, intent(out) :: VDR0_GVTD_r(size(rd))
+
+  integer :: ii, jj, kk, nnr, cstat
+  double precision, dimension(size(rd)) :: dr, dr_inv, r_inv, alp
+  double precision, dimension(size(rd)) :: tmp_VRT0_r, tmp_VDR0_r
+
+  call stdout( "Enter procedure.", "calc_pseudo_GVTD0", 0 )
+
+  nnr=size(rd)
+
+  do ii=1,nnr
+     dr(ii)=rdh(ii+1)-rdh(ii)
+     dr_inv(ii)=1.0d0/dr(ii)
+     alp(ii)=(rd(ii)-rdh(ii))/(rdh(ii+1)-rdh(ii))
+  end do
+  r_inv(1:nnr)=1.0d0/rd(1:nnr)
+
+  tmp_VRT0_r(1:nnr)=VRT0_r(1:nnr)
+  tmp_VDR0_r(1:nnr)=VDR0_r(1:nnr)
+
+  if(nrot>0)then
+
+!$omp parallel default(shared)
+
+!-- For wavenumber 1
+!$omp do schedule(runtime) private(ii)
+     do ii=1,nnr
+        tmp_VRT0_r(ii)=tmp_VRT0_r(ii)  &
+  &                    +((alp(ii)*phic_nr(1,ii+1)+(1.0d0-alp(ii))*phic_nr(1,ii))/rtc)*vmax
+        tmp_VDR0_r(ii)=tmp_VDR0_r(ii)  &
+  &                    +r_inv(ii)*(alp(ii)*phis_nr(1,ii+1)+(1.0d0-alp(ii))*phis_nr(1,ii))*vmax
+     end do
+!$omp end do
+
+!$omp barrier
+
+!-- For wavenumber 2
+     if(nrot>1)then
+!$omp do schedule(runtime) private(ii)
+        do ii=1,nnr
+           tmp_VRT0_r(ii)=tmp_VRT0_r(ii)  &
+  &                       +2.0d0*r_inv(ii)*(alp(ii)*phic_nr(2,ii+1)+(1.0d0-alp(ii))*phic_nr(2,ii))*vmax
+           tmp_VDR0_r(ii)=tmp_VDR0_r(ii)  &
+  &                       +2.0d0*r_inv(ii)*(alp(ii)*phis_nr(2,ii+1)+(1.0d0-alp(ii))*phis_nr(2,ii))*vmax
+        end do
+!$omp end do
+     end if
+
+!$omp barrier
+
+!-- For wavenumber 3
+     if(nrot>2)then
+!$omp do schedule(runtime) private(ii)
+        do ii=1,nnr
+           tmp_VRT0_r(ii)=tmp_VRT0_r(ii)  &
+  &                       +3.0d0*((alp(ii)*phic_nr(3,ii+1)+(1.0d0-alp(ii))*phic_nr(3,ii))/rtc)*vmax
+           tmp_VDR0_r(ii)=tmp_VDR0_r(ii)  &
+  &                       +3.0d0*r_inv(ii)*(alp(ii)*phis_nr(3,ii+1)+(1.0d0-alp(ii))*phis_nr(3,ii))*vmax
+        end do
+!$omp end do
+     end if
+!$omp end parallel
+
+     VRT0_GVTD_r(1:nnr)=tmp_VRT0_r(1:nnr)
+     VDR0_GVTD_r(1:nnr)=tmp_VDR0_r(1:nnr)
+
+  end if
+
+  call stdout( "Finish procedure.", "calc_pseudo_GVTD0", 0 )
+
+end subroutine calc_pseudo_GVTD0
+
+!--------------------------------------------------
+! Calculate sine and cosine components of Vt and VR for rot
+!--------------------------------------------------
+
+subroutine calc_phi2sc( nrot, vmax, rd, rdh, phis_nr, phic_nr,  &
+  &                     VRTns_r, VRTnc_r, VRRns_r, VRRnc_r )
+  implicit none
+  integer, intent(in) :: nrot
+  double precision, intent(in) :: vmax
+  double precision, intent(in) :: rd(:)  ! Normalized radius
+  double precision, intent(in) :: rdh(size(rd)+1)  ! Normalized radius
+  double precision, intent(in) :: phis_nr(nrot,size(rd)+1)
+  double precision, intent(in) :: phic_nr(nrot,size(rd)+1)
+  double precision, intent(out) :: VRTns_r(nrot,size(rd))
+  double precision, intent(out) :: VRTnc_r(nrot,size(rd))
+  double precision, intent(out) :: VRRns_r(nrot,size(rd))
+  double precision, intent(out) :: VRRnc_r(nrot,size(rd))
+
+  integer :: ii, jj, kk, nnr, cstat
+  double precision, dimension(size(rd)) :: dr, dr_inv, r_inv, alp
+
+  call stdout( "Enter procedure.", "calc_phi2sc", 0 )
+
+  nnr=size(rd)
+
+  do ii=1,nnr
+     dr(ii)=rdh(ii+1)-rdh(ii)
+     dr_inv(ii)=1.0d0/dr(ii)
+     alp(ii)=(rd(ii)-rdh(ii))/(rdh(ii+1)-rdh(ii))
+  end do
+  r_inv(1:nnr)=1.0d0/rd(1:nnr)
+
+  if(nrot>0)then
+
+!$omp parallel default(shared)
+!$omp do schedule(runtime) private(kk,ii)
+
+     do ii=1,nnr
+        do kk=1,nrot
+        VRTns_r(kk,ii)=-(phis_nr(kk,ii+1)-phis_nr(kk,ii))*dr_inv(ii)*vmax
+        VRTnc_r(kk,ii)=-(phic_nr(kk,ii+1)-phic_nr(kk,ii))*dr_inv(ii)*vmax
+        VRRns_r(kk,ii)=-dble(kk)*(alp(ii)*phic_nr(kk,ii+1)+(1.0d0-alp(ii))*phic_nr(kk,ii))*r_inv(ii)*vmax
+        VRRnc_r(kk,ii)=dble(kk)*(alp(ii)*phis_nr(kk,ii+1)+(1.0d0-alp(ii))*phis_nr(kk,ii))*r_inv(ii)*vmax
+        end do
+     end do
+
+!$omp end do
+!$omp end parallel
+
+  end if
+
+  call stdout( "Finish procedure.", "calc_phi2sc", 0 )
+
+end subroutine calc_phi2sc
 
 end module ToRMHOWe_main
