@@ -38,11 +38,11 @@ program test_Rankine
 
 !-- internal
   integer :: i, j, k, cstat
-  double precision :: d2r, r2d
-  double precision :: Vsrn, rad_tc
+  double precision :: d2r, r2d, rad_tc
+  double precision :: Vsrn, thetad_tc
   double precision, dimension(2) :: vx_new, vy_new
   double precision :: dxd, dyd, dr_d, dr_t, dt_d, dt_t, dx_d, dy_d, dx_t, dy_t
-  double precision, allocatable, dimension(:) :: xd, yd, r_d, r_t, rh_t, t_d, t_t, x_d, y_d, x_t, y_t
+  double precision, allocatable, dimension(:) :: xd, yd, r_d, r_t, rh_t, t_d, t_t, t_ref_t, x_d, y_d, x_t, y_t
   double precision, allocatable, dimension(:,:) :: Vt_0, Vr_0
   double precision, allocatable, dimension(:,:) :: tdr_t
   double precision, allocatable, dimension(:,:) :: Vd_rt_d
@@ -89,6 +89,7 @@ program test_Rankine
   allocate(r_t(nr_t+1),stat=cstat)  ! Radius on TC R-T coordinate
   allocate(t_d(nt_d),stat=cstat)  ! Radar azimuthal angle on radar R-T coordinate
   allocate(t_t(nt_t),stat=cstat)  ! Azimuthal angle on TC R-T coordinate
+  allocate(t_ref_t(nt_t),stat=cstat)  ! Reference angle on TC R-T coordinate
   allocate(x_d(nx_d),stat=cstat)  ! X coordinate for each (r_d, t_d)
   allocate(y_d(ny_d),stat=cstat)  ! Y coordinate for each (r_d, t_d)
   allocate(x_t(nx_t),stat=cstat)  ! X coordinate for each (r_t, t_t)
@@ -158,6 +159,7 @@ program test_Rankine
 
   t_d=t_d*d2r
   t_t=t_t*d2r
+  t_ref_t=t_t
 
   rh_t(1:nr_t)=r_t(1:nr_t)+0.5d0*dr_t
   do j=1,nt_t
@@ -166,11 +168,20 @@ program test_Rankine
      end do
   end do
 
+!-- Making relative angle to the storm center (tdr_r - thetad_tc)
   rad_tc=dsqrt((tc_xd-ra_xd)**2+(tc_yd-ra_yd)**2)
+  thetad_tc=datan2((tc_yd-ra_yd),(tc_xd-ra_xd))
+  write(*,*) "thetad_tc is ", thetad_tc
+  do j=1,nt_t
+     do i=1,nr_t
+        tdr_t(i,j)=tdr_t(i,j)-thetad_tc
+     end do
+  end do
+  t_t=t_ref_t-thetad_tc
 
   do k=1,nt_t
 !-- producing vortex profiles at vector points 
-     call prod_vortex_structure( rh_t, t_t, rvmax, vmax, c1u, c2u,  &
+     call prod_vortex_structure( rh_t, t_ref_t, rvmax, vmax, c1u, c2u,  &
   &                              Vt_rht_t, Ut_rht_t, vp(1:nvp), up(1:nup),  &
   &                              vpa(1:nvp)*d2r+t_t(k),  &
   &                              upa(1:nup)*d2r+t_t(k), ropt=ropt,  &
@@ -180,7 +191,7 @@ program test_Rankine
      us0=us
      vs0=vs
      call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd )
-     call tangent_conv_scal( xd, yd, tc_xd, tc_yd, Vsra_xyd, rh_t, t_t, Vsra_rt_t,  &
+     call tangent_conv_scal( xd, yd, tc_xd, tc_yd, Vsra_xyd, rh_t, t_ref_t, Vsra_rt_t,  &
   &                          undef=undef, undefg=undef, undefgc='inc',  &
   &                          stdopt=.true., axis='xy' )
 !ORG  tc_ra_r=dsqrt((tc_xd-ra_xd)**2+(tc_yd-ra_yd)**2)
