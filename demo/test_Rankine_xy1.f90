@@ -6,7 +6,8 @@ program test_Rankine
   use Math_Const
   use typhoon_analy
   use ToRMHOWe_sub
-  use ToRMHOWe_main
+!  use ToRMHOWe_main
+  use ToRMHOWe_main2
 
   implicit none
 
@@ -38,7 +39,7 @@ program test_Rankine
 
 !-- internal
   integer :: i, j, k, cstat
-  double precision :: d2r, r2d
+  double precision :: d2r, r2d, rad_tc
   double precision :: Vsrn, Vra1d, thetad_tc
   double precision, dimension(2) :: vx_new, vy_new
   double precision :: dxd, dyd, dr_d, dr_t, dt_d, dt_t, dx_d, dy_d, dx_t, dy_t
@@ -197,6 +198,7 @@ program test_Rankine
   end do
 
 !-- Making relative angle to the storm center (tdr_r - thetad_tc)
+  rad_tc=dsqrt((tc_xd-ra_xd)**2+(tc_yd-ra_yd)**2)
   thetad_tc=datan2((tc_yd-ra_yd),(tc_xd-ra_xd))
   write(*,*) "thetad_tc is ", thetad_tc
   do j=1,nt_t
@@ -262,9 +264,10 @@ program test_Rankine
   call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )  ! Vd - proj(Vs)
   call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
 write(*,*) "val check", Vra1d
-  call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t, (/Vsrn,0.0d0/), (/0.0d0,0.0d0/),  &
-  &                       VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
-  &                       VDTm_rt_t, VDRm_rt_t, undef, phi1=phi1_rt_t )
+  call Retrieve_velocity2( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
+  &                        (/Vsrn,0.0d0/), (/0.0d0,0.0d0/), rad_tc,  &
+  &                        VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
+  &                        VDTm_rt_t, VDRm_rt_t, undef, phi1=phi1_rt_t )
   call stdout( "Retrieved velocity.", "main", 0 )
 
 do i=1,nr_t

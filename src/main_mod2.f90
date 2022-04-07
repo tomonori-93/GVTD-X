@@ -1,11 +1,11 @@
-module ToRMHOWe_main
+module ToRMHOWe_main2
 
   use matrix_calc
   use ToRMHOWe_sub
 
   implicit none
 
-  public :: Retrieve_velocity
+  public :: Retrieve_velocity2
 
   private :: calc_fkij
   private :: calc_fkij2akp
@@ -22,10 +22,10 @@ module ToRMHOWe_main
 
 contains
 
-subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
-  &                           VT, VR, VRT0, VDR0, VRTn, VRRn, VDTm, VDRm,  &
-  &                           undef, phi1, VRT0_GVTD, VDR0_GVTD,  &
-  &                           VRTns, VRTnc, VRRns, VRRnc )
+subroutine Retrieve_velocity2( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
+  &                            VT, VR, VRT0, VDR0, VRTn, VRRn, VDTm, VDRm,  &
+  &                            undef, phi1, VRT0_GVTD, VDR0_GVTD,  &
+  &                            VRTns, VRTnc, VRRns, VRRnc )
 !-- solve unknown variables and return wind velocity on R-T coordinates.
 !-------------------------------------------------------
 !-- [relationship between r and rh] --
@@ -92,7 +92,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
   double precision, dimension(size(r),size(t)) :: delta     ! delta_ij
   logical, allocatable, dimension(:,:) :: undeflag ! Flag for Vd grid with undef
 
-  call stdout( "Enter procedure.", "Retrieve_velocity", 0 )
+  call stdout( "Enter procedure.", "Retrieve_velocity2", 0 )
 
   nr=size(r)
   nt=size(t)
@@ -138,11 +138,11 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
 
 !-- Check retrieved asymmetric wave number
   if(nrot<0)then
-     call stdout( "nrot is greater equal to 0. stop.", "Retrieve_velocity", -1 )
+     call stdout( "nrot is greater equal to 0. stop.", "Retrieve_velocity2", -1 )
      stop
   end if
   if(ndiv<0)then
-     call stdout( "ndiv is greater equal to 0. stop.", "Retrieve_velocity", -1 )
+     call stdout( "ndiv is greater equal to 0. stop.", "Retrieve_velocity2", -1 )
      stop
   end if
 
@@ -162,8 +162,8 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
 !$omp do schedule(runtime) private(i,j,tmprho)
   do j=1,nt
      do i=1,nr
-        if(r_n(i)>0.0d0)then
-           tmprho=rtc_n/r_n(i)
+        if(rtc_n>0.0d0)then
+           tmprho=r_n(i)/rtc_n
            delta(i,j)=dsqrt(tmprho**2+2.0d0*tmprho*dcos(t(j))+1.0d0)
         end if
      end do
@@ -196,7 +196,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
   call check_undef_grid( Vd, dundef, undeflag )
 
   if(cstat/=0)then
-     call stdout( "Failed to allocate variables. stop.", "Retrieve_velocity", -1 )
+     call stdout( "Failed to allocate variables. stop.", "Retrieve_velocity2", -1 )
      stop
   end if
 
@@ -306,9 +306,9 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
      end do
   end if
 
-  call stdout( "Finish procedure.", "Retrieve_velocity", 0 )
+  call stdout( "Finish procedure.", "Retrieve_velocity2", 0 )
 
-end subroutine Retrieve_velocity
+end subroutine Retrieve_velocity2
 
 !--------------------------------------------------
 !-- calculate f_kij
@@ -408,8 +408,8 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
      do ii=1,nnr
 !ORG(thetad)        sines(ii,jj)=dsin(theta(jj)-thetad(ii,jj))
 !ORG(thetad)        cosines(ii,jj)=dcos(theta(jj)-thetad(ii,jj))
-        sines(ii,jj)=rtc*r_inv(ii)*dsin(theta(jj))  ! MOD = delta x sin(theta-thetad)
-        cosines(ii,jj)=1.0d0+rtc*r_inv(ii)*dcos(theta(jj))  ! MOD = delta x cos(theta-thetad)
+        sines(ii,jj)=dsin(theta(jj))  ! MOD = (delta/rho) x sin(theta-thetad)
+        cosines(ii,jj)=rd(ii)/rtc+dcos(theta(jj))  ! MOD = (delta/rho) x cos(theta-thetad)
      end do
   end do
 !$omp end do
@@ -1647,4 +1647,4 @@ subroutine calc_phi2sc( nrot, vmax, rd, rdh, phis_nr, phic_nr,  &
 
 end subroutine calc_phi2sc
 
-end module ToRMHOWe_main
+end module ToRMHOWe_main2

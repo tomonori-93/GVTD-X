@@ -39,7 +39,7 @@ program test_Rankine
 !-- internal
   integer :: i, j, k, cstat
   double precision :: d2r, r2d
-  double precision :: Vsrn
+  double precision :: Vsrn, rad_tc
   double precision, dimension(2) :: vx_new, vy_new
   double precision :: dxd, dyd, dr_d, dr_t, dt_d, dt_t, dx_d, dy_d, dx_t, dy_t
   double precision, allocatable, dimension(:) :: xd, yd, r_d, r_t, rh_t, t_d, t_t, x_d, y_d, x_t, y_t
@@ -166,6 +166,8 @@ program test_Rankine
      end do
   end do
 
+  rad_tc=dsqrt((tc_xd-ra_xd)**2+(tc_yd-ra_yd)**2)
+
   do k=1,nt_t
 !-- producing vortex profiles at vector points 
      call prod_vortex_structure( rh_t, t_t, rvmax, vmax, c1u, c2u,  &
@@ -210,7 +212,8 @@ program test_Rankine
 
 !-- Retrieving all components of horizontal winds (VRT, VRR, VDT, and VDR) from Vd
      call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )  ! Vd - proj(Vs)
-     call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t, (/Vsrn,0.0d0/),  &
+     call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
+  &                          (/Vsrn,0.0d0/), (/0.0d0,0.0d0/), rad_tc,  &
   &                          VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                          VRTn_rt_t, VRRn_rt_t,  &
   &                          VDTm_rt_t, VDRm_rt_t, undef )
