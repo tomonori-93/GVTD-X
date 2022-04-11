@@ -1191,6 +1191,8 @@ logical function undef_checker_2d( val, undef )
      end if
   end do
 
+  undef_checker_2d=checker
+
   return
 end function undef_checker_2d
 
