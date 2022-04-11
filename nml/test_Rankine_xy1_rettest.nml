@@ -1,6 +1,6 @@
 &input
- nvp = 2
- nup = 2
+ nvp = 3
+ nup = 3
  undef = -999.0
  rvmax = 20.0e3
  vmax = 50.0
@@ -9,28 +9,29 @@
  !c1u = 0.1
  !c2u = 3.0
  c2u = 0.0
+! vp = 5.0, 0.0, 0.0
  vp = 0.0, 10.0, 0.0
  up = 0.0, 0.0, 0.0
+! up = -5.0, 0.0, 0.0
  vpa = 0.0, 0.0, 0.0
+! vpa = 0.0, 0.0, 0.0
  upa = 0.0, 0.0, 0.0
- !vp = 0.0, 0.0, 0.0
- !up = 0.0, 0.0, 0.0
- !vpa = 0.0, 0.0, 0.0
- !upa = 0.0, 0.0, 0.0
+! upa = 180.0, 0.0, 0.0
  us = 0.0
  vs = 0.0
- nrot = 2
- ndiv = 0
+ nrot = 3
+ ndiv = 1
  ropt = .true.
 /
 &domain
  nxd = 400
  nyd = 400
  nr_d = 400
- !nr_t = 2
+ !nr_t = 2  ! For test.bin
  nr_t = 25
  nt_d = 400
- nt_t = 25
+ !nt_t = 25  ! For test.bin
+ nt_t = 100
  nx_d = 400
  ny_d = 400
  nx_t = 400
@@ -52,9 +53,10 @@
  t_dmin = 0.0
  t_dmax = 360.0
  !r_tmin = 0.0 
- r_tmin = 2.0e3
- !r_tmin = 10.0e3
+ r_tmin = 5.0e3
+ !r_tmin = 15.0e3  ! For test.bin
  !r_tmax = 5.0e3
+ !r_tmax = 20.0e3  ! For test.bin
  r_tmax = 55.0e3
  t_tmin = 0.0
  t_tmax = 360.0
@@ -66,7 +68,7 @@
  ra_yd = 0.0
 /
 &draw_info
- IWS = 2
+ IWS = 1
  tone_grid = 10
  cmap = 4
  col_rev = .false.
@@ -86,11 +88,11 @@
  fixc_typ3 = 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
  form_typec3 = '(f4.0)'
  shade_num = 3
- min_tab = 999
- max_tab = 95999
- fix_val = 100.0, 130.0, 150.0, 170.0
- fix_col = 20999, 40999, 60999
- form_types = '(f3.0)'
+ min_tab = 25999
+ max_tab = 85999
+ fix_val = -10.0, -1.0, 1.0, 10.0
+ fix_col = 35999, 55999, 75999
+ form_types = '(f4.0)'
  xax_fact = 1.0e-3
- yax_fact = 57.295779578
+ yax_fact = 1.0e-3
 /
