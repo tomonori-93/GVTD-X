@@ -3,13 +3,12 @@ ToRMHOWe (Tropical-cyclone circulation Retrieval Method based on the Helmholtz d
 
 ToRMHOWe is pronounced as "To-Moe" and written as 鞆絵 or 巴 in Chinese characters, which is come from a Japanese traditional pattern. 
 
-![Test Image 1](image/ToRMHOWe.png)
-
 
 # Methods
 [Paper](https://doi.org/)
 
 
 # Images
+![Test Image 1](image/image1.png)
 
 
