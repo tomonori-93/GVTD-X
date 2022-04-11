@@ -3,8 +3,6 @@ program test_Rankine
 
   use dcl
   use Dcl_Automatic
-  use Math_Const
-  use typhoon_analy
   use ToRMHOWe_sub
   use ToRMHOWe_main
 
@@ -192,8 +190,8 @@ program test_Rankine
      vs0=vs
      call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd )
      call tangent_conv_scal( xd, yd, tc_xd, tc_yd, Vsra_xyd, rh_t, t_ref_t, Vsra_rt_t,  &
-  &                          undef=undef, undefg=undef, undefgc='inc',  &
-  &                          stdopt=.true., axis='xy' )
+  &                          undef=undef, undefg=undef,  &
+  &                          stdopt=.true. )
 !ORG  tc_ra_r=dsqrt((tc_xd-ra_xd)**2+(tc_yd-ra_yd)**2)
 !ORG  tc_ra_t=datan2((tc_yd-ra_yd),(tc_xd-ra_xd))
 !MOD  Vsrn=vs*dcos(tc_ra_t)-us*dsin(tc_ra_t)
@@ -202,10 +200,10 @@ program test_Rankine
 
 !-- converting (Vr,Vt)(r_t,t_t) -> (Vx,Vy)(r_t,t_t)
 !  call conv_VtVr2VxVy( rh_t, t_t, Vt_rht_t, Ut_rht_t, Vx_rht_t, Vy_rht_t )
-!  call Cart_conv_scal( rh_t, t_t, Vx_rht_t, xd, yd, tc_xd, tc_yd, Vx_xyd_t, undef=undef,  &
-!  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
-!  call Cart_conv_scal( rh_t, t_t, Vy_rht_t, xd, yd, tc_xd, tc_yd, Vy_xyd_t, undef=undef,  &
-!  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
+!  call cart_conv_scal( rh_t, t_t, Vx_rht_t, xd, yd, tc_xd, tc_yd, Vx_xyd_t, undef=undef,  &
+!  &                    undefg=undef, stdopt=.true. )
+!  call cart_conv_scal( rh_t, t_t, Vy_rht_t, xd, yd, tc_xd, tc_yd, Vy_xyd_t, undef=undef,  &
+!  &                    undefg=undef, stdopt=.true. )
 !  call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, Vx_xyd_t, Vy_xyd_t, Vra_xyd, undef=undef )
      call proj_VtVr2Vrart( rh_t, t_t, tdr_t, Vt_rht_t, Ut_rht_t, Vra_rt_t, undef=undef )
 !  call proj_VxVy2Vra( xd, yd, ra_xd, ra_yd, Um_xyd, Vm_xyd, Vmra_xyd )
@@ -214,10 +212,10 @@ program test_Rankine
      call stdout( "Projected winds.", "main", 0 )
 
 !!-- converting (r_t,t_t) -> (xd,yd)
-!  call Cart_conv_scal( rh_t, t_t, Vt_rht_t, xd, yd, tc_xd, tc_yd, Vt_xyd, undef=undef,  &
-!  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
-!  call Cart_conv_scal( rh_t, t_t, Ut_rht_t, xd, yd, tc_xd, tc_yd, Ut_xyd, undef=undef,  &
-!  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
+!  call cart_conv_scal( rh_t, t_t, Vt_rht_t, xd, yd, tc_xd, tc_yd, Vt_xyd, undef=undef,  &
+!  &                    undefg=undef, stdopt=.true. )
+!  call cart_conv_scal( rh_t, t_t, Ut_rht_t, xd, yd, tc_xd, tc_yd, Ut_xyd, undef=undef,  &
+!  &                    undefg=undef, stdopt=.true. )
 
 !  call stdout( "Converted r-t -> x-y.", "main", 0 )
 

@@ -1,10 +1,6 @@
 # Makefile
 include ../Mkinclude
 
-STLIB	= ${STPKLIB}
-STDIR	= ${STPKLD}/lib
-STINC	= ${STPKLD}/include
-
 DCLIB	= ${AF90LIB}
 DCDIR	= ${AF90LD}/lib
 DCINC	= ${AF90LD}/include
@@ -47,21 +43,22 @@ TARGET3	=  \
 TARGET4	=  \
 	  test_draw
 
-all: $(TARGET) $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4)
+#all: $(TARGET) $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4)
+all: $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4)
 $(TARGET): %:%.f90
-	$(FC) $(FFLAGS) -I${STINC} $< -o $@ -L${STDIR} -l${STLIB}
+	$(FC) $(FFLAGS) $< -o $@
 
 $(TARGET1): $(TGSRC1) $(OBJ1)
-	$(DCLFC) $(FFLAGS) -I${STINC} -I${DCINC} -I${TMWINC} $< -o $@ -L${STDIR} -l${STLIB} -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB}
+	$(DCLFC) $(FFLAGS) -I${DCINC} -I${TMWINC} $< -o $@ -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB}
 
 $(TARGET2): $(TGSRC2) $(OBJ1)
-	$(DCLFC) $(FFLAGS) -I${STINC} -I${DCINC} -I${TMWINC} $< -o $@ -L${STDIR} -l${STLIB} -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB}
+	$(DCLFC) $(FFLAGS) -I${DCINC} -I${TMWINC} $< -o $@ -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB}
 
 $(TARGET3): $(TGSRC3) $(OBJ1)
-	$(DCLFC) $(FFLAGS) -I${STINC} -I${DCINC} -I${TMWINC} $< -o $@ -L${STDIR} -l${STLIB} -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB}
+	$(DCLFC) $(FFLAGS) -I${DCINC} -I${TMWINC} $< -o $@ -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB}
 
 $(TARGET4): $(TGSRC4) $(OBJ1)
-	$(DCLFC) $(FFLAGS) -I${STINC} -I${DCINC} -I${TMWINC} $< -o $@ -L${STDIR} -l${STLIB} -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB}
+	$(DCLFC) $(FFLAGS) -I${DCINC} -I${TMWINC} $< -o $@ -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB}
 
 #$(OBJ1): %.o:%.f90
 #	$(DCLFC) $(FFLAGS) -c -I${STINC} -I${DCINC} $< -o $@ -L${STDIR} -l${STLIB} -L${DCDIR} -l${DCLIB}

@@ -1,6 +1,5 @@
 module ToRMHOWe_main2
 
-  use matrix_calc
   use ToRMHOWe_sub
 
   implicit none

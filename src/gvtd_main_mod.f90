@@ -1,6 +1,5 @@
 module GVTD_main
 
-  use matrix_calc
   use ToRMHOWe_sub
 
   implicit none

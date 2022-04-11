@@ -3,11 +3,9 @@ program test_Rankine
 
   use dcl
   use Dcl_Automatic
-  use Math_Const
-  use typhoon_analy
   use ToRMHOWe_sub
-!  use ToRMHOWe_main
-  use ToRMHOWe_main2
+  use ToRMHOWe_main
+!  use ToRMHOWe_main2
 
   implicit none
 
@@ -218,8 +216,7 @@ program test_Rankine
   vs0=vs
   call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd )
   call tangent_conv_scal( xd, yd, tc_xd, tc_yd, Vsra_xyd, rh_t, t_ref_t, Vsra_rt_t,  &
-  &                       undef=undef, undefg=undef, undefgc='inc',  &
-  &                       stdopt=.true., axis='xy' )
+  &                       undef=undef, undefg=undef, stdopt=.true. )
 !ORG  tc_ra_r=dsqrt((tc_xd-ra_xd)**2+(tc_yd-ra_yd)**2)
 !ORG  tc_ra_t=datan2((tc_yd-ra_yd),(tc_xd-ra_xd))
 !MOD  Vsrn=vs*dcos(tc_ra_t)-us*dsin(tc_ra_t)
@@ -229,19 +226,17 @@ program test_Rankine
 !-- Environmental wind (Us, Vs) -> Vsr(r_t,t_ref_t), Vst(r_t,t_ref_t) for only drawing
   ! (Us, Vs)(xd,yd) -> (Us, Vs)(r_t,t_ref_t) -> (Vsr,Vst)(r_t,t_ref_t)
   call tangent_conv_scal( xd, yd, tc_xd, tc_yd, us0, rh_t, t_ref_t, us0_rht_t,  &
-  &                       undef=undef, undefg=undef, undefgc='inc',  &
-  &                       stdopt=.true., axis='xy' )
+  &                       undef=undef, undefg=undef, stdopt=.true. )
   call tangent_conv_scal( xd, yd, tc_xd, tc_yd, vs0, rh_t, t_ref_t, vs0_rht_t,  &
-  &                       undef=undef, undefg=undef, undefgc='inc',  &
-  &                       stdopt=.true., axis='xy' )
+  &                       undef=undef, undefg=undef, stdopt=.true. )
   call conv_VxVy2VtVr( rh_t, t_ref_t, us0_rht_t, vs0_rht_t, Vst_rht_t, Usr_rht_t )
 
 !-- converting (Vr,Vt)(r_t,t_ref_t) -> (Vx,Vy)(r_t,t_ref_t)
   call conv_VtVr2VxVy( rh_t, t_ref_t, Vt_rht_t, Ut_rht_t, Vx_rht_t, Vy_rht_t )
-  call Cart_conv_scal( rh_t, t_ref_t, Vx_rht_t, xd, yd, tc_xd, tc_yd, Vx_xyd_t, undef=undef,  &
-  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
-  call Cart_conv_scal( rh_t, t_ref_t, Vy_rht_t, xd, yd, tc_xd, tc_yd, Vy_xyd_t, undef=undef,  &
-  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
+  call cart_conv_scal( rh_t, t_ref_t, Vx_rht_t, xd, yd, tc_xd, tc_yd, Vx_xyd_t, undef=undef,  &
+  &                    undefg=undef, stdopt=.true. )
+  call cart_conv_scal( rh_t, t_ref_t, Vy_rht_t, xd, yd, tc_xd, tc_yd, Vy_xyd_t, undef=undef,  &
+  &                    undefg=undef, stdopt=.true. )
   call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, Vx_xyd_t, Vy_xyd_t, Vra_xyd, undef=undef )
   call proj_VtVr2Vrart( rh_t, t_t, tdr_t, Vt_rht_t, Ut_rht_t, Vra_rt_t, undef=undef )
   call subst_2d( Vra_xyd, Vsra_xyd, undef=undef )
@@ -253,10 +248,10 @@ program test_Rankine
 !-- converting (r_t,t_t) -> (xd,yd)
   call subst_2d( Vt_rht_t, Vst_rht_t, undef=undef )
   call subst_2d( Ut_rht_t, Usr_rht_t, undef=undef )
-  call Cart_conv_scal( rh_t, t_ref_t, Vt_rht_t, xd, yd, tc_xd, tc_yd, Vt_xyd, undef=undef,  &
-  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
-  call Cart_conv_scal( rh_t, t_ref_t, Ut_rht_t, xd, yd, tc_xd, tc_yd, Ut_xyd, undef=undef,  &
-  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
+  call cart_conv_scal( rh_t, t_ref_t, Vt_rht_t, xd, yd, tc_xd, tc_yd, Vt_xyd, undef=undef,  &
+  &                    undefg=undef, stdopt=.true. )
+  call cart_conv_scal( rh_t, t_ref_t, Ut_rht_t, xd, yd, tc_xd, tc_yd, Ut_xyd, undef=undef,  &
+  &                    undefg=undef, stdopt=.true. )
 
   call stdout( "Converted r-t -> x-y.", "main", 0 )
 
@@ -264,10 +259,10 @@ program test_Rankine
   call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )  ! Vd - proj(Vs)
   call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
 write(*,*) "val check", Vra1d
-  call Retrieve_velocity2( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
-  &                        (/Vsrn,0.0d0/), (/0.0d0,0.0d0/), rad_tc,  &
-  &                        VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
-  &                        VDTm_rt_t, VDRm_rt_t, undef, phi1=phi1_rt_t )
+  call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
+  &                       (/Vsrn,0.0d0/), (/0.0d0,0.0d0/), rad_tc,  &
+  &                       VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
+  &                       VDTm_rt_t, VDRm_rt_t, undef, phi1=phi1_rt_t )
   call stdout( "Retrieved velocity.", "main", 0 )
 
 do i=1,nr_t
@@ -275,22 +270,22 @@ write(*,'(a6,1P3E22.15)') "check ", rh_t(i), Vt_rht_t(i,1), VRT0_rt_t(i,1)
 end do
 !-- converting (r_t,t_ref_t) -> (xd,yd)
   call proj_VtVr2Vrart( rh_t, t_t, tdr_t, VTtot_rt_t, VRtot_rt_t, Vratot_rt_t, undef=undef )
-  call Cart_conv_scal( rh_t, t_ref_t, VTtot_rt_t, xd, yd, tc_xd, tc_yd, Vtott_xyd, undef=undef,  &
-  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
-  call Cart_conv_scal( rh_t, t_ref_t, VRtot_rt_t, xd, yd, tc_xd, tc_yd, Utott_xyd, undef=undef,  &
-  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
-  call Cart_conv_scal( rh_t, t_ref_t, Vratot_rt_t, xd, yd, tc_xd, tc_yd, Vratot_xyd, undef=undef,  &
-  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
+  call cart_conv_scal( rh_t, t_ref_t, VTtot_rt_t, xd, yd, tc_xd, tc_yd, Vtott_xyd, undef=undef,  &
+  &                    undefg=undef, stdopt=.true. )
+  call cart_conv_scal( rh_t, t_ref_t, VRtot_rt_t, xd, yd, tc_xd, tc_yd, Utott_xyd, undef=undef,  &
+  &                    undefg=undef, stdopt=.true. )
+  call cart_conv_scal( rh_t, t_ref_t, Vratot_rt_t, xd, yd, tc_xd, tc_yd, Vratot_xyd, undef=undef,  &
+  &                    undefg=undef, stdopt=.true. )
 
 !-- calculate divergence and rotation for the retrieved VR and VT
   call div_curl_2d( rh_t, t_ref_t, Ut_rht_t, Vt_rht_t, div_rht_t, rot_rht_t )
 !  call div_curl_2d( rh_t, t_t, VRtot_rt_t, VTtot_rt_t, div_rht_t, rot_rht_t )
-  call Cart_conv_scal( rh_t, t_ref_t, div_rht_t, xd, yd, tc_xd, tc_yd, div_xyd, undef=undef,  &
-  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
-  call Cart_conv_scal( rh_t, t_ref_t, rot_rht_t, xd, yd, tc_xd, tc_yd, rot_xyd, undef=undef,  &
-  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
-  call Cart_conv_scal( r_t, t_ref_t, phi1_rt_t, xd, yd, tc_xd, tc_yd, phi1_xyd, undef=undef,  &
-  &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
+  call cart_conv_scal( rh_t, t_ref_t, div_rht_t, xd, yd, tc_xd, tc_yd, div_xyd, undef=undef,  &
+  &                    undefg=undef, stdopt=.true. )
+  call cart_conv_scal( rh_t, t_ref_t, rot_rht_t, xd, yd, tc_xd, tc_yd, rot_xyd, undef=undef,  &
+  &                    undefg=undef, stdopt=.true. )
+  call cart_conv_scal( r_t, t_ref_t, phi1_rt_t, xd, yd, tc_xd, tc_yd, phi1_xyd, undef=undef,  &
+  &                    undefg=undef, stdopt=.true. )
 
 !-- calculate the maximum difference between analysis and retrieval
   call display_2valdiff_max( Vt_rht_t, VTtot_rt_t, undef=undef, cout=cvtmax )

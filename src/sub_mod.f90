@@ -1,6 +1,14 @@
 module ToRMHOWe_sub
+! core library for ToRMHOWe procedures.
+  implicit none
+  real, parameter :: pi=3.14159265e0   ! Pi for real
+  complex, parameter :: img=(0.0,1.0)  ! Imaginary unit for real
+  double precision, parameter :: pi_dp=3.14159265358979d0  ! Pi for double
+  complex(kind(0d0)), parameter :: img_cdp=(0.0d0,1.0d0)   ! Imaginary unit for double
 
 contains
+
+!------------------------------------------
 
 subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   &                               Vt, Vr, Vt_pert, Vr_pert, Vt_pert_ang, Vr_pert_ang,  &
@@ -813,5 +821,621 @@ subroutine stdout( message, routine_name, mtype )
   write(6,trim(adjustl(forma))) trim(adjustl(all_mess))
 
 end subroutine stdout
+
+!------------------------------------------------------------!
+! Reuse the subroutine from the STPK library (0.9.20.0)      !
+! STPK library (LGPL2.1):                                    !
+! https://www.gfd-dennou.org/library/davis/stpk/index.htm.en !
+!------------------------------------------------------------!
+
+subroutine fp_gauss( c, d, x )
+! Gauss-Jordan method with fully pivotting
+  implicit none
+  double precision, intent(in) :: d(:)  ! Vector
+  double precision, intent(in) :: c(size(d),size(d))  ! Square matrix (array is the first elements)
+  double precision, intent(inout) :: x(size(d))  ! Vector for unknown variables
+
+!-- internal variables
+  double precision :: b(size(d))  ! == d
+  double precision :: a(size(d),size(d))  ! == c
+  double precision :: s, pivotb  ! working variables for pivotting
+  double precision :: pivot(size(d)+1), y(size(d))  ! working variables for pivotting
+  integer :: i, j, k, nmax, pivi, pivj, ipv
+  integer :: ipivot(size(d))  ! temporary store of the original values for replacement
+
+  nmax=size(b)
+
+  do k=1,nmax
+     do j=1,nmax
+        a(k,j)=c(j,k)   ! Replacement between the column and array
+     end do
+     b(k)=d(k)
+     ipivot(k)=k
+  end do
+
+!-- Forward erasure ---
+!-- Forward erasure for a(i,j) ---
+  do k=1,nmax-1
+!-- Start the pivotting procedure ---
+!-- Determine the maximum value in the matrix elements ---
+     pivi=k
+     pivj=k
+     do i=k,nmax
+        do j=k,nmax
+           if(dabs(a(i,j)).gt.dabs(a(pivi,pivj)))then
+              pivi=i
+              pivj=j
+           end if
+        end do
+     end do
+     ipv=ipivot(pivj)
+     ipivot(pivj)=ipivot(k)
+     ipivot(k)=ipv
+     !-- Replacing the column with the maximum value to the current column ---
+     do i=1,nmax
+        pivot(i)=a(i,k)
+        a(i,k)=a(i,pivj)
+        a(i,pivj)=pivot(i)
+     end do
+     !-- Replacing the array with the maximum value to the current array ---
+     do j=k,nmax
+        pivot(j)=a(k,j)
+        a(k,j)=a(pivi,j)
+        a(pivi,j)=pivot(j)
+     end do
+     pivotb=b(k)
+     b(k)=b(pivi)
+     b(pivi)=pivotb
+     if(dabs(a(k,k))<=1.0d-10)then
+     write(*,*) "detect small", a(k,k:nmax)
+     end if
+!-- End the pivotting procedure ---
+     do i=k+1,nmax
+        a(k,i)=a(k,i)/a(k,k)
+     end do
+     b(k)=b(k)/a(k,k)
+     a(k,k)=1.0d0
+
+     do j=k+1,nmax
+        do i=k+1,nmax
+            a(j,i)=a(j,i)-a(k,i)*a(j,k)
+        end do
+        b(j)=b(j)-b(k)*a(j,k)
+        a(j,k)=0.0d0
+     end do
+  end do
+
+  b(nmax)=b(nmax)/a(nmax,nmax)
+  a(nmax,nmax)=1.0d0
+
+!-- Back substitution of x(i)
+  y(nmax)=b(nmax)
+  do i=nmax-1,1,-1
+     s=b(i)
+     do j=i+1,nmax
+        s=s-a(i,j)*y(j)
+     end do
+     y(i)=s
+  end do
+
+  do i=1,nmax
+     x(ipivot(i))=y(i)
+  end do
+
+end subroutine fp_gauss
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine tangent_conv_scal( x, y, xc, yc, u, r, theta, v,  &
+  &                           undef, undefg, stdopt )
+  ! Convert the Cartesian grid to polar grid with the origin of the storm center. 
+  ! The procedure: 
+  ! (1) Define the given polar grid (r-theta) on the Cartesian grid
+  ! (2) Search the 4 nearest points on the Cartesian grid (x-y) for each polar grid point
+  ! (3) Performing the bilinear interpolation of the 4 values defined on the
+  !     Cartesian grid to the polar grid. 
+  implicit none
+  double precision, intent(in) :: x(:)  ! X-coordinate on the Cartesian grid
+  double precision, intent(in) :: y(:)  ! Y-coordinate on the Cartesian grid
+  double precision, intent(in) :: u(size(x),size(y))  ! Values defined on the Cartesian grid
+  double precision, intent(in) :: xc    ! X-component of the storm center
+  double precision, intent(in) :: yc    ! Y-component of the storm center
+  double precision, intent(in) :: r(:)  ! R-coordinate on the polar grid with the origin (xc, yc).
+  double precision, intent(in) :: theta(:)  ! theta-coordinate of the polar grid with the origin (xc, yc) [rad]
+  double precision, intent(out) :: v(size(r),size(theta))  ! Values converted to the polar grid
+  double precision, intent(in), optional :: undef   ! Missing value for the outside of the polar grid area (default: -999.0)
+  double precision, intent(in), optional :: undefg  ! Missing value for the inside of the polar grid area (default: -999.0)
+  logical, intent(in), optional :: stdopt  ! Display debug messages.
+                                           ! (default: .false. == No display)
+
+  !-- internal variables
+  integer :: i, j, nx, ny, nr, nt, i_undef
+  double precision :: r_undef, r_undefg
+  double precision :: work(size(r),size(theta))
+  double precision :: point(size(r),size(theta),2)
+  integer :: ip(size(r),size(theta),2)
+  double precision :: tmpx(2), tmpy(2), tmpz(2,2), inter(2)
+  double precision :: tmppointd1, tmppointd2
+  logical :: ucf, stderr
+
+  nx=size(x)
+  ny=size(y)
+  nr=size(r)
+  nt=size(theta)
+
+  i_undef=0
+
+  if(present(undef))then
+    r_undef=undef
+  else
+    r_undef=-999.0d0
+  end if
+
+  if(present(undefg))then
+    r_undefg=undefg
+  else
+    r_undefg=-999.0d0
+  end if
+
+  if(present(stdopt))then
+     stderr=stdopt
+  else
+     stderr=.false.
+  end if
+
+!-- Process (1) ---
+  do j=1,nt
+     do i=1,nr
+        call rt_2_xy( r(i), theta(j), point(i,j,1), point(i,j,2) )
+        point(i,j,1)=xc+point(i,j,1)
+        point(i,j,2)=yc+point(i,j,2)
+     end do
+  end do
+
+!-- Process (2) ---
+  do j=1,nt
+     do i=1,nr
+        call interpo_search_2d( x, y, point(i,j,1), point(i,j,2),  &
+      &                         ip(i,j,1), ip(i,j,2), undeff=i_undef,  &
+  &                             stdopt=stderr )
+     end do
+  end do
+
+!-- Process (3) ---
+  do j=1,nt
+     do i=1,nr
+        if(ip(i,j,1)/=i_undef.and.ip(i,j,2)/=i_undef.and.  &
+  &        ip(i,j,1)/=nx.and.ip(i,j,2)/=ny)then
+           tmpx(1)=x(ip(i,j,1))
+           tmpx(2)=x(ip(i,j,1)+1)
+           tmpy(1)=y(ip(i,j,2))
+           tmpy(2)=y(ip(i,j,2)+1)
+           tmpz(1,1)=u(ip(i,j,1),ip(i,j,2))
+           tmpz(2,1)=u(ip(i,j,1)+1,ip(i,j,2))
+           tmpz(1,2)=u(ip(i,j,1),ip(i,j,2)+1)
+           tmpz(2,2)=u(ip(i,j,1)+1,ip(i,j,2)+1)
+           inter(1)=point(i,j,1)
+           inter(2)=point(i,j,2)
+
+           if(present(undefg))then
+              ucf=undef_checker_2d( tmpz, undefg )
+              if(ucf.eqv..false.)then
+                 call interpolation_2d( tmpx, tmpy, tmpz, inter, work(i,j) )
+              else
+                 work(i,j)=r_undefg
+              end if
+           else
+              call interpolation_2d( tmpx, tmpy, tmpz, inter, work(i,j) )
+           end if
+        else
+           work(i,j)=r_undef
+        end if
+     end do
+  end do
+
+  do j=1,nt
+     do i=1,nr
+        v(i,j)=work(i,j)
+     end do
+  end do
+
+end subroutine tangent_conv_scal
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine cart_conv_scal( r, theta, v, x, y, xc, yc, u,  &
+  &                        undef, undefg, stdopt )
+  ! Convert polar grid with the origin of the storm center to the Cartesian grid. 
+  ! The procedure: 
+  ! (1) Define the given Cartesian grid (x-y) on the polar grid
+  ! (2) Search the 4 nearest points on the polar grid for each Cartesian grid point
+  ! (3) Performing the bilinear interpolation of the 4 values defined on the
+  !     polar grid to the Cartesian grid. 
+  implicit none
+  double precision, intent(in) :: r(:)  ! R-coordinate on the polar grid with the origin (xc, yc).
+  double precision, intent(in) :: theta(:)  ! theta-coordinate of the polar grid with the origin (xc, yc) [rad]
+  double precision, intent(in) :: v(size(r),size(theta))  ! Values defined on the polar grid
+  double precision, intent(in) :: x(:)  ! X-coordinate on the Cartesian grid
+  double precision, intent(in) :: y(:)  ! Y-coordinate on the Cartesian grid
+  double precision, intent(in) :: xc    ! X-component of the storm center
+  double precision, intent(in) :: yc    ! Y-component of the storm center
+  double precision, intent(out) :: u(size(x),size(y))  ! Values converted to the Cartesian grid
+  double precision, intent(in), optional :: undef   ! Missing value for the outside of the Cartesian grid area (default: -999.0)
+  double precision, intent(in), optional :: undefg  ! Missing value for the inside of the Cartesian grid area (default: -999.0)
+  logical, intent(in), optional :: stdopt  ! Display debug messages.
+                                           ! (default: .false. == No display)
+
+  !-- internal variables
+  integer :: i, j, nx, ny, nr, nt, i_undef
+  double precision :: r_undef, r_undefg
+  double precision :: work(size(x),size(y))
+  double precision :: point(size(x),size(y),2)
+  integer :: ip(size(x),size(y),2)
+  double precision :: tmpx(2), tmpy(2), tmpz(2,2), inter(2)
+  double precision :: tmppoint1, tmppoint2
+  logical :: ucf, stderr
+
+  nx=size(x)
+  ny=size(y)
+  nr=size(r)
+  nt=size(theta)
+
+  i_undef=0
+
+  if(present(undef))then
+    r_undef=undef
+  else
+    r_undef=-999.0d0
+  end if
+
+  if(present(undefg))then
+    r_undefg=undefg
+  else
+    r_undefg=-999.0d0
+  end if
+
+  if(present(stdopt))then
+     stderr=stdopt
+  else
+     stderr=.false.
+  end if
+
+!-- Process (1) ---
+   do j=1,ny
+      do i=1,nx
+         call xy_2_rt( x(i), y(j), xc, yc, point(i,j,1), point(i,j,2) )
+!         if(point(i,j,2)<0.0d0)then
+!            point(i,j,2)=point(i,j,2)+2.0d0*pi_dp
+!         end if
+         if(point(i,j,2)<theta(1))then  ! +2pi
+            do while(point(i,j,2)<theta(1))
+               point(i,j,2)=point(i,j,2)+2.0d0*pi_dp
+            end do
+         else if(point(i,j,2)>theta(nt))then  ! -2pi
+            do while(point(i,j,2)>theta(nt))
+               point(i,j,2)=point(i,j,2)-2.0d0*pi_dp
+            end do
+         end if
+      end do
+   end do
+
+!-- Process (2) ---
+  do j=1,ny
+     do i=1,nx
+        call interpo_search_2d( r, theta, point(i,j,1), point(i,j,2),  &
+      &                         ip(i,j,1), ip(i,j,2), undeff=i_undef,  &
+  &                             stdopt=stderr )
+     end do
+  end do
+
+!-- Process (3) ---
+  do j=1,ny
+     do i=1,nx
+        if(ip(i,j,1)/=i_undef.and.ip(i,j,2)/=i_undef.and.  &
+  &        ip(i,j,1)/=nr.and.ip(i,j,2)/=nt)then
+           tmpx(1)=r(ip(i,j,1))
+           tmpx(2)=r(ip(i,j,1)+1)
+           tmpy(1)=theta(ip(i,j,2))
+           tmpy(2)=theta(ip(i,j,2)+1)
+           tmpz(1,1)=v(ip(i,j,1),ip(i,j,2))
+           tmpz(2,1)=v(ip(i,j,1)+1,ip(i,j,2))
+           tmpz(1,2)=v(ip(i,j,1),ip(i,j,2)+1)
+           tmpz(2,2)=v(ip(i,j,1)+1,ip(i,j,2)+1)
+           inter(1)=point(i,j,1)
+           inter(2)=point(i,j,2)
+
+           if(present(undefg))then
+              ucf=undef_checker_2d( tmpz, undefg )
+              if(ucf.eqv..false.)then
+                 call interpolation_2d( tmpx, tmpy, tmpz, inter, work(i,j) )
+              else
+                 work(i,j)=r_undefg
+              end if
+           else
+              call interpolation_2d( tmpx, tmpy, tmpz, inter, work(i,j) )
+           end if
+        else
+           work(i,j)=r_undef
+        end if
+     end do
+  end do
+
+  do j=1,ny
+     do i=1,nx
+        u(i,j)=work(i,j)
+     end do
+  end do
+
+end subroutine cart_conv_scal
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+logical function undef_checker_2d( val, undef )
+!-- Check missing value in "val"
+  implicit none
+  double precision, dimension(:,:), intent(in) :: val
+  double precision, intent(in) :: undef
+  integer :: i, nx
+  logical :: checker
+
+  nx=size(val,2)
+  checker=.false.
+
+  do i=1,nx
+     checker=undef_checker_1d( val(:,i), undef )
+     if(checker.eqv..true.)then
+        exit
+     end if
+  end do
+
+  return
+end function undef_checker_2d
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+logical function undef_checker_1d( val, undef )
+!-- Check missing value in "val"
+  implicit none
+  double precision, dimension(:), intent(in) :: val
+  double precision, intent(in) :: undef
+  integer :: i, nx
+  logical :: checker
+
+  nx=size(val)
+  checker=.false.
+
+  do i=1,nx
+     if(val(i)==undef)then
+        checker=.true.
+        exit
+     end if
+  end do
+
+  undef_checker_1d=checker
+
+  return
+end function undef_checker_1d
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine interpo_search_2d( x, y, pointx, pointy, i, j, undeff, stdopt )
+  ! Floor function for the real grid points
+  implicit none
+  double precision, intent(in) :: x(:)  ! X-coordinate
+  double precision, intent(in) :: y(:)  ! Y-coordinate
+  double precision, intent(in) :: pointx  ! The X point in real
+  double precision, intent(in) :: pointy  ! The Y point in real
+  integer, intent(out) :: i  ! floor(pointx)
+  integer, intent(out) :: j  ! floor(pointy)
+  integer, intent(in), optional :: undeff  ! In case of (x(1)>pointx or y(1)>pointy), the value returned to i and j
+                                           ! (default = 0)
+  logical, intent(in), optional :: stdopt  ! Display debug messages
+                                           ! (default = .false. = Not display)
+
+  !-- internal variables
+  integer :: just
+  logical :: stderr
+
+  if(present(stdopt))then
+     stderr=stdopt
+  else
+     stderr=.false.
+  end if
+
+  if(present(undeff))then
+     just=undeff
+     call interpo_search_1d( x, pointx, i, just, stdopt=stderr )
+     call interpo_search_1d( y, pointy, j, just, stdopt=stderr )
+  else
+     call interpo_search_1d( x, pointx, i, stdopt=stderr )
+     call interpo_search_1d( y, pointy, j, stdopt=stderr )
+  end if
+
+end subroutine interpo_search_2d
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine interpo_search_1d( x, point, i, undeff, stdopt )
+  ! Floor function for the real grid points
+  implicit none
+  double precision, intent(in) :: x(:)  ! X-coordinate
+  double precision, intent(in) :: point  ! The X point in real
+  integer, intent(out) :: i  ! floor(pointx)
+  integer, intent(in), optional :: undeff  ! In case of (x(1)>pointx or y(1)>pointy), the value returned to i and j
+                                           ! (default = 0)
+  logical, intent(in), optional :: stdopt  ! Display debug messages
+                                           ! (default = .false. = Not display)
+
+  !-- internal variables
+  integer :: nx, j
+  integer :: just
+  logical :: stderr
+
+  nx=size(x)
+  if(present(undeff))then
+     just=undeff
+  else
+     just=0
+  end if
+
+  if(present(stdopt))then
+     stderr=stdopt
+  else
+     stderr=.false.
+  end if
+
+  if(x(1)>point)then
+
+     if(stderr.eqv..false.)then
+        write(*,*) "****** WARNING ******"
+        write(*,*) "searching point was not found :", x(1), point
+        write(*,*) "Abort. Exit.!!!"
+     end if
+     i=just
+
+  else
+
+     do j=1,nx
+        if(x(j)<=point)then
+           i=j
+        else
+           exit
+        end if
+     end do
+
+  end if
+
+end subroutine interpo_search_1d
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine xy_2_rt( x, y, xc, yc, r, t )
+! Convert the Cartesian (x-y) grid to the polar (r-t) grid
+  implicit none
+  double precision, intent(in) :: x
+  double precision, intent(in) :: y
+  double precision, intent(in) :: xc ! X-coordinate of the center on the polar grid
+  double precision, intent(in) :: yc ! Y-coordinate of the center on the polar grid
+  double precision, intent(out) :: r  ! Radius
+  double precision, intent(out) :: t  ! Angle [rad]
+  double precision :: rx, ry
+
+  rx=x-xc
+  ry=y-yc
+
+  r=dsqrt(rx**2+ry**2)
+
+  if(rx==0.0d0.and.ry==0.0d0)then
+     t=0.0d0
+  else if(rx==0.0d0.and.ry/=0.0d0)then
+     if(ry>0.0d0)then
+        t=0.5d0*pi_dp
+     else
+        t=1.5d0*pi_dp
+     end if
+  else if(rx/=0.0d0.and.ry==0.0d0)then
+     if(rx>0.0d0)then
+        t=0.0d0
+     else
+        t=pi_dp
+     end if
+  else
+     if(rx>0.0d0.and.ry>0.0d0)then
+        t=datan(ry/rx)
+     else if(rx<0.0d0.and.ry>0.0d0)then
+        t=pi_dp-datan(ry/dabs(rx))
+     else if(rx>0.0d0.and.ry<0.0d0)then
+        t=2.0d0*pi_dp-datan(dabs(ry)/rx)
+     else if(rx<0.0d0.and.ry<0.0d0)then
+        t=pi_dp+datan(ry/rx)
+     end if
+  end if
+
+end subroutine xy_2_rt
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine rt_2_xy( r, t, x, y )
+! Convert the polar grid (r-t) to the Cartesian (x-y) grid
+  implicit none
+  double precision, intent(in) :: r  ! Radius
+  double precision, intent(in) :: t  ! Angle [rad]
+  double precision, intent(out) :: x
+  double precision, intent(out) :: y
+
+  x=r*dcos(t)
+  y=r*dsin(t)
+
+end subroutine rt_2_xy
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine interpolation_2d( x, y, z, point, val )
+  ! Perform bilinear interpolation to the "point" on the Cartesian (x-y) grid
+  implicit none
+  double precision, intent(in) :: x(2)  ! The nearest west and east points for "point"
+  double precision, intent(in) :: y(2)  ! The nearest south and north points for "point"
+  double precision, intent(in) :: z(2,2)  ! Values defined at (x,y).
+                                          ! z(1,1) at x(1), y(1)
+                                          ! z(1,2) at x(1), y(2)
+                                          ! z(2,1) at x(2), y(1)
+                                          ! z(2,2) at x(2), y(2)
+  double precision, intent(in) :: point(2)  ! The target point for the interpolation
+  double precision, intent(out) :: val  ! Interpolated value
+
+  ! internal variables
+  double precision :: valx(2)
+
+  call interpolation_1d( x, (/z(1,1), z(2,1)/), point(1), valx(1) )
+  call interpolation_1d( x, (/z(1,2), z(2,2)/), point(1), valx(2) )
+  call interpolation_1d( y, valx, point(2), val )
+
+end subroutine interpolation_2d
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine interpolation_1d( x, y, point, val )
+  ! Perform linear interpolation to the "point" on the Cartesian (x) grid
+  implicit none
+  double precision, intent(in) :: x(2)  ! The nearest west and east points for "point"
+  double precision, intent(in) :: y(2)  ! Values defined at x.
+                                        ! y(1) at x(1)
+                                        ! y(2) at x(2)
+  double precision, intent(in) :: point ! The target point for the interpolation
+  double precision, intent(out) :: val  ! Interpolated value
+
+  ! internal variables
+  double precision :: fd, dt
+  double precision :: tmin
+  double precision :: tmax
+  double precision :: xmin
+  double precision :: xmax
+
+  tmin=x(1)
+  tmax=x(2)
+
+  xmin=y(1)
+  xmax=y(2)
+
+  dt=point-tmin
+
+  fd=(xmax-xmin)/(tmax-tmin)
+
+  val=xmin+dt*fd
+
+end subroutine interpolation_1d
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
 
 end module ToRMHOWe_sub
