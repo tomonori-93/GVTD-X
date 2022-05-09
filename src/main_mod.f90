@@ -172,9 +172,11 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
 
 !-- Set total number for unknown variables in a_k
   if(rh(1)==0.0d0)then
-     nk=(2+2*nrot+ndiv)*(nr-2)+(2+2*nrot2+ndiv)+2+ndiv
+     nk=(2+2*nrot+ndiv)*(nr-2)+(2+2*nrot2+ndiv)+2
+!tmpORG     nk=(2+2*nrot+ndiv)*(nr-2)+(2+2*nrot2+ndiv)+2+ndiv
   else
-     nk=(2+2*nrot+ndiv)*(nr-2)+(2+2*nrot2+ndiv)+2+ndiv+ndiv
+     nk=(2+2*nrot+ndiv)*(nr-2)+(2+2*nrot2+ndiv)+2+ndiv
+!tmpORG     nk=(2+2*nrot+ndiv)*(nr-2)+(2+2*nrot2+ndiv)+2+ndiv+ndiv
   end if
 
 !-- Allocate and initialize arrays
@@ -372,12 +374,14 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
   end if
 
   if(rdh(1)==0.0d0)then
-     if(nnk/=ncyc*(nnr-2)+ncyc2+2+ndiv)then
+     if(nnk/=ncyc*(nnr-2)+ncyc2+2)then
+!tmpORG     if(nnk/=ncyc*(nnr-2)+ncyc2+2+ndiv)then
         call stdout( "nnk is not identical to (2+2N+M)(m-1). stop.", "calc_fkij", -1 )
         stop
      end if
   else
-     if(nnk/=ncyc*(nnr-2)+ncyc2+2+ndiv+ndiv)then
+     if(nnk/=ncyc*(nnr-2)+ncyc2+2+ndiv)then
+!tmpORG     if(nnk/=ncyc*(nnr-2)+ncyc2+2+ndiv+ndiv)then
         call stdout( "nnk is not identical to (2+2N+M)(m-1)+M. stop.", "calc_fkij", -1 )
         stop
      end if
@@ -648,7 +652,7 @@ write(*,*) "after Vd at the outer", Vdij(nnr-1,jj), jj
 !$omp barrier
 
 !-- Set coefficients for D_s and D_c at the outermost (nnr,jj)
-!$omp do schedule(runtime) private(kk,pp,ii,jj)
+!$omp do schedule(runtime) private(kk,ii,jj)
      do jj=1,nnt
         do ii=1,nnr
            do kk=1,ndiv
@@ -672,30 +676,30 @@ write(*,*) "after Vd at the outer", Vdij(nnr-1,jj), jj
 
 !$omp barrier
 
-!-- Set coefficients for D_s and D_c at the outermost radius for D (nnr+1,jj)
-!$omp do schedule(runtime) private(kk,ii,jj)
-     do jj=1,nnt
-        do ii=1,nnr
-           do kk=1,ndiv
-              fkij(2+kk+ncyc*(nnr-2)+ncyc2,ii,jj)  &
-!  &          =vareps(nnr+1)*rdh(nnr+1)  &  ! For Ds
-!  &                    *(dble(kk)*dr*r_inv(ii)*gkrr(kk,nnr+1,ii)  &
-!  &                    *cosinen(kk,jj)*sines(ii,jj)  &
-!  &                   -(gkrr(kk,nnr+1,ii+1)-gkrr(kk,nnr+1,ii))  &
-!  &                    *sinen(kk,jj)*cosines(ii,jj))
-!
-!              fkij(2+ndiv+kk+ncyc*(nnr-2)+ncyc2,ii,jj)  &
-  &          =-vareps(nnr+1)*rdh(nnr+1)  &  ! For Dc
-  &                   *(dble(kk)*dr(ii)*r_inv(ii)*gkrr(kk,nnr+1,ii)  &
-  &                    *sinen(kk,jj)*sines(ii,jj)  &
-  &                   +(gkrr(kk,nnr+1,ii+1)-gkrr(kk,nnr+1,ii))  &
-  &                    *cosinen(kk,jj)*cosines(ii,jj))
-           end do
-        end do
-     end do
-!$omp end do
-
-!$omp barrier
+!tmpORG!-- Set coefficients for D_s and D_c at the outermost radius for D (nnr+1,jj)
+!tmpORG!$omp do schedule(runtime) private(kk,ii,jj)
+!tmpORG     do jj=1,nnt
+!tmpORG        do ii=1,nnr
+!tmpORG           do kk=1,ndiv
+!tmpORG              fkij(2+kk+ncyc*(nnr-2)+ncyc2,ii,jj)  &
+!tmpORG!  &          =vareps(nnr+1)*rdh(nnr+1)  &  ! For Ds
+!tmpORG!  &                    *(dble(kk)*dr(ii)*r_inv(ii)*gkrr(kk,nnr+1,ii)  &
+!tmpORG!  &                    *cosinen(kk,jj)*sines(ii,jj)  &
+!tmpORG!  &                   -(gkrr(kk,nnr+1,ii+1)-gkrr(kk,nnr+1,ii))  &
+!tmpORG!  &                    *sinen(kk,jj)*cosines(ii,jj))
+!tmpORG!
+!tmpORG!              fkij(2+ndiv+kk+ncyc*(nnr-2)+ncyc2,ii,jj)  &
+!tmpORG  &          =-vareps(nnr+1)*rdh(nnr+1)  &  ! For Dc
+!tmpORG  &                   *(dble(kk)*dr(ii)*r_inv(ii)*gkrr(kk,nnr+1,ii)  &
+!tmpORG  &                    *sinen(kk,jj)*sines(ii,jj)  &
+!tmpORG  &                   +(gkrr(kk,nnr+1,ii+1)-gkrr(kk,nnr+1,ii))  &
+!tmpORG  &                    *cosinen(kk,jj)*cosines(ii,jj))
+!tmpORG           end do
+!tmpORG        end do
+!tmpORG     end do
+!tmpORG!$omp end do
+!tmpORG
+!tmpORG!$omp barrier
 
 !-- Set coefficients for D_s and D_c at the innermost radius (without center)
      if(rdh(1)/=0.0d0)then
@@ -703,7 +707,8 @@ write(*,*) "after Vd at the outer", Vdij(nnr-1,jj), jj
         do jj=1,nnt
            do ii=1,nnr
               do kk=1,ndiv
-                 fkij(2+ndiv+ncyc*(nnr-2)+ncyc2+kk,ii,jj)  &
+                 fkij(2+ncyc*(nnr-2)+ncyc2+kk,ii,jj)  &
+!tmpORG                 fkij(2+ndiv+ncyc*(nnr-2)+ncyc2+kk,ii,jj)  &
 !  &             =vareps(1)*rdh(1)  &  ! For Ds
 !  &                       *(dble(kk)*dr(ii)*r_inv(ii)*gkrr(kk,1,ii)  &
 !  &                       *cosinen(kk,jj)*sines(ii,jj)  &
@@ -934,6 +939,7 @@ write(*,*) "check [VRT0, VDR0] = ", VRT0(nnr), VDR0(nnr), nnr
 
 !-- Set D_s and D_c
   if(ndiv>0)then
+
 !$omp parallel default(shared)
 !$omp do schedule(runtime) private(kk,ii)
      do ii=1,nnr-2
@@ -953,14 +959,17 @@ write(*,*) "check [VRT0, VDR0] = ", VRT0(nnr), VDR0(nnr), nnr
 !$omp barrier
 !$omp do schedule(runtime) private(kk)
      do kk=1,ndiv  ! at ii=nnr
-        Ds_m(kk,nnr+1)=xk(2+kk+ncyc*(nnr-2)+ncyc2)
+        Ds_m(kk,nnr+1)=0.0d0
+!tmpORG        Ds_m(kk,nnr+1)=xk(2+kk+ncyc*(nnr-2)+ncyc2)
      end do
 !$omp end do
 !$omp barrier
-     if(size(xk)>ncyc*(nnr-1)+2+ndiv)then  ! At innermost radius (without center)
+     if(size(xk)>ncyc*(nnr-1)+2)then  ! At innermost radius (without center)
+!tmpORG     if(size(xk)>ncyc*(nnr-1)+2+ndiv)then  ! At innermost radius (without center)
 !$omp do schedule(runtime) private(kk)
         do kk=1,ndiv
-           Ds_m(kk,1)=xk(2+ndiv+kk+ncyc*(nnr-2)+ncyc2)  ! nnr = 1
+           Ds_m(kk,1)=xk(2+kk+ncyc*(nnr-2)+ncyc2)  ! nnr = 1
+!tmpORG           Ds_m(kk,1)=xk(2+ndiv+kk+ncyc*(nnr-2)+ncyc2)  ! nnr = 1
 !           Dc_m(kk,1)=xk(ndiv+kk+ncyc*nnr)
 !           Dc_m(kk,1)=xk(kk+ncyc*nnr)  ! nnr = m - 1
         end do
