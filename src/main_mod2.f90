@@ -146,7 +146,7 @@ subroutine Retrieve_velocity2( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
   end if
 
   if(nrot>0)then
-     nrot2=nrot-1
+     nrot2=nrot
   else
      nrot2=0
   end if
@@ -347,7 +347,7 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
   nnt=size(theta)
   ncyc=2+2*nrot+ndiv  ! unknown variable number at a certain radius
   if(nrot>0)then
-     nrot2=nrot-1
+     nrot2=nrot
   else
      nrot2=0
   end if
@@ -497,28 +497,28 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
 !-- Set coefficients for Phi_s and Phi_c at each (ii,jj) for wavenumber 1
 !$omp do schedule(runtime) private(ii,jj)
      do jj=1,nnt
-        do ii=2,nnr-2
+        do ii=1,nnr-2
            !-- Phi(s)*delta(s,i)
-           fkij(2+1+ncyc*(ii-2),ii,jj)  &
+           fkij(2+1+ncyc*(ii-1),ii,jj)  &
   &       =(dr_inv(ii)*sinen(1,jj))  &
   &        *(-sines(ii,jj))  &
   &       +((1.0d0-alp(ii))*dble(1)*cosinen(1,jj))  &
   &        *(r_inv(ii)*cosines(ii,jj))
 
-           fkij(2+nrot+1+ncyc*(ii-2),ii,jj)  &
+           fkij(2+nrot+1+ncyc*(ii-1),ii,jj)  &
   &       =(dr_inv(ii)*cosinen(1,jj))  &
   &        *(-sines(ii,jj))  &
   &       -((1.0d0-alp(ii))*dble(1)*sinen(1,jj))  &
   &        *(r_inv(ii)*cosines(ii,jj))
 
            !-- Phi(s)*delta(s,i+1)
-           fkij(2+1+ncyc*(ii-1),ii,jj)  &
+           fkij(2+1+ncyc*(ii),ii,jj)  &
   &       =(dr_inv(ii)*sinen(1,jj))  &
   &        *(sines(ii,jj))  &
   &       +(alp(ii)*dble(1)*cosinen(1,jj))  &
   &        *(r_inv(ii)*cosines(ii,jj))
 
-           fkij(2+nrot+1+ncyc*(ii-1),ii,jj)  &
+           fkij(2+nrot+1+ncyc*(ii),ii,jj)  &
   &       =(dr_inv(ii)*cosinen(1,jj))  &
   &        *(sines(ii,jj))  &
   &       -(alp(ii)*dble(1)*sinen(1,jj))  &
@@ -529,48 +529,15 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
 
 !$omp barrier
 
-!-- [NOTE]: NOT applying "al"p to the boundary conditions because of 
-!--         assumption of uniform distance in radial grids at the boundaries
-!-- Set coefficients for Phi_s and Phi_c 
-!--     at the innermost boundary (1,jj) for wavenumber 1 (and adjust Vd)
-!$omp do schedule(runtime) private(jj)
-     do jj=1,nnt
-        fkij(2+1,1,jj)  &
-  &    =2.0d0*rad1_in_coef  &
-  &     *(-sinen(1,jj)*sines(1,jj)  &
-  &      +cosinen(1,jj)*cosines(1,jj))
-
-        fkij(2+nrot+1,1,jj)  &
-  &    =-2.0d0*rad1_in_coef  &
-  &     *(cosinen(1,jj)*sines(1,jj)  &
-  &      +sinen(1,jj)*cosines(1,jj))
-
-        if(undeflag(1,jj).eqv..false.)then
-write(*,*) "before Vd at the inner", Vdij(1,jj), jj
-           Vdij(1,jj)  &
-  &       =Vdij(1,jj)  &
-  &       -rad1_in_coef  &
-  &        *(4.0d0*rd(1)*(Usrn(1)*sinen(1,jj)-Vsrn(1)*cosinen(1,jj))*sines(1,jj)  &
-  &         -2.0d0*dr(1)*(Usrn(1)*cosinen(1,jj)-Vsrn(1)*sinen(1,jj))*cosines(1,jj))
-!  &       +Vsrn(1)*rad1_in_coef  &
-!  &        *(rd(1)*(sinen(1,jj)+cosinen(1,jj))*sines(1,jj)  &
-!  &         +0.5d0*dr(1)*(cosinen(1,jj)-sinen(1,jj))*cosines(1,jj))
-write(*,*) "after Vd at the inner", Vdij(1,jj), jj
-        end if
-     end do
-!$omp end do
-
-!$omp barrier
-
 !-- Set coefficients for Phi_s and Phi_c 
 !--     at one inner radius from the outermost (nnr-1,jj) for wavenumber 1
 !$omp do schedule(runtime) private(jj)
      do jj=1,nnt
-        fkij(2+1+ncyc*(nnr-3),nnr-1,jj)  &
+        fkij(2+1+ncyc*(nnr-2),nnr-1,jj)  &
   &    =-dr_inv(nnr-1)*sinen(1,jj)*sines(nnr-1,jj)  &
   &     +0.5d0*r_inv(nnr-1)*cosinen(1,jj)*cosines(nnr-1,jj)
 
-        fkij(2+nrot+1+ncyc*(nnr-3),nnr-1,jj)  &
+        fkij(2+nrot+1+ncyc*(nnr-2),nnr-1,jj)  &
   &    =-dr_inv(nnr-1)*cosinen(1,jj)*sines(nnr-1,jj)  &
   &     -0.5d0*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj)
 
@@ -595,7 +562,7 @@ write(*,*) "after Vd at the outer", Vdij(nnr-1,jj), jj
 !-- Set coefficients for Phi_s and Phi_c at each (ii,jj)
 !$omp do schedule(runtime) private(kk,ii,jj)
         do jj=1,nnt
-           do ii=1,nnr-3
+           do ii=1,nnr-2
               do kk=2,nrot
                  !-- Phi(s)*delta(s,i)
                  fkij(2+kk+ncyc*(ii-1),ii,jj)  &
@@ -629,51 +596,16 @@ write(*,*) "after Vd at the outer", Vdij(nnr-1,jj), jj
 
 !$omp barrier
 
-!-- Set coefficients for Phi_s and Phi_c at two inner radius from the outermost (nnr-2,jj)
-!$omp do schedule(runtime) private(kk,jj)
-        do jj=1,nnt
-           do kk=2,nrot
-              !-- Phi(s)*delta(s,i)
-              fkij(2+kk+ncyc*(nnr-3),nnr-2,jj)  &
-  &          =(dr_inv(nnr-2)*sinen(kk,jj))  &
-  &           *(-sines(nnr-2,jj))  &
-  &          +((1.0d0-alp(nnr-2))*dble(kk)*cosinen(kk,jj))  &
-  &           *(r_inv(nnr-2)*cosines(nnr-2,jj))
-
-              fkij(2+nrot+kk+ncyc*(nnr-3),nnr-2,jj)  &
-  &          =(dr_inv(nnr-2)*cosinen(kk,jj))  &
-  &           *(-sines(nnr-2,jj))  &
-  &          -((1.0d0-alp(nnr-2))*dble(kk)*sinen(kk,jj))  &
-  &           *(r_inv(nnr-2)*cosines(nnr-2,jj))
-
-              !-- Phi(s)*delta(s,i+1)
-              fkij(2+(kk-1)+ncyc*(nnr-2),nnr-2,jj)  &
-  &          =(dr_inv(nnr-2)*sinen(kk,jj))  &
-  &           *(sines(nnr-2,jj))  &
-  &          +(alp(nnr-2)*dble(kk)*cosinen(kk,jj))  &
-  &           *(r_inv(nnr-2)*cosines(nnr-2,jj))
-
-              fkij(2+(nrot-1)+(kk-1)+ncyc*(nnr-2),nnr-2,jj)  &
-  &          =(dr_inv(nnr-2)*cosinen(kk,jj))  &
-  &           *(sines(nnr-2,jj))  &
-  &          -(alp(nnr-2)*dble(kk)*sinen(kk,jj))  &
-  &           *(r_inv(nnr-2)*cosines(nnr-2,jj))
-           end do
-        end do
-!$omp end do
-
-!$omp barrier
-
 !$omp do schedule(runtime) private(kk,jj)
 !-- Set coefficients for Phi_s and Phi_c at one inner radius from the outermost (nnr-1,jj)
         do jj=1,nnt
            do kk=2,nrot
-              fkij(2+(kk-1)+ncyc*(nnr-2),nnr-1,jj)  &
+              fkij(2+kk+ncyc*(nnr-2),nnr-1,jj)  &
   &          =-dr_inv(nnr-1)*sinen(kk,jj)*sines(nnr-1,jj)  &
   &           +(1.0d0-alp(nnr-1))*dble(kk)*cosinen(kk,jj)  &
   &            *r_inv(nnr-1)*cosines(nnr-1,jj)
 
-              fkij(2+(nrot-1)+(kk-1)+ncyc*(nnr-2),nnr-1,jj)  &
+              fkij(2+nrot2+kk+ncyc*(nnr-2),nnr-1,jj)  &
   &          =-dr_inv(nnr-1)*cosinen(kk,jj)*sines(nnr-1,jj)  &
   &           -(1.0d0-alp(nnr-1))*dble(kk)*sinen(kk,jj)  &
   &            *r_inv(nnr-1)*cosines(nnr-1,jj)
@@ -950,7 +882,7 @@ subroutine set_xk2variables( nrot, ndiv, xk, VRT0, VDR0,  &
   nnr=size(VRT0)
   ncyc=2+2*nrot+ndiv
   if(nrot>1)then
-     nrot2=nrot-1
+     nrot2=nrot
   else
      nrot2=0
   end if
@@ -971,9 +903,9 @@ write(*,*) "check [VRT0, VDR0] = ", VRT0(nnr), VDR0(nnr), nnr
 !$omp parallel default(shared)
 !$omp do schedule(runtime) private(ii)
 !-- For wn1
-     do ii=2,nnr-1
-        phis_n(1,ii)=xk(2+1+ncyc*(ii-2))
-        phic_n(1,ii)=xk(2+nrot+1+ncyc*(ii-2))
+     do ii=1,nnr-1
+        phis_n(1,ii)=xk(2+1+ncyc*(ii-1))
+        phic_n(1,ii)=xk(2+nrot+1+ncyc*(ii-1))
      end do
 !$omp end do
 
@@ -1119,10 +1051,6 @@ subroutine calc_phi2Vrot( nrot, Usrn, Vsrn, vmax, rd, rdh, theta, VRT0_r,  &
 
      VRT_nrt=0.0d0
      VRR_nrt=0.0d0
-
-     !-- set the innermost boundary for wavenumber 1
-     phis_nr(1,1)=((2.0d0*rd(1)+dr(1))*phis_nr(1,2)-4.0d0*Usrn_n(1)*rd(1)*dr(1))/(2.0d0*rd(1)-dr(1))
-     phic_nr(1,1)=((2.0d0*rd(1)+dr(1))*phic_nr(1,2)+4.0d0*Vsrn_n(1)*rd(1)*dr(1))/(2.0d0*rd(1)-dr(1))
 
      !-- set the outermost boundary for wavenumber 1
      phis_nr(1,nnr+1)=Usrn_n(2)*dr(nnr)
