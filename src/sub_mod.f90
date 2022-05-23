@@ -12,7 +12,7 @@ contains
 
 subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   &                               Vt, Vr, Vt_pert, Vr_pert, Vt_pert_ang, Vr_pert_ang,  &
-  &                               ropt, Vt_0, Vr_0 )
+  &                               ropt, Vt_0, Vr_0, Uxm, Vym )
 !-- Producing vortex structure with rmax, vmax, and umax
   implicit none
   double precision, intent(in) :: r(:)  ! radius [m]
@@ -30,9 +30,12 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   logical, intent(in), optional :: ropt  ! option for radial variation of perturbation Vt and Vr
   double precision, intent(out), optional :: Vt_0(size(r))  ! Radial profile of axisymmetric Vt [m s-1]
   double precision, intent(out), optional :: Vr_0(size(r))  ! Radial profile of axisymmetric Vr [m s-1]
+  double precision, intent(out), optional :: Uxm(2)  ! Azimuthal averaged X-wind of wavenumber-1 component [m s-1]
+  double precision, intent(out), optional :: Vym(2)  ! Azimuthal averaged Y-wind of wavenumber-1 component [m s-1]
 
   integer :: nr, nt, i, j, k, nvtp, nvrp, nvpmax
   double precision :: tmp_vtp1, tmp_vrp1, tmp_vtp2n, tmp_vrp2n, rad_coef, radp_coef, lin_coef, dr
+  double precision :: umean(2), vmean(2)
   double precision, allocatable, dimension(:,:) :: zetap
   double precision, allocatable, dimension(:,:,:) :: gkrr, dgkrr
   logical rad_opt
@@ -156,6 +159,29 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
         deallocate(dgkrr)
         deallocate(zetap)
      end if
+  end if
+
+  if(present(Uxm))then
+     umean(1)=0.0d0
+     umean(2)=0.0d0
+     do j=1,nt
+        umean(1)=umean(1)+(Vr(1,j)*dcos(t(j))-Vt(1,j)*dsin(t(j)))
+        umean(2)=umean(2)+(Vr(nr,j)*dcos(t(j))-Vt(nr,j)*dsin(t(j)))
+     end do
+     umean(1)=umean(1)/dble(nt)
+     umean(2)=umean(2)/dble(nt)
+     Uxm(1:2)=umean(1:2)
+  end if
+  if(present(Vym))then
+     vmean(1)=0.0d0
+     vmean(2)=0.0d0
+     do j=1,nt
+        vmean(1)=vmean(1)+(Vr(1,j)*dsin(t(j))+Vt(1,j)*dcos(t(j)))
+        vmean(2)=vmean(2)+(Vr(nr,j)*dsin(t(j))+Vt(nr,j)*dcos(t(j)))
+     end do
+     vmean(1)=vmean(1)/dble(nt)
+     vmean(2)=vmean(2)/dble(nt)
+     Vym(1:2)=vmean(1:2)
   end if
 
 end subroutine prod_vortex_structure

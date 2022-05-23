@@ -38,7 +38,7 @@ program test_Rankine
 !-- internal
   integer :: i, j, k, cstat
   double precision :: d2r, r2d, rad_tc
-  double precision :: Vsrn, Vra1d, thetad_tc
+  double precision :: Usrn(2), Vsrn(2), Vra1d, thetad_tc
   double precision, dimension(2) :: vx_new, vy_new
   double precision :: dxd, dyd, dr_d, dr_t, dt_d, dt_t, dx_d, dy_d, dx_t, dy_t
   double precision, allocatable, dimension(:) :: xd, yd, r_d, r_t, rh_t, t_d, t_t, t_ref_t, x_d, y_d, x_t, y_t
@@ -209,7 +209,8 @@ program test_Rankine
 !-- producing vortex profiles at vector points
   call prod_vortex_structure( rh_t, t_ref_t, rvmax, vmax, c1u, c2u,  &
   &                           Vt_rht_t, Ut_rht_t, vp(1:nvp), up(1:nup),  &
-  &                           vpa(1:nvp)*d2r, upa(1:nup)*d2r, ropt=ropt )
+  &                           vpa(1:nvp)*d2r, upa(1:nup)*d2r, ropt=ropt,  &
+  &                           Uxm=Usrn, Vym=Vsrn )
 
 !-- Environmental wind (Us, Vs) -> Vra(r_t,t_t), Vrn(r_t,t_t)
   us0=us
@@ -260,7 +261,7 @@ program test_Rankine
   call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
 write(*,*) "val check", Vra1d
   call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
-  &                       (/Vsrn,0.0d0/), (/0.0d0,0.0d0/), rad_tc,  &
+  &                       Usrn, Vsrn, rad_tc,  &
   &                       VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
   &                       VDTm_rt_t, VDRm_rt_t, undef, phi1=phi1_rt_t )
   call stdout( "Retrieved velocity.", "main", 0 )
