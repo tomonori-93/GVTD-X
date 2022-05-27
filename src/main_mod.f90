@@ -16,6 +16,8 @@ module ToRMHOWe_main
   private :: check_zero
   private :: check_undef_grid
   private :: set_undef_value
+  private :: calc_Phi2Phin
+  private :: calc_Phi2Zetan
   private :: calc_pseudo_GVTD0
   private :: calc_phi2sc
 
@@ -23,7 +25,7 @@ contains
 
 subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
   &                           VT, VR, VRT0, VDR0, VRTn, VRRn, VDTm, VDRm,  &
-  &                           undef, phi1, VRT0_GVTD, VDR0_GVTD,  &
+  &                           undef, phin, zetan, VRT0_GVTD, VDR0_GVTD,  &
   &                           VRTns, VRTnc, VRRns, VRRnc )
 !-- solve unknown variables and return wind velocity on R-T coordinates.
 !-------------------------------------------------------
@@ -55,7 +57,8 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
   double precision, intent(out) :: VDTm(ndiv,size(r),size(t))  ! retrieved tangential component of divergent wind [m s-1]
   double precision, intent(out) :: VDRm(ndiv,size(r),size(t))  ! retrieved radial component of divergent wind [m s-1]
   double precision, intent(in), optional :: undef  ! undefined value for Vd
-  double precision, intent(out), optional :: phi1(size(r)+1,size(t))  ! retrieved WN-1 stream function [m2 s-1]
+  double precision, intent(out), optional :: phin(nrot,size(r)+1,size(t))   ! retrieved stream function [m2 s-1]
+  double precision, intent(out), optional :: zetan(nrot,size(r)+1,size(t))  ! retrieved vorticity [s-1]
   double precision, intent(out), optional :: VRT0_GVTD(size(r),size(t))  ! retrieved axisymmetric radial component of pseudo-GVTD tangential wind [m s-1]
   double precision, intent(out), optional :: VDR0_GVTD(size(r),size(t))  ! retrieved axisymmetric tangential component of pseudo-GVTD tangential wind [m s-1]
   double precision, intent(out), optional :: VRTns(nrot,size(r),size(t))  ! Sine component of retrieved asymmetric radial wind [m s-1]
@@ -113,8 +116,11 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
   VDRm=dundef
   delta=undef
 
-  if(present(phi1))then
-     phi1=dundef
+  if(present(phin))then
+     phin=dundef
+  end if
+  if(present(zetan))then
+     zetan=dundef
   end if
   if(present(VRT0_GVTD))then
      VRT0_GVTD=dundef
@@ -275,13 +281,12 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
   end if
 
 !-- monitor variables
-  if((present(phi1)).and.(nrot>0))then
-     do j=1,nt
-     do i=1,nr+1
-     phi1(i,j)=phis_nr(1,i)*dsin(t(j))+phic_nr(1,i)*dcos(t(j))
-     phi1(i,j)=phi1(i,j)*vmax*rh(nr+1)
-     end do
-     end do
+  if((present(phin)).and.(nrot>0))then
+     call calc_Phi2Phin( nrot, nr+1, nt, vmax, rh(nr+1), t, phis_nr, phic_nr, phin )
+  end if
+
+  if((present(zetan)).and.(nrot>0))then
+     call calc_Phi2Zetan( nrot, nr+1, nt, vmax, rh(nr+1), rh, t, phis_nr, phic_nr, zetan )
   end if
 
   if(present(VRT0_GVTD).and.(nrot>0))then
@@ -539,20 +544,20 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
      do jj=1,nnt
         fkij(2+1+ncyc*(nnr-2),nnr-1,jj)  &
   &    =-dr_inv(nnr-1)*sinen(1,jj)*sines(nnr-1,jj)  &
-  &     +0.5d0*r_inv(nnr-1)*cosinen(1,jj)*cosines(nnr-1,jj)
+  &     +(1.0d0-alp(nnr-1))*r_inv(nnr-1)*cosinen(1,jj)*cosines(nnr-1,jj)
 
         fkij(2+nrot+1+ncyc*(nnr-2),nnr-1,jj)  &
   &    =-dr_inv(nnr-1)*cosinen(1,jj)*sines(nnr-1,jj)  &
-  &     -0.5d0*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj)
+  &     -(1.0d0-alp(nnr-1))*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj)
 
         if(undeflag(nnr-1,jj).eqv..false.)then
 write(*,*) "before Vd at the outer", Vdij(nnr-1,jj), jj
            Vdij(nnr-1,jj)  &
   &       =Vdij(nnr-1,jj)  &
   &       +Usrn(2)*(sinen(1,jj)*sines(nnr-1,jj)  &
-  &                +0.5d0*dr(nnr-1)*r_inv(nnr-1)*cosinen(1,jj)*cosines(nnr-1,jj)) &
+  &                +(1.0d0-alp(nnr-1))*dr(nnr-1)*r_inv(nnr-1)*cosinen(1,jj)*cosines(nnr-1,jj)) &
   &       -Vsrn(2)*(cosinen(1,jj)*sines(nnr-1,jj)  &
-  &                -0.5d0*dr(nnr-1)*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj))
+  &                -(1.0d0-alp(nnr-1))*dr(nnr-1)*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj))
 write(*,*) "after Vd at the outer", Vdij(nnr-1,jj), jj
         end if
      end do
@@ -1438,6 +1443,120 @@ subroutine set_undef_value( undeflag, undefv, vval )
   end do
 
 end subroutine set_undef_value
+
+!--------------------------------------------------
+! Calculate streamfunction for each wavenumber
+!--------------------------------------------------
+
+subroutine calc_Phi2Phin( nrot, nnr, nnt, vmax, rmax, theta, phis_nr, phic_nr, phi_nr )
+  implicit none
+  integer, intent(in) :: nrot
+  integer, intent(in) :: nnr
+  integer, intent(in) :: nnt
+  double precision, intent(in) :: vmax
+  double precision, intent(in) :: rmax
+  double precision, intent(in) :: theta(nnt)
+  double precision, intent(in) :: phis_nr(nrot,nnr)
+  double precision, intent(in) :: phic_nr(nrot,nnr)
+  double precision, intent(out) :: phi_nr(nrot,nnr,nnt)
+
+  integer :: ii, jj, kk
+
+  call stdout( "Enter procedure.", "calc_Phi2Phin", 0 )
+
+!$omp parallel default(shared)
+!$omp do schedule(runtime) private(kk,ii,jj)
+
+  do jj=1,nnt
+     do ii=1,nnr
+        do kk=1,nrot
+           phi_nr(kk,ii,jj)=(phis_nr(kk,ii)*dsin(theta(jj))+phic_nr(kk,ii)*dcos(theta(jj)))*vmax*rmax
+        end do
+     end do
+  end do
+
+!$omp end do
+!$omp end parallel
+
+  call stdout( "Finish procedure.", "calc_Phi2Phin", 0 )
+
+end subroutine calc_Phi2Phin
+
+!--------------------------------------------------
+! Calculate vorticity for each wavenumber
+!--------------------------------------------------
+
+subroutine calc_Phi2Zetan( nrot, nnr, nnt, vmax, rmax, rdh, theta, phis_nr, phic_nr, zeta_nr )
+  implicit none
+  integer, intent(in) :: nrot
+  integer, intent(in) :: nnr
+  integer, intent(in) :: nnt
+  double precision, intent(in) :: vmax
+  double precision, intent(in) :: rmax
+  double precision, intent(in) :: rdh(nnr)  ! Normalized radius
+  double precision, intent(in) :: theta(nnt)
+  double precision, intent(in) :: phis_nr(nrot,nnr)
+  double precision, intent(in) :: phic_nr(nrot,nnr)
+  double precision, intent(out) :: zeta_nr(nrot,nnr,nnt)
+
+  integer :: ii, jj, kk, cstat
+  double precision, dimension(nnr) :: drc, drf, drb
+  double precision, dimension(nnr) ::  drc_inv, drf_inv, drb_inv, rh_inv, rh2_inv
+  double precision :: dpfs, dpfc, dpbs, dpbc, rmax_inv
+
+  call stdout( "Enter procedure.", "calc_Phi2Zetan", 0 )
+
+  drc(1)=rdh(2)-rdh(1)
+  drc(nnr)=rdh(nnr)-rdh(nnr-1)
+  drb(1)=rdh(2)-rdh(1)
+  drb(nnr)=rdh(nnr)-rdh(nnr-1)
+  drf(1)=rdh(2)-rdh(1)
+  drf(nnr)=rdh(nnr)-rdh(nnr-1)
+  if(rdh(1)==0.0d0)then
+     rh_inv(1)=0.0d0
+  end if
+  do ii=2,nnr-1
+     drc(ii)=rdh(ii+1)-rdh(ii-1)
+     drb(ii)=rdh(ii)-rdh(ii-1)
+     drf(ii)=rdh(ii+1)-rdh(ii)
+     rh_inv(ii)=1.0/rdh(ii)
+  end do
+  drc_inv=1.0d0/drc
+  drb_inv=1.0d0/drb
+  drf_inv=1.0d0/drf
+
+  rmax_inv=1.0d0/rmax
+  rh2_inv=rh_inv**2
+
+  zeta_nr=0.0d0
+
+!$omp parallel default(shared)
+!$omp do schedule(runtime) private(kk,ii,jj,dpfs,dpfc,dpbs,dpbc)
+
+  do jj=1,nnt
+     do ii=2,nnr-1
+        do kk=1,nrot
+           dpfs=(phis_nr(kk,ii+1)-phis_nr(kk,ii))*drf_inv(ii)
+           dpbs=(phis_nr(kk,ii-1)-phis_nr(kk,ii))*drb_inv(ii)
+           dpfc=(phic_nr(kk,ii+1)-phic_nr(kk,ii))*drf_inv(ii)
+           dpbc=(phic_nr(kk,ii-1)-phic_nr(kk,ii))*drb_inv(ii)
+           zeta_nr(kk,ii,jj)=((2.0d0*drc_inv(ii)*(dpfs+dpbs)  &
+  &                           +0.5d0*rh_inv(ii)*(dpfs-dpbs)  &
+  &                           -dble(kk**2)*rh2_inv(ii)*phis_nr(kk,ii))*dsin(theta(jj))  &
+  &                         +((2.0d0*drc_inv(ii)*(dpfc+dpbc)  &
+  &                           +0.5d0*rh_inv(ii)*(dpfc-dpbc)  &
+  &                           -dble(kk**2)*rh2_inv(ii)*phic_nr(kk,ii))*dcos(theta(jj))))  &
+  &                         *vmax*rmax_inv
+        end do
+     end do
+  end do
+
+!$omp end do
+!$omp end parallel
+
+  call stdout( "Finish procedure.", "calc_Phi2Zetan", 0 )
+
+end subroutine calc_Phi2Zetan
 
 !--------------------------------------------------
 ! Calculate pseudo retrieval of VT and VR for GVTD
