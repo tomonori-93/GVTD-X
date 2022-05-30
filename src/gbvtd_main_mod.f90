@@ -396,9 +396,6 @@ subroutine calc_AB2VT( nasym, vmax, rd, thetad_max, Vn, psid, rtc, A0, An, Bn,  
      VTCn_r(kk)=-2.0d0*Bn(kk+1)
   end do
 
-  VTSn_r(1)=VTSn_r(1)+VTSn_r(3)
-  VTCn_r(1)=VTCn_r(1)+VTCn_r(3)
-
   do jj=1,nnt
      do kk=1,nasym
         VTSn_rt(kk,jj)=VTSn_r(kk)*sinen(kk,jj)*vmax

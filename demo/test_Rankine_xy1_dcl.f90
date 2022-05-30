@@ -52,7 +52,7 @@ program test_Rankine
   double precision, allocatable, dimension(:,:) :: VRT0_rt_t, VDR0_rt_t, VTtot_rt_t, VRtot_rt_t
   double precision, allocatable, dimension(:,:) :: us0, vs0, us0_rht_t, vs0_rht_t
   double precision, allocatable, dimension(:,:) :: div_rht_t, rot_rht_t, div_xyd, rot_xyd
-  double precision, allocatable, dimension(:,:) :: phi1_rt_t, phi1_xyd
+  double precision, allocatable, dimension(:,:,:) :: phin_rt_t, phin_xyd
   double precision, allocatable, dimension(:,:,:) :: VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t
 
   real :: dundef
@@ -134,10 +134,10 @@ program test_Rankine
   allocate(vs0_rht_t(nr_t,nt_t),stat=cstat)  ! Y-component of homogeneous wind on R-T coordinate
   allocate(div_rht_t(nr_t,nt_t),stat=cstat)  ! divergence on R-T coordinate
   allocate(rot_rht_t(nr_t,nt_t),stat=cstat)  ! rotation on R-T coordinate
-  allocate(phi1_rt_t(nr_t+1,nt_t),stat=cstat)  ! phi1 on R-T coordinate
+  allocate(phin_rt_t(nrot,nr_t+1,nt_t),stat=cstat)  ! phin on R-T coordinate
   allocate(div_xyd(nxd,nyd),stat=cstat)  ! divergence on X-Y coordinate
   allocate(rot_xyd(nxd,nyd),stat=cstat)  ! rotation on X-Y coordinate
-  allocate(phi1_xyd(nxd,nyd),stat=cstat)  ! phi1 on X-Y coordinate
+  allocate(phin_xyd(nrot,nxd,nyd),stat=cstat)  ! phin on X-Y coordinate
 
   !-- For drawing variables
   allocate(draw_xd(nxd),stat=cstat)
@@ -263,7 +263,7 @@ write(*,*) "val check", Vra1d
   call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
   &                       Usrn, Vsrn, rad_tc,  &
   &                       VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
-  &                       VDTm_rt_t, VDRm_rt_t, undef, phi1=phi1_rt_t )
+  &                       VDTm_rt_t, VDRm_rt_t, undef, phin=phin_rt_t )
   call stdout( "Retrieved velocity.", "main", 0 )
 
 do i=1,nr_t
@@ -285,8 +285,19 @@ end do
   &                    undefg=undef, stdopt=.true. )
   call cart_conv_scal( rh_t, t_ref_t, rot_rht_t, xd, yd, tc_xd, tc_yd, rot_xyd, undef=undef,  &
   &                    undefg=undef, stdopt=.true. )
-  call cart_conv_scal( r_t, t_ref_t, phi1_rt_t, xd, yd, tc_xd, tc_yd, phi1_xyd, undef=undef,  &
-  &                    undefg=undef, stdopt=.true. )
+  if(nrot>0)then
+     do k=1,nrot
+        call cart_conv_scal( r_t, t_ref_t, phin_rt_t(k,1:nr_t+1,1:nt_t),  &
+  &                          xd, yd, tc_xd, tc_yd,  &
+  &                          phin_xyd(k,1:nxd,1:nyd), undef=undef,  &
+  &                          undefg=undef, stdopt=.true. )
+     end do
+  else
+     call cart_conv_scal( r_t, t_ref_t, phin_rt_t(nrot,1:nr_t+1,1:nt_t),  &
+  &                       xd, yd, tc_xd, tc_yd,  &
+  &                       phin_xyd(nrot,1:nxd,1:nyd), undef=undef,  &
+  &                       undefg=undef, stdopt=.true. )
+  end if
 
 !-- calculate the maximum difference between analysis and retrieval
   call display_2valdiff_max( Vt_rht_t, VTtot_rt_t, undef=undef, cout=cvtmax )
@@ -312,7 +323,11 @@ end do
   call subst_2d_r( draw_dVt, draw_Vt, undef=real(undef) )
   call subst_2d_r( draw_dVr, draw_Vr, undef=real(undef) )
   call subst_2d_r( draw_dVra, draw_Vra, undef=real(undef) )
-  call conv_d2r_2d( phi1_xyd, draw_phi1 )
+  if(nrot>0)then
+     call conv_d2r_2d( phin_xyd(1,1:nxd,1:nyd), draw_phi1 )
+  else
+     call conv_d2r_2d( phin_xyd(nrot,1:nxd,1:nyd), draw_phi1 )
+  end if
 
 write(*,*) "checkVt0", VRT0_rt_t(:,1)
 write(*,*) "checkUt0", VDR0_rt_t(:,1)
