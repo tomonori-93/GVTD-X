@@ -5,8 +5,6 @@ program test_Rankine
   use Dcl_Automatic
   use ToRMHOWe_sub
   use ToRMHOWe_main
-  use GVTD_main
-  use GBVTD_main
 !  use ToRMHOWe_main2
 
   implicit none
@@ -14,7 +12,6 @@ program test_Rankine
   integer, parameter :: nvp_max=100
 
 !-- namelist
-  integer :: flag_ToRMHOWe
   integer :: nvp, nup, nxd, nyd, nr_d, nr_t, nt_d, nt_t
   integer :: nrot, ndiv
   integer :: nx_d, ny_d, nx_t, ny_t
@@ -33,6 +30,7 @@ program test_Rankine
   double precision :: r_tmin, r_tmax, t_tmin, t_tmax
   double precision :: undef, xax_fact, yax_fact
   double precision :: tc_xd, tc_yd, ra_xd, ra_yd, tc_ra_r, tc_ra_t
+  double precision :: pseudo_tc_xd, pseudo_tc_yd
   double precision :: rvmax, vmax, c1u, c2u
   double precision :: vp(nvp_max), up(nvp_max), vpa(nvp_max), upa(nvp_max)
   character(20) :: form_typec, form_typec2, form_typec3, form_types
@@ -46,7 +44,7 @@ program test_Rankine
   double precision :: dxd, dyd, dr_d, dr_t, dt_d, dt_t, dx_d, dy_d, dx_t, dy_t
   double precision, allocatable, dimension(:) :: xd, yd, r_d, r_t, rh_t, t_d, t_t, t_ref_t, x_d, y_d, x_t, y_t
   double precision, allocatable, dimension(:,:) :: tdr_t
-  double precision, allocatable, dimension(:,:) :: Vd_rt_d, Ut_xyd, Vt_xyd, Vra_xyd, Vsra_xyd, Vratot_xyd
+  double precision, allocatable, dimension(:,:) :: Vd_rt_d, Ut_xyd, Vt_xyd, Vra_xyd, Vsra_xyd, Vratot_xyd, VraP_xyd
   double precision, allocatable, dimension(:,:) :: Utott_xyd, Vtott_xyd, Vra_rt_t, Vratot_rt_t, Vsra_rt_t
   double precision, allocatable, dimension(:,:) :: Ut_rht_t, Vt_rht_t
   double precision, allocatable, dimension(:,:) :: Vst_rht_t, Usr_rht_t
@@ -66,7 +64,7 @@ program test_Rankine
   character(20) :: cvtmax, cvrmax, cvamax
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
-  &                us, vs, nrot, ndiv, ropt, flag_ToRMHOWe
+  &                us, vs, nrot, ndiv, ropt
   namelist /domain /nxd, nyd, nr_d, nr_t, nt_d, nt_t,  &
   &                 nx_d, ny_d, nx_t, ny_t,  &
   &                 xdmin, xdmax, ydmin, ydmax,  &
@@ -74,7 +72,7 @@ program test_Rankine
   &                 x_tmin, x_tmax, y_tmin, y_tmax,  &
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
   &                 r_tmin, r_tmax, t_tmin, t_tmax
-  namelist /pos_info /tc_xd, tc_yd, ra_xd, ra_yd
+  namelist /pos_info /tc_xd, tc_yd, ra_xd, ra_yd, pseudo_tc_xd, pseudo_tc_yd
   namelist /draw_info /IWS, tone_grid, cmap, col_rev,  &
   &                    contour_num, fixc_val, fixc_idx, fixc_typ, form_typec,  &
   &                    contour_num2, fixc_val2, fixc_idx2, fixc_typ2, form_typec2,  &
@@ -131,6 +129,7 @@ program test_Rankine
   allocate(Vra_xyd(nxd,nyd),stat=cstat)  ! Velocity along beam on X-Y coordinate
   allocate(Vsra_xyd(nxd,nyd),stat=cstat)  ! Environmental wind velocity along beam on X-Y coordinate
   allocate(Vratot_xyd(nxd,nyd),stat=cstat)  ! Retrieved velocity along beam on X-Y coordinate
+  allocate(VraP_xyd(nxd,nyd),stat=cstat)  ! Velocity along beam on X-Y coordinate with the pseudo-center
   allocate(us0(nxd,nyd),stat=cstat)  ! X-component of homogeneous wind on X-Y coordinate
   allocate(vs0(nxd,nyd),stat=cstat)  ! Y-component of homogeneous wind on X-Y coordinate
   allocate(us0_rht_t(nr_t,nt_t),stat=cstat)  ! X-component of homogeneous wind on R-T coordinate
@@ -264,24 +263,17 @@ program test_Rankine
   call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
 write(*,*) "val check", Vra1d
 
-  select case (flag_ToRMHOWe)
-  case (1)  ! ToRMHOWe
-     call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
-  &                          Usrn, Vsrn, rad_tc,  &
-  &                          VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
-  &                          VRTn_rt_t, VRRn_rt_t,  &
-  &                          VDTm_rt_t, VDRm_rt_t, undef, phin=phin_rt_t )
-  case (2)  ! GVTD
-     call Retrieve_velocity_GVTD( nrot, rh_t, t_t, tdr_t, Vra_rt_T,  &
-  &                               Usrn, Vsrn, rad_tc,  &
-  &                               VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
-  &                               VRTn_rt_t, VRRn_rt_t, undef )
-  case (3)  ! GVTD
-     call Retrieve_velocity_GBVTD( nrot, rh_t, t_t, tdr_t, Vra_rt_T,  &
-  &                                Usrn, Vsrn, rad_tc,  &
-  &                                VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
-  &                                VRTn_rt_t, VRRn_rt_t, undef )
-  end select
+!-- Reallocate Vra with the true center to pseudo-center
+  call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )
+  call cart_conv_scal( rh_t, t_ref_t, Vra_rt_t, xd, yd, tc_xd, tc_yd, VraP_xyd, undef=undef,  &
+  &                    undefg=undef, stdopt=.true. )
+  call tangent_conv_scal( xd, yd, pseudo_tc_xd, pseudo_tc_yd, VraP_xyd, rh_t, t_ref_t, Vra_rt_t,  &
+  &                       undef=undef, undefg=undef, stdopt=.true. )
+
+  call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
+  &                       Usrn, Vsrn, rad_tc,  &
+  &                       VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
+  &                       VDTm_rt_t, VDRm_rt_t, undef, phin=phin_rt_t )
   call stdout( "Retrieved velocity.", "main", 0 )
 
 do i=1,nr_t
