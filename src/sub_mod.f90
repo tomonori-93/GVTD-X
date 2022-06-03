@@ -36,6 +36,7 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   integer :: nr, nt, i, j, k, nvtp, nvrp, nvpmax
   double precision :: tmp_vtp1, tmp_vrp1, tmp_vtp2n, tmp_vrp2n, rad_coef, radp_coef, lin_coef, dr
   double precision :: umean(2), vmean(2)
+  double precision :: r_inv(size(r))
   double precision, allocatable, dimension(:,:) :: zetap
   double precision, allocatable, dimension(:,:,:) :: gkrr, dgkrr
   logical rad_opt
@@ -88,6 +89,14 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
      end if
   end if
 
+  do i=1,nr
+     if(r(i)/=0.0d0)then
+        r_inv(i)=1.0d0/r(i)
+     else
+        r_inv(i)=0.0d0
+     end if
+  end do
+
   do j=1,nt
      do i=1,nr
         tmp_vtp1=0.0d0
@@ -112,7 +121,7 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
 !              do k=2,nvrp
               do k=1,nvrp
                  lin_coef=line_integral( nr-1, r, gkrr(k,1:nr,i), zetap(k,1:nr) )*dr
-                 tmp_vrp2n=tmp_vrp2n+(-dble(k)*lin_coef*dsin(dble(k)*(t(j)+Vt_pert_ang(k)))/r(i))  ! same as Vt_pert_ang
+                 tmp_vrp2n=tmp_vrp2n+(-dble(k)*lin_coef*dsin(dble(k)*(t(j)+Vt_pert_ang(k)))*r_inv(i))  ! same as Vt_pert_ang
 !ORG                 tmp_vrp2n=tmp_vrp2n+Vr_pert(k)*(-lin_coef*dsin(dble(k)*(t(j)+Vt_pert_ang(k)))/r(i))  ! same as Vt_pert_ang
               end do
            end if
@@ -125,14 +134,14 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
            Vr(i,j)=c1u*dsqrt((rmax-r(i))*r(i))
            Vr(i,j)=Vr(i,j)*4.0*1.0e-3  ! 多分これが必要 [m] -> [km]
         else
-           rad_coef=rmax/r(i)
+           rad_coef=rmax*r_inv(i)
            if((r(i)>rmax).and.(r(i)<=1.5d0*rmax))then
               radp_coef=1.0d0
            else
-              radp_coef=rmax/r(i)
+              radp_coef=rmax*r_inv(i)
            end if
            Vt(i,j)=vmax*rad_coef
-           Vr(i,j)=-c2u*dsqrt(r(i)-rmax)*(rmax/r(i))
+           Vr(i,j)=-c2u*dsqrt(r(i)-rmax)*(rmax*r_inv(i))
            Vr(i,j)=Vr(i,j)/dsqrt(1000.0d0)  ! 多分これが必要 [m] -> [km]
         end if
         if(j==1)then
@@ -224,7 +233,7 @@ subroutine prod_radar_along_vel()
 
 end subroutine prod_radar_along_vel
 
-subroutine conv_VtVr2VxVy( r, t, Vt, Vr, Vx, Vy )
+subroutine conv_VtVr2VxVy( r, t, Vt, Vr, Vx, Vy, undef )
 !-- convert Vt and Vr to Vx and Vy on R-T coordinates
   implicit none
   double precision, intent(in) :: r(:)  ! R-coordinate [m]
@@ -233,21 +242,35 @@ subroutine conv_VtVr2VxVy( r, t, Vt, Vr, Vx, Vy )
   double precision, intent(in) :: Vr(size(r),size(t))   ! radial wind component on R-T coordinates
   double precision, intent(out) :: Vx(size(r),size(t))  ! X-component of wind on R-T coordinates
   double precision, intent(out) :: Vy(size(r),size(t))  ! Y-component of wind on R-T coordinates
+  double precision, intent(in), optional :: undef
   integer :: nr, nt, i, j
 
   nr=size(r)
   nt=size(t)
 
-  do j=1,nt
-     do i=1,nr
-        Vx(i,j)=Vr(i,j)*dcos(t(j))-Vt(i,j)*dsin(t(j))
-        Vy(i,j)=Vr(i,j)*dsin(t(j))+Vt(i,j)*dcos(t(j))
+  if(present(undef))then
+     Vx=undef
+     Vy=undef
+     do j=1,nt
+        do i=1,nr
+           if(Vt(i,j)/=undef.and.Vr(i,j)/=undef)then
+              Vx(i,j)=Vr(i,j)*dcos(t(j))-Vt(i,j)*dsin(t(j))
+              Vy(i,j)=Vr(i,j)*dsin(t(j))+Vt(i,j)*dcos(t(j))
+           end if
+        end do
      end do
-  end do
+  else
+     do j=1,nt
+        do i=1,nr
+           Vx(i,j)=Vr(i,j)*dcos(t(j))-Vt(i,j)*dsin(t(j))
+           Vy(i,j)=Vr(i,j)*dsin(t(j))+Vt(i,j)*dcos(t(j))
+        end do
+     end do
+  end if
 
 end subroutine conv_VtVr2VxVy
 
-subroutine conv_VxVy2VtVr( r, t, Vx, Vy, Vt, Vr )
+subroutine conv_VxVy2VtVr( r, t, Vx, Vy, Vt, Vr, undef )
 !-- convert Vx and Vy to Vr and Vt on R-T coordinates
   implicit none
   double precision, intent(in) :: r(:)  ! R-coordinate [m]
@@ -256,17 +279,31 @@ subroutine conv_VxVy2VtVr( r, t, Vx, Vy, Vt, Vr )
   double precision, intent(in) :: Vy(size(r),size(t))  ! Y-component of wind on R-T coordinates
   double precision, intent(out) :: Vt(size(r),size(t))   ! tangential wind component on R-T coordinates
   double precision, intent(out) :: Vr(size(r),size(t))   ! radial wind component on R-T coordinates
+  double precision, intent(in), optional :: undef
   integer :: nr, nt, i, j
 
   nr=size(r)
   nt=size(t)
 
-  do j=1,nt
-     do i=1,nr
-        Vr(i,j)=Vx(i,j)*dcos(t(j))+Vy(i,j)*dsin(t(j))
-        Vt(i,j)=-Vx(i,j)*dsin(t(j))+Vy(i,j)*dcos(t(j))
+  if(present(undef))then
+     Vr=undef
+     Vt=undef
+     do j=1,nt
+        do i=1,nr
+           if(Vx(i,j)/=undef.and.Vy(i,j)/=undef)then
+              Vr(i,j)=Vx(i,j)*dcos(t(j))+Vy(i,j)*dsin(t(j))
+              Vt(i,j)=-Vx(i,j)*dsin(t(j))+Vy(i,j)*dcos(t(j))
+           end if
+        end do
      end do
-  end do
+  else
+     do j=1,nt
+        do i=1,nr
+           Vr(i,j)=Vx(i,j)*dcos(t(j))+Vy(i,j)*dsin(t(j))
+           Vt(i,j)=-Vx(i,j)*dsin(t(j))+Vy(i,j)*dcos(t(j))
+        end do
+     end do
+  end if
 
 end subroutine conv_VxVy2VtVr
 

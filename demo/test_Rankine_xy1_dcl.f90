@@ -17,7 +17,6 @@ program test_Rankine
   integer :: flag_ToRMHOWe
   integer :: nvp, nup, nxd, nyd, nr_d, nr_t, nt_d, nt_t
   integer :: nrot, ndiv
-  integer :: nx_d, ny_d, nx_t, ny_t
   integer :: IWS, tone_grid, cmap
   integer :: contour_num, contour_num2, contour_num3
   integer :: shade_num, min_tab, max_tab
@@ -27,8 +26,6 @@ program test_Rankine
   real, dimension(20) :: fixc_val, fixc_val2, fixc_val3
   double precision :: us, vs
   double precision :: xdmin, xdmax, ydmin, ydmax
-  double precision :: x_dmin, x_dmax, y_dmin, y_dmax
-  double precision :: x_tmin, x_tmax, y_tmin, y_tmax
   double precision :: r_dmin, r_dmax, t_dmin, t_dmax
   double precision :: r_tmin, r_tmax, t_tmin, t_tmax
   double precision :: undef, xax_fact, yax_fact
@@ -43,8 +40,8 @@ program test_Rankine
   double precision :: d2r, r2d, rad_tc
   double precision :: Usrn(2), Vsrn(2), Vra1d, thetad_tc
   double precision, dimension(2) :: vx_new, vy_new
-  double precision :: dxd, dyd, dr_d, dr_t, dt_d, dt_t, dx_d, dy_d, dx_t, dy_t
-  double precision, allocatable, dimension(:) :: xd, yd, r_d, r_t, rh_t, t_d, t_t, t_ref_t, x_d, y_d, x_t, y_t
+  double precision :: dxd, dyd, dr_d, dr_t, dt_d, dt_t
+  double precision, allocatable, dimension(:) :: xd, yd, r_d, r_t, rh_t, t_d, t_t, t_ref_t
   double precision, allocatable, dimension(:,:) :: tdr_t
   double precision, allocatable, dimension(:,:) :: Vd_rt_d, Ut_xyd, Vt_xyd, Vra_xyd, Vsra_xyd, Vratot_xyd
   double precision, allocatable, dimension(:,:) :: Utott_xyd, Vtott_xyd, Vra_rt_t, Vratot_rt_t, Vsra_rt_t
@@ -68,10 +65,7 @@ program test_Rankine
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
   &                us, vs, nrot, ndiv, ropt, flag_ToRMHOWe
   namelist /domain /nxd, nyd, nr_d, nr_t, nt_d, nt_t,  &
-  &                 nx_d, ny_d, nx_t, ny_t,  &
   &                 xdmin, xdmax, ydmin, ydmax,  &
-  &                 x_dmin, x_dmax, y_dmin, y_dmax,  &
-  &                 x_tmin, x_tmax, y_tmin, y_tmax,  &
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
   &                 r_tmin, r_tmax, t_tmin, t_tmax
   namelist /pos_info /tc_xd, tc_yd, ra_xd, ra_yd
@@ -93,15 +87,11 @@ program test_Rankine
 !-- Allocate and assign variables for coordinates
   allocate(xd(nxd),stat=cstat)  ! Drawing area for x on X-Y coordinate
   allocate(yd(nyd),stat=cstat)  ! Drawing area for y on X-Y coordinate
-  allocate(r_d(nr_d+1),stat=cstat)  ! Radar range on radar R-T coordinate
+  allocate(r_d(nr_d+1),stat=cstat)  ! Whole range of vortex on radar R-T coordinate
   allocate(r_t(nr_t+1),stat=cstat)  ! Radius on TC R-T coordinate
-  allocate(t_d(nt_d),stat=cstat)  ! Radar azimuthal angle on radar R-T coordinate
+  allocate(t_d(nt_d),stat=cstat)  ! Whole azimuthal angle on radar R-T coordinate
   allocate(t_t(nt_t),stat=cstat)  ! Azimuthal angle on TC R-T coordinate
   allocate(t_ref_t(nt_t),stat=cstat)  ! Reference angle on TC R-T coordinate
-  allocate(x_d(nx_d),stat=cstat)  ! X coordinate for each (r_d, t_d)
-  allocate(y_d(ny_d),stat=cstat)  ! Y coordinate for each (r_d, t_d)
-  allocate(x_t(nx_t),stat=cstat)  ! X coordinate for each (r_t, t_t)
-  allocate(y_t(ny_t),stat=cstat)  ! Y coordinate for each (r_t, t_t)
   allocate(Vd_rt_d(nr_d,nt_d),stat=cstat)  ! Velocity along beam on radar R-T coodinate
   allocate(tdr_t(nr_t,nt_t),stat=cstat)  ! Radar azimuthal angle on TC R-T coordinate
   allocate(rh_t(nr_t),stat=cstat)  ! (staggered) Radius on TC R-T coordinate
@@ -171,10 +161,6 @@ program test_Rankine
   dr_t=(r_tmax-r_tmin)/dble(nr_t-1)
   dt_d=(t_dmax-t_dmin)/dble(nt_d-1)
   dt_t=(t_tmax-t_tmin)/dble(nt_t-1)
-!  dx_d=(x_dmax-x_dmin)/dble(nx_d-1)
-!  dy_d=(y_dmax-y_dmin)/dble(ny_d-1)
-!  dx_t=(x_tmax-x_tmin)/dble(nx_t-1)
-!  dy_t=(y_tmax-y_tmin)/dble(ny_t-1)
 
   xd=(/((xdmin+dxd*dble(i-1)),i=1,nxd)/)
   yd=(/((ydmin+dyd*dble(i-1)),i=1,nyd)/)
@@ -182,10 +168,6 @@ program test_Rankine
   r_t=(/((r_tmin+dr_t*dble(i-1)),i=1,nr_t+1)/)
   t_d=(/((t_dmin+dt_d*dble(i-1)),i=1,nt_d)/)
   t_t=(/((t_tmin+dt_t*dble(i-1)),i=1,nt_t)/)
-!  x_d=(/((x_dmin+dx_d*dble(i-1)),i=1,nx_d)/)
-!  y_d=(/((y_dmin+dy_d*dble(i-1)),i=1,ny_d)/)
-!  x_t=(/((x_tmin+dx_t*dble(i-1)),i=1,nx_t)/)
-!  y_t=(/((y_tmin+dy_t*dble(i-1)),i=1,ny_t)/)
 
   t_d=t_d*d2r
   t_t=t_t*d2r

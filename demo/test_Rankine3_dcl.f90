@@ -14,7 +14,6 @@ program test_Rankine
 !-- namelist
   integer :: nvp, nup, nxd, nyd, nr_d, nr_t, nt_d, nt_t
   integer :: nrot, ndiv
-  integer :: nx_d, ny_d, nx_t, ny_t
   integer :: IWS, tone_grid, cmap
   integer :: contour_num, contour_num2, contour_num3
   integer :: shade_num, min_tab, max_tab
@@ -24,8 +23,6 @@ program test_Rankine
   real, dimension(20) :: fixc_val, fixc_val2, fixc_val3
   double precision :: us, vs
   double precision :: xdmin, xdmax, ydmin, ydmax
-  double precision :: x_dmin, x_dmax, y_dmin, y_dmax
-  double precision :: x_tmin, x_tmax, y_tmin, y_tmax
   double precision :: r_dmin, r_dmax, t_dmin, t_dmax
   double precision :: r_tmin, r_tmax, t_tmin, t_tmax
   double precision :: undef, xax_fact, yax_fact
@@ -38,21 +35,21 @@ program test_Rankine
 
 !-- internal
   integer :: i, j, k, cstat
-  double precision :: d2r, r2d, rad_tc
-  double precision :: Usrn(2), Vsrn(2), Vra1d, thetad_tc
+  double precision :: d2r, r2d, rad_tc, pseudo_rad_tc
+  double precision :: Usrn(2), Vsrn(2), Vra1d, thetad_tc, pseudo_thetad_tc
   double precision, dimension(2) :: vx_new, vy_new
-  double precision :: dxd, dyd, dr_d, dr_t, dt_d, dt_t, dx_d, dy_d, dx_t, dy_t
-  double precision, allocatable, dimension(:) :: xd, yd, r_d, r_t, rh_t, t_d, t_t, t_ref_t, x_d, y_d, x_t, y_t
-  double precision, allocatable, dimension(:,:) :: tdr_t
-  double precision, allocatable, dimension(:,:) :: Vd_rt_d, Ut_xyd, Vt_xyd, Vra_xyd, Vsra_xyd, Vratot_xyd, VraP_xyd
-  double precision, allocatable, dimension(:,:) :: Utott_xyd, Vtott_xyd, Vra_rt_t, Vratot_rt_t, Vsra_rt_t
-  double precision, allocatable, dimension(:,:) :: Ut_rht_t, Vt_rht_t
-  double precision, allocatable, dimension(:,:) :: Vst_rht_t, Usr_rht_t
-  double precision, allocatable, dimension(:,:) :: Vx_rht_t, Vy_rht_t
+  double precision :: dxd, dyd, dr_d, dr_t, dt_d, dt_t
+  double precision, allocatable, dimension(:) :: xd, yd, r_d, r_t, rh_t, t_d, t_t, t_ref_t, t_ref_d
+  double precision, allocatable, dimension(:,:) :: tdr_t, tdr_d
+  double precision, allocatable, dimension(:,:) :: Ut_xyd, Vt_xyd, Vra_xyd, Vsra_xyd, Vratot_xyd
+  double precision, allocatable, dimension(:,:) :: Utott_xyd, Vtott_xyd, Vra_rt_d, Vratot_rt_t
+  double precision, allocatable, dimension(:,:) :: Vst_rt_d, Usr_rt_d
+  double precision, allocatable, dimension(:,:) :: Vx_rt_d, Vy_rt_d
   double precision, allocatable, dimension(:,:) :: Vx_xyd_t, Vy_xyd_t
+  double precision, allocatable, dimension(:,:) :: Ut_rt_d, Vt_rt_d, VraP_rt_t
   double precision, allocatable, dimension(:,:) :: VRT0_rt_t, VDR0_rt_t, VTtot_rt_t, VRtot_rt_t
-  double precision, allocatable, dimension(:,:) :: us0, vs0, us0_rht_t, vs0_rht_t
-  double precision, allocatable, dimension(:,:) :: div_rht_t, rot_rht_t, div_xyd, rot_xyd
+  double precision, allocatable, dimension(:,:) :: us0, vs0, us0_rt_d, vs0_rt_d
+  double precision, allocatable, dimension(:,:) :: div_rt_d, rot_rt_d, div_xyd, rot_xyd
   double precision, allocatable, dimension(:,:,:) :: phin_rt_t, phin_xyd
   double precision, allocatable, dimension(:,:,:) :: VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t
 
@@ -66,10 +63,7 @@ program test_Rankine
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
   &                us, vs, nrot, ndiv, ropt
   namelist /domain /nxd, nyd, nr_d, nr_t, nt_d, nt_t,  &
-  &                 nx_d, ny_d, nx_t, ny_t,  &
   &                 xdmin, xdmax, ydmin, ydmax,  &
-  &                 x_dmin, x_dmax, y_dmin, y_dmax,  &
-  &                 x_tmin, x_tmax, y_tmin, y_tmax,  &
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
   &                 r_tmin, r_tmax, t_tmin, t_tmax
   namelist /pos_info /tc_xd, tc_yd, ra_xd, ra_yd, pseudo_tc_xd, pseudo_tc_yd
@@ -91,17 +85,13 @@ program test_Rankine
 !-- Allocate and assign variables for coordinates
   allocate(xd(nxd),stat=cstat)  ! Drawing area for x on X-Y coordinate
   allocate(yd(nyd),stat=cstat)  ! Drawing area for y on X-Y coordinate
-  allocate(r_d(nr_d+1),stat=cstat)  ! Radar range on radar R-T coordinate
+  allocate(r_d(nr_d),stat=cstat)  ! Whole range of vortex on radar R-T coordinate
   allocate(r_t(nr_t+1),stat=cstat)  ! Radius on TC R-T coordinate
-  allocate(t_d(nt_d),stat=cstat)  ! Radar azimuthal angle on radar R-T coordinate
+  allocate(t_d(nt_d),stat=cstat)  ! Whole azimuthal angle on radar R-T coordinate
   allocate(t_t(nt_t),stat=cstat)  ! Azimuthal angle on TC R-T coordinate
   allocate(t_ref_t(nt_t),stat=cstat)  ! Reference angle on TC R-T coordinate
-  allocate(x_d(nx_d),stat=cstat)  ! X coordinate for each (r_d, t_d)
-  allocate(y_d(ny_d),stat=cstat)  ! Y coordinate for each (r_d, t_d)
-  allocate(x_t(nx_t),stat=cstat)  ! X coordinate for each (r_t, t_t)
-  allocate(y_t(ny_t),stat=cstat)  ! Y coordinate for each (r_t, t_t)
-  allocate(Vd_rt_d(nr_d,nt_d),stat=cstat)  ! Velocity along beam on radar R-T coodinate
   allocate(tdr_t(nr_t,nt_t),stat=cstat)  ! Radar azimuthal angle on TC R-T coordinate
+  allocate(tdr_d(nr_d,nt_d),stat=cstat)  ! Radar azimuthal angle on TC R-T coordinate
   allocate(rh_t(nr_t),stat=cstat)  ! (staggered) Radius on TC R-T coordinate
   allocate(VTtot_rt_t(nr_t,nt_t),stat=cstat)  ! Total tangential wind on TC R-T coordinate
   allocate(VRtot_rt_t(nr_t,nt_t),stat=cstat)  ! Total radial wind on TC R-T coordinate
@@ -111,31 +101,30 @@ program test_Rankine
   allocate(VRRn_rt_t(nrot,nr_t,nt_t),stat=cstat)  ! Asymmetric rotating wind on TC R-T coordinate
   allocate(VDTm_rt_t(ndiv,nr_t,nt_t),stat=cstat)  ! Asymmetric divergent wind on TC R-T coordinate
   allocate(VDRm_rt_t(ndiv,nr_t,nt_t),stat=cstat)  ! Asymmetric divergent wind on TC R-T coordinate
-  allocate(Ut_rht_t(nr_t,nt_t),stat=cstat)  ! Radial wind on TC R-T coordinate
-  allocate(Vt_rht_t(nr_t,nt_t),stat=cstat)  ! Tangential wind on TC R-T coordinate
-  allocate(Usr_rht_t(nr_t,nt_t),stat=cstat)  ! Radial component of environmental wind on TC R-T coordinate
-  allocate(Vst_rht_t(nr_t,nt_t),stat=cstat)  ! Tangential component of environmental wind on TC R-T coordinate
-  allocate(Vra_rt_t(nr_t,nt_t),stat=cstat)  ! Velocity along beam on TC R-T coordinate
-  allocate(Vsra_rt_t(nr_t,nt_t),stat=cstat)  ! Environmental wind velocity along beam on TC R-T coordinate
+  allocate(Usr_rt_d(nr_d,nt_d),stat=cstat)  ! Radial component of environmental wind on TC R-T coordinate
+  allocate(Vst_rt_d(nr_d,nt_d),stat=cstat)  ! Tangential component of environmental wind on TC R-T coordinate
+  allocate(Vra_rt_d(nr_d,nt_d),stat=cstat)  ! Velocity along beam on TC R-T coordinate
+  allocate(VraP_rt_t(nr_t,nt_t),stat=cstat)  ! Velocity along beam on TC R-T coordinate
   allocate(Vratot_rt_t(nr_t,nt_t),stat=cstat)  ! Velocity along beam on TC R-T coordinate
+  allocate(Ut_rt_d(nr_d,nt_d),stat=cstat)  ! Radial wind on TC R-T coordinate
+  allocate(Vt_rt_d(nr_d,nt_d),stat=cstat)  ! Tangential wind on TC R-T coordinate
   allocate(Ut_xyd(nxd,nyd),stat=cstat)  ! Radial wind on X-Y coordinate
   allocate(Vt_xyd(nxd,nyd),stat=cstat)  ! Tangential wind on X-Y coordinate
   allocate(Utott_xyd(nxd,nyd),stat=cstat)  ! Total radial wind on X-Y coordinate
   allocate(Vtott_xyd(nxd,nyd),stat=cstat)  ! Total tangential wind on X-Y coordinate
-  allocate(Vx_rht_t(nr_t,nt_t),stat=cstat)  ! X component of wind on TC R-T coordinate
-  allocate(Vy_rht_t(nr_t,nt_t),stat=cstat)  ! Y component of wind on TC R-T coordinate
+  allocate(Vx_rt_d(nr_d,nt_d),stat=cstat)  ! X component of wind on TC R-T coordinate
+  allocate(Vy_rt_d(nr_d,nt_d),stat=cstat)  ! Y component of wind on TC R-T coordinate
   allocate(Vx_xyd_t(nxd,nyd),stat=cstat)  ! X component of wind on X-Y coordinate
   allocate(Vy_xyd_t(nxd,nyd),stat=cstat)  ! Y component of wind on X-Y coordinate
   allocate(Vra_xyd(nxd,nyd),stat=cstat)  ! Velocity along beam on X-Y coordinate
   allocate(Vsra_xyd(nxd,nyd),stat=cstat)  ! Environmental wind velocity along beam on X-Y coordinate
   allocate(Vratot_xyd(nxd,nyd),stat=cstat)  ! Retrieved velocity along beam on X-Y coordinate
-  allocate(VraP_xyd(nxd,nyd),stat=cstat)  ! Velocity along beam on X-Y coordinate with the pseudo-center
   allocate(us0(nxd,nyd),stat=cstat)  ! X-component of homogeneous wind on X-Y coordinate
   allocate(vs0(nxd,nyd),stat=cstat)  ! Y-component of homogeneous wind on X-Y coordinate
-  allocate(us0_rht_t(nr_t,nt_t),stat=cstat)  ! X-component of homogeneous wind on R-T coordinate
-  allocate(vs0_rht_t(nr_t,nt_t),stat=cstat)  ! Y-component of homogeneous wind on R-T coordinate
-  allocate(div_rht_t(nr_t,nt_t),stat=cstat)  ! divergence on R-T coordinate
-  allocate(rot_rht_t(nr_t,nt_t),stat=cstat)  ! rotation on R-T coordinate
+  allocate(us0_rt_d(nr_d,nt_d),stat=cstat)  ! X-component of homogeneous wind on R-T coordinate
+  allocate(vs0_rt_d(nr_d,nt_d),stat=cstat)  ! Y-component of homogeneous wind on R-T coordinate
+  allocate(div_rt_d(nr_d,nt_d),stat=cstat)  ! divergence on R-T coordinate
+  allocate(rot_rt_d(nr_d,nt_d),stat=cstat)  ! rotation on R-T coordinate
   allocate(phin_rt_t(nrot,nr_t+1,nt_t),stat=cstat)  ! phin on R-T coordinate
   allocate(div_xyd(nxd,nyd),stat=cstat)  ! divergence on X-Y coordinate
   allocate(rot_xyd(nxd,nyd),stat=cstat)  ! rotation on X-Y coordinate
@@ -170,130 +159,133 @@ program test_Rankine
   dr_t=(r_tmax-r_tmin)/dble(nr_t-1)
   dt_d=(t_dmax-t_dmin)/dble(nt_d-1)
   dt_t=(t_tmax-t_tmin)/dble(nt_t-1)
-!  dx_d=(x_dmax-x_dmin)/dble(nx_d-1)
-!  dy_d=(y_dmax-y_dmin)/dble(ny_d-1)
-!  dx_t=(x_tmax-x_tmin)/dble(nx_t-1)
-!  dy_t=(y_tmax-y_tmin)/dble(ny_t-1)
 
   xd=(/((xdmin+dxd*dble(i-1)),i=1,nxd)/)
   yd=(/((ydmin+dyd*dble(i-1)),i=1,nyd)/)
-  r_d=(/((r_dmin+dr_d*dble(i-1)),i=1,nr_d+1)/)
+  r_d=(/((r_dmin+dr_d*dble(i-1)),i=1,nr_d)/)
   r_t=(/((r_tmin+dr_t*dble(i-1)),i=1,nr_t+1)/)
   t_d=(/((t_dmin+dt_d*dble(i-1)),i=1,nt_d)/)
   t_t=(/((t_tmin+dt_t*dble(i-1)),i=1,nt_t)/)
-!  x_d=(/((x_dmin+dx_d*dble(i-1)),i=1,nx_d)/)
-!  y_d=(/((y_dmin+dy_d*dble(i-1)),i=1,ny_d)/)
-!  x_t=(/((x_tmin+dx_t*dble(i-1)),i=1,nx_t)/)
-!  y_t=(/((y_tmin+dy_t*dble(i-1)),i=1,ny_t)/)
 
   t_d=t_d*d2r
   t_t=t_t*d2r
+  t_ref_d=t_d
   t_ref_t=t_t
 
   rh_t(1:nr_t)=r_t(1:nr_t)+0.5d0*dr_t
+
+  !-- Note: tdr_d is located with the true center
+  do j=1,nt_d
+     do i=1,nr_d
+        tdr_d(i,j)=datan2(((tc_yd-ra_yd)+r_d(i)*dsin(t_d(j))),  &
+  &                       ((tc_xd-ra_xd)+r_d(i)*dcos(t_d(j))))
+     end do
+  end do
+  !-- Note: tdr_t is located with the pseudo-center
   do j=1,nt_t
      do i=1,nr_t
-        tdr_t(i,j)=datan2(((tc_yd-ra_yd)+rh_t(i)*dsin(t_t(j))),((tc_xd-ra_xd)+rh_t(i)*dcos(t_t(j))))
+        tdr_t(i,j)=datan2(((pseudo_tc_yd-ra_yd)+rh_t(i)*dsin(t_t(j))),  &
+  &                       ((pseudo_tc_xd-ra_xd)+rh_t(i)*dcos(t_t(j))))
      end do
   end do
 
 !-- Making relative angle to the storm center (tdr_r - thetad_tc)
+  pseudo_rad_tc=dsqrt((pseudo_tc_xd-ra_xd)**2+(pseudo_tc_yd-ra_yd)**2)
+  pseudo_thetad_tc=datan2((pseudo_tc_yd-ra_yd),(pseudo_tc_xd-ra_xd))
   rad_tc=dsqrt((tc_xd-ra_xd)**2+(tc_yd-ra_yd)**2)
   thetad_tc=datan2((tc_yd-ra_yd),(tc_xd-ra_xd))
-  write(*,*) "thetad_tc is ", thetad_tc
-  do j=1,nt_t
-     do i=1,nr_t
-        tdr_t(i,j)=tdr_t(i,j)-thetad_tc
+  write(*,*) "thetad_tc is ", thetad_tc, pseudo_thetad_tc
+  do j=1,nt_d
+     do i=1,nr_d
+        tdr_d(i,j)=tdr_d(i,j)-thetad_tc
      end do
   end do
-  t_t=t_ref_t-thetad_tc
+  do j=1,nt_t
+     do i=1,nr_t
+        tdr_t(i,j)=tdr_t(i,j)-pseudo_thetad_tc
+     end do
+  end do
+  t_d=t_ref_d-thetad_tc
+  t_t=t_ref_t-pseudo_thetad_tc
 
 !-- producing vortex profiles at vector points
-  call prod_vortex_structure( rh_t, t_ref_t, rvmax, vmax, c1u, c2u,  &
-  &                           Vt_rht_t, Ut_rht_t, vp(1:nvp), up(1:nup),  &
+  call prod_vortex_structure( r_d, t_d, rvmax, vmax, c1u, c2u,  &
+  &                           Vt_rt_d, Ut_rt_d, vp(1:nvp), up(1:nup),  &
   &                           vpa(1:nvp)*d2r, upa(1:nup)*d2r, ropt=ropt,  &
-  &                           Uxm=Usrn, Vym=Vsrn )
+  &                           Uxm=Usrn, Vym=Vsrn )  ! For retrieval
 
-!-- Environmental wind (Us, Vs) -> Vra(r_t,t_t), Vrn(r_t,t_t)
+!-- Environmental wind (Us, Vs) -> Vsra(x,y)
   us0=us
   vs0=vs
   call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd )
-  call tangent_conv_scal( xd, yd, tc_xd, tc_yd, Vsra_xyd, rh_t, t_ref_t, Vsra_rt_t,  &
-  &                       undef=undef, undefg=undef, stdopt=.true. )
 !ORG  tc_ra_r=dsqrt((tc_xd-ra_xd)**2+(tc_yd-ra_yd)**2)
 !ORG  tc_ra_t=datan2((tc_yd-ra_yd),(tc_xd-ra_xd))
 !MOD  Vsrn=vs*dcos(tc_ra_t)-us*dsin(tc_ra_t)
 !ORG  Vsrn=vs*dcos(tc_ra_t+dasin(rh_t(1)/tc_ra_r))-us*dsin(tc_ra_t+dasin(rh_t(1)/tc_ra_r))
-  Vsrn=0.0d0
+!  Vsrn=0.0d0
 
 !-- Environmental wind (Us, Vs) -> Vsr(r_t,t_ref_t), Vst(r_t,t_ref_t) for only drawing
   ! (Us, Vs)(xd,yd) -> (Us, Vs)(r_t,t_ref_t) -> (Vsr,Vst)(r_t,t_ref_t)
-  call tangent_conv_scal( xd, yd, tc_xd, tc_yd, us0, rh_t, t_ref_t, us0_rht_t,  &
+  call tangent_conv_scal( xd, yd, tc_xd, tc_yd, us0, r_d, t_ref_d, us0_rt_d,  &
   &                       undef=undef, undefg=undef, stdopt=.true. )
-  call tangent_conv_scal( xd, yd, tc_xd, tc_yd, vs0, rh_t, t_ref_t, vs0_rht_t,  &
+  call tangent_conv_scal( xd, yd, tc_xd, tc_yd, vs0, r_d, t_ref_d, vs0_rt_d,  &
   &                       undef=undef, undefg=undef, stdopt=.true. )
-  call conv_VxVy2VtVr( rh_t, t_ref_t, us0_rht_t, vs0_rht_t, Vst_rht_t, Usr_rht_t )
+  call conv_VxVy2VtVr( r_d, t_ref_d, us0_rt_d, vs0_rt_d, Vst_rt_d, Usr_rt_d, undef=undef )
 
 !-- converting (Vr,Vt)(r_t,t_ref_t) -> (Vx,Vy)(r_t,t_ref_t)
-  call conv_VtVr2VxVy( rh_t, t_ref_t, Vt_rht_t, Ut_rht_t, Vx_rht_t, Vy_rht_t )
-  call cart_conv_scal( rh_t, t_ref_t, Vx_rht_t, xd, yd, tc_xd, tc_yd, Vx_xyd_t, undef=undef,  &
+  call conv_VtVr2VxVy( r_d, t_ref_d, Vt_rt_d, Ut_rt_d, Vx_rt_d, Vy_rt_d, undef=undef )
+  call cart_conv_scal( r_d, t_ref_d, Vx_rt_d, xd, yd, tc_xd, tc_yd, Vx_xyd_t, undef=undef,  &
   &                    undefg=undef, stdopt=.true. )
-  call cart_conv_scal( rh_t, t_ref_t, Vy_rht_t, xd, yd, tc_xd, tc_yd, Vy_xyd_t, undef=undef,  &
+  call cart_conv_scal( r_d, t_ref_d, Vy_rt_d, xd, yd, tc_xd, tc_yd, Vy_xyd_t, undef=undef,  &
   &                    undefg=undef, stdopt=.true. )
   call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, Vx_xyd_t, Vy_xyd_t, Vra_xyd, undef=undef )
-  call proj_VtVr2Vrart( rh_t, t_t, tdr_t, Vt_rht_t, Ut_rht_t, Vra_rt_t, undef=undef )
   call subst_2d( Vra_xyd, Vsra_xyd, undef=undef )
 !  call proj_VxVy2Vra( xd, yd, ra_xd, ra_yd, Um_xyd, Vm_xyd, Vmra_xyd )
 !  Vra_xyd_t=Vra_xyd_t!+Vmra_xyd
 
   call stdout( "Projected winds.", "main", 0 )
 
-!-- converting (r_t,t_t) -> (xd,yd)
-  call subst_2d( Vt_rht_t, Vst_rht_t, undef=undef )
-  call subst_2d( Ut_rht_t, Usr_rht_t, undef=undef )
-  call cart_conv_scal( rh_t, t_ref_t, Vt_rht_t, xd, yd, tc_xd, tc_yd, Vt_xyd, undef=undef,  &
+!-- converting (r_d,t_d) -> (xd,yd)
+  call subst_2d( Vt_rt_d, Vst_rt_d, undef=undef )
+  call subst_2d( Ut_rt_d, Usr_rt_d, undef=undef )
+  call cart_conv_scal( r_d, t_ref_d, Vt_rt_d, xd, yd, tc_xd, tc_yd, Vt_xyd, undef=undef,  &
   &                    undefg=undef, stdopt=.true. )
-  call cart_conv_scal( rh_t, t_ref_t, Ut_rht_t, xd, yd, tc_xd, tc_yd, Ut_xyd, undef=undef,  &
+  call cart_conv_scal( r_d, t_ref_d, Ut_rt_d, xd, yd, tc_xd, tc_yd, Ut_xyd, undef=undef,  &
   &                    undefg=undef, stdopt=.true. )
 
   call stdout( "Converted r-t -> x-y.", "main", 0 )
 
 !-- Retrieving all components of horizontal winds (VRT, VRR, VDT, and VDR) from Vd
-  call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )  ! Vd - proj(Vs)
-  call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
+  call proj_VtVr2Vrart( r_d, t_d, tdr_d, Vt_rt_d, Ut_rt_d, Vra_rt_d,  &
+  &                     undef=undef )  ! Vra_rt = Vd - proj(Vs)
+  call sum_1d( Vra_rt_d(1,1:nt_d), Vra1d, undef )  ! calc. mean Vra
 write(*,*) "val check", Vra1d
 
 !-- Reallocate Vra with the true center to pseudo-center
-  call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )
-  call cart_conv_scal( rh_t, t_ref_t, Vra_rt_t, xd, yd, tc_xd, tc_yd, VraP_xyd, undef=undef,  &
-  &                    undefg=undef, stdopt=.true. )
-  call tangent_conv_scal( xd, yd, pseudo_tc_xd, pseudo_tc_yd, VraP_xyd, rh_t, t_ref_t, Vra_rt_t,  &
+  call tangent_conv_scal( xd, yd, pseudo_tc_xd, pseudo_tc_yd, Vra_xyd, rh_t, t_ref_t, VraP_rt_t,  &
   &                       undef=undef, undefg=undef, stdopt=.true. )
 
-  call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
-  &                       Usrn, Vsrn, rad_tc,  &
+  call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, VraP_rt_t,  &
+  &                       Usrn, Vsrn, pseudo_rad_tc,  &
   &                       VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
   &                       VDTm_rt_t, VDRm_rt_t, undef, phin=phin_rt_t )
   call stdout( "Retrieved velocity.", "main", 0 )
 
-do i=1,nr_t
-write(*,'(a6,1P3E22.15)') "check ", rh_t(i), Vt_rht_t(i,1), VRT0_rt_t(i,1)
-end do
 !-- converting (r_t,t_ref_t) -> (xd,yd)
   call proj_VtVr2Vrart( rh_t, t_t, tdr_t, VTtot_rt_t, VRtot_rt_t, Vratot_rt_t, undef=undef )
-  call cart_conv_scal( rh_t, t_ref_t, VTtot_rt_t, xd, yd, tc_xd, tc_yd, Vtott_xyd, undef=undef,  &
-  &                    undefg=undef, stdopt=.true. )
-  call cart_conv_scal( rh_t, t_ref_t, VRtot_rt_t, xd, yd, tc_xd, tc_yd, Utott_xyd, undef=undef,  &
-  &                    undefg=undef, stdopt=.true. )
-  call cart_conv_scal( rh_t, t_ref_t, Vratot_rt_t, xd, yd, tc_xd, tc_yd, Vratot_xyd, undef=undef,  &
-  &                    undefg=undef, stdopt=.true. )
+  call cart_conv_scal( rh_t, t_ref_t, VTtot_rt_t, xd, yd, pseudo_tc_xd, pseudo_tc_yd, Vtott_xyd,  &
+  &                    undef=undef, undefg=undef, stdopt=.true. )
+  call cart_conv_scal( rh_t, t_ref_t, VRtot_rt_t, xd, yd, pseudo_tc_xd, pseudo_tc_yd, Utott_xyd,  &
+  &                    undef=undef, undefg=undef, stdopt=.true. )
+  call cart_conv_scal( rh_t, t_ref_t, Vratot_rt_t, xd, yd, pseudo_tc_xd, pseudo_tc_yd, Vratot_xyd,  &
+  &                    undef=undef, undefg=undef, stdopt=.true. )
 
 !-- calculate divergence and rotation for the retrieved VR and VT
-  call div_curl_2d( rh_t, t_ref_t, Ut_rht_t, Vt_rht_t, div_rht_t, rot_rht_t )
+  call div_curl_2d( r_d, t_ref_d, Ut_rt_d, Vt_rt_d, div_rt_d, rot_rt_d )
 !  call div_curl_2d( rh_t, t_t, VRtot_rt_t, VTtot_rt_t, div_rht_t, rot_rht_t )
-  call cart_conv_scal( rh_t, t_ref_t, div_rht_t, xd, yd, tc_xd, tc_yd, div_xyd, undef=undef,  &
+  call cart_conv_scal( r_d, t_ref_d, div_rt_d, xd, yd, tc_xd, tc_yd, div_xyd, undef=undef,  &
   &                    undefg=undef, stdopt=.true. )
-  call cart_conv_scal( rh_t, t_ref_t, rot_rht_t, xd, yd, tc_xd, tc_yd, rot_xyd, undef=undef,  &
+  call cart_conv_scal( r_d, t_ref_d, rot_rt_d, xd, yd, tc_xd, tc_yd, rot_xyd, undef=undef,  &
   &                    undefg=undef, stdopt=.true. )
   if(nrot>0)then
      do k=1,nrot
@@ -310,9 +302,9 @@ end do
   end if
 
 !-- calculate the maximum difference between analysis and retrieval
-  call display_2valdiff_max( Vt_rht_t, VTtot_rt_t, undef=undef, cout=cvtmax )
-  call display_2valdiff_max( Ut_rht_t, VRtot_rt_t, undef=undef, cout=cvrmax )
-  call display_2valdiff_max( Vra_rt_t, Vratot_rt_t, undef=undef, cout=cvamax )
+  call display_2valdiff_max( Vt_xyd, Vtott_xyd, undef=undef, cout=cvtmax )
+  call display_2valdiff_max( Ut_xyd, Utott_xyd, undef=undef, cout=cvrmax )
+  call display_2valdiff_max( Vra_xyd, Vratot_xyd, undef=undef, cout=cvamax )
 
 !-- DCL drawing
   call conv_d2r_1d( xd, draw_xd )
@@ -347,7 +339,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   call SWLSET( 'LSYSFNT', .true. )
   CALL GLLSET( 'LMISS', .TRUE. )
   CALL GLRSET( 'RMISS', real(undef) )
-  call UZFACT(0.9)
+  call UZFACT( 0.9 )
   call DclSetParm( 'ENABLE_CONTOUR_MESSAGE', .false. )
 !  call DclSetTextIndex( 3 )
   call DclSetTextHeight( 0.03*0.75 )
