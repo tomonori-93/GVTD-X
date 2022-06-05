@@ -1503,4 +1503,53 @@ end subroutine interpolation_1d
 !--------------------------------------------------------------
 !--------------------------------------------------------------
 
+subroutine max_val_1d(var, mamv, undef)
+  ! Get the max value
+  implicit none
+  double precision, intent(in) :: var(:)  ! Searched array
+  double precision, intent(inout) :: mamv  ! Max value in var
+  double precision, intent(in), optional :: undef  ! undefined value
+  integer :: nx
+  integer :: i
+  logical :: undeflag
+
+  nx=size(var)
+  undeflag=.true.
+
+  if(present(undef))then
+
+     do i=1,nx
+        if(var(i)/=undef)then
+           if(undeflag.eqv..true.)then
+              undeflag=.false.
+              mamv=var(i)
+           else
+              if(var(i)>mamv)then
+                 mamv=var(i)
+              end if
+           end if
+        end if
+     end do
+
+     if(undeflag.eqv..true.)then
+        mamv=undef
+     end if
+
+  else
+
+     mamv=var(1)
+
+     do i=2,nx
+        if(var(i)>mamv)then
+           mamv=var(i)
+        end if
+     end do
+  end if
+
+end subroutine max_val_1d
+
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
 end module ToRMHOWe_sub
