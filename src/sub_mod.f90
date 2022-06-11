@@ -104,25 +104,33 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
         tmp_vtp2n=0.0d0
         tmp_vrp2n=0.0d0
         if(present(Vt_pert))then
-           tmp_vtp1=Vt_pert(1)*dcos((t(j)+Vt_pert_ang(1)))
-           if(nvtp>1)then
-              tmp_vtp1=0.0d0
-!              do k=2,nvtp
+           if(rad_opt.eqv..true.)then
+              if(nvtp>1)then
+!                 do k=2,nvtp
+                 do k=1,nvtp
+                    lin_coef=line_integral( nr-1, r, dgkrr(k,1:nr,i), zetap(k,1:nr) )*dr
+                    tmp_vtp2n=tmp_vtp2n+(-lin_coef*dcos(dble(k)*(t(j)+Vt_pert_ang(k))))
+                 end do
+              end if
+           else
               do k=1,nvtp
-                 lin_coef=line_integral( nr-1, r, dgkrr(k,1:nr,i), zetap(k,1:nr) )*dr
-                 tmp_vtp2n=tmp_vtp2n+(-lin_coef*dcos(dble(k)*(t(j)+Vt_pert_ang(k))))
+                 tmp_vtp1=tmp_vtp1+Vt_pert(k)*dcos(dble(k)*(t(j)+Vt_pert_ang(k)))
               end do
            end if
         end if
         if(present(Vr_pert))then
-           tmp_vrp1=Vr_pert(1)*dcos((t(j)+Vr_pert_ang(1)))
-           if(nvrp>1)then
-              tmp_vrp1=0.0d0
-!              do k=2,nvrp
+           if(rad_opt.eqv..true.)then
+              if(nvrp>1)then
+!                 do k=2,nvrp
+                 do k=1,nvrp
+                    lin_coef=line_integral( nr-1, r, gkrr(k,1:nr,i), zetap(k,1:nr) )*dr
+                    tmp_vrp2n=tmp_vrp2n+(-dble(k)*lin_coef*dsin(dble(k)*(t(j)+Vt_pert_ang(k)))*r_inv(i))  ! same as Vt_pert_ang
+!ORG                    tmp_vrp2n=tmp_vrp2n+Vr_pert(k)*(-lin_coef*dsin(dble(k)*(t(j)+Vt_pert_ang(k)))/r(i))  ! same as Vt_pert_ang
+                 end do
+              end if
+           else
               do k=1,nvrp
-                 lin_coef=line_integral( nr-1, r, gkrr(k,1:nr,i), zetap(k,1:nr) )*dr
-                 tmp_vrp2n=tmp_vrp2n+(-dble(k)*lin_coef*dsin(dble(k)*(t(j)+Vt_pert_ang(k)))*r_inv(i))  ! same as Vt_pert_ang
-!ORG                 tmp_vrp2n=tmp_vrp2n+Vr_pert(k)*(-lin_coef*dsin(dble(k)*(t(j)+Vt_pert_ang(k)))/r(i))  ! same as Vt_pert_ang
+                 tmp_vrp1=tmp_vrp1+Vr_pert(k)*dcos(dble(k)*(t(j)+Vr_pert_ang(k)))
               end do
            end if
         end if
@@ -369,6 +377,8 @@ subroutine proj_VtVr2Vrart( r, t, td, Vt, Vr, Vra, undef )
      do i=1,nr
         if(Vt(i,j)/=undef.and.Vr(i,j)/=undef.and.td(i,j)/=undef)then
            Vra(i,j)=-Vt(i,j)*dsin(t(j)-td(i,j))+Vr(i,j)*dcos(t(j)-td(i,j))
+        else
+           Vra(i,j)=undef
         end if
      end do
   end do
@@ -505,7 +515,7 @@ double precision function green_func( rc, r, nval )
 
 end function green_func
 
-subroutine div_curl_2d( r, t, ur, vt, divr, curl )
+subroutine div_curl_2d( r, t, ur, vt, divr, curl, undef )
 !-- def: drv_r/rdr + dvt/rdt  (divr)
 !-- def: drv_t/rdr - dvr/rdt  (curl)
   implicit none
@@ -515,95 +525,260 @@ subroutine div_curl_2d( r, t, ur, vt, divr, curl )
   double precision, intent(in) :: vt(size(r),size(t))  ! Vt [m/s]
   double precision, intent(out) :: divr(size(r),size(t))  ! divergence [1/s]
   double precision, intent(out) :: curl(size(r),size(t))  ! rotation [1/s]
+  double precision, intent(in), optional :: undef
   integer :: ii, jj, ni, nj
   double precision :: dr, dt
+  logical :: undeflag(size(r),size(t))
 
   ni=size(r)
   nj=size(t)
   dr=r(2)-r(1)
   dt=t(2)-t(1)
-  divr=0.0d0
-  curl=0.0d0
 
-  do jj=2,nj-1
+  if(present(undef))then
+
+     divr=undef
+     curl=undef
+
+     undeflag=.false.
+
+     do jj=2,nj-1
+        do ii=2,ni-1
+           if(ur(ii,jj)==undef.or.vt(ii,jj)==undef)then
+              undeflag(ii,jj)=.true.
+              undeflag(ii-1,jj)=.true.
+              undeflag(ii+1,jj)=.true.
+              undeflag(ii,jj-1)=.true.
+              undeflag(ii,jj+1)=.true.
+           end if
+        end do
+     end do
+     do jj=2,nj-1
+        if(ur(1,jj)==undef.or.vt(1,jj)==undef)then
+           undeflag(1,jj)=.true.
+           undeflag(2,jj)=.true.
+           undeflag(1,jj-1)=.true.
+           undeflag(1,jj+1)=.true.
+        end if
+        if(ur(ni,jj)==undef.or.vt(ni,jj)==undef)then
+           undeflag(ni,jj)=.true.
+           undeflag(ni-1,jj)=.true.
+           undeflag(ni,jj-1)=.true.
+           undeflag(ni,jj+1)=.true.
+        end if
+     end do
      do ii=2,ni-1
-        divr(ii,jj)=0.5d0*(ur(ii+1,jj)-ur(ii-1,jj))/dr  &
-  &                +ur(ii,jj)/r(ii)  &
-  &                +0.5d0*(vt(ii,jj+1)-vt(ii,jj-1))/(r(ii)*dt)
-        curl(ii,jj)=0.5d0*(vt(ii+1,jj)-vt(ii-1,jj))/dr  &
-  &                +vt(ii,jj)/r(ii)  &
-  &                -0.5d0*(ur(ii,jj+1)-ur(ii,jj-1))/(r(ii)*dt)
+        if(ur(ii,1)==undef.or.vt(ii,1)==undef)then
+           undeflag(ii,1)=.true.
+           undeflag(ii-1,1)=.true.
+           undeflag(ii+1,1)=.true.
+           undeflag(ii,2)=.true.
+        end if
+        if(ur(ii,nj)==undef.or.vt(ii,nj)==undef)then
+           undeflag(ii,nj)=.true.
+           undeflag(ii-1,nj)=.true.
+           undeflag(ii+1,nj)=.true.
+           undeflag(ii,nj-1)=.true.
+        end if
      end do
-  end do
+     if(ur(1,1)==undef.or.vt(1,1)==undef)then
+        undeflag(1,1)=.true.
+        undeflag(2,1)=.true.
+        undeflag(1,2)=.true.
+     end if
+     if(ur(ni,1)==undef.or.vt(ni,1)==undef)then
+        undeflag(ni,1)=.true.
+        undeflag(ni-1,1)=.true.
+        undeflag(ni,2)=.true.
+     end if
+     if(ur(1,nj)==undef.or.vt(1,nj)==undef)then
+        undeflag(1,nj)=.true.
+        undeflag(2,nj)=.true.
+        undeflag(1,nj-1)=.true.
+     end if
+     if(ur(ni,nj)==undef.or.vt(ni,nj)==undef)then
+        undeflag(ni,nj)=.true.
+        undeflag(ni-1,nj)=.true.
+        undeflag(ni,nj-1)=.true.
+     end if
 
-  if(r(1)>0.0d0)then
      do jj=2,nj-1
-        divr(1,jj)=(ur(2,jj)-ur(1,jj))/dr  &
-  &                +ur(1,jj)/r(1)  &
-  &                +0.5d0*(vt(1,jj+1)-vt(1,jj-1))/(r(1)*dt)
-        curl(1,jj)=(vt(2,jj)-vt(1,jj))/dr  &
-  &                +vt(1,jj)/r(1)  &
-  &                -0.d50*(ur(1,jj+1)-ur(1,jj-1))/(r(1)*dt)
-        divr(ni,jj)=(ur(ni,jj)-ur(ni-1,jj))/dr  &
-  &                +ur(ni,jj)/r(ni)  &
-  &                +0.5d0*(vt(ni,jj+1)-vt(ni,jj-1))/(r(ni)*dt)
-        curl(ni,jj)=(vt(ni,jj)-vt(ni-1,jj))/dr  &
-  &                +vt(ni,jj)/r(ni)  &
-  &                -0.5d0*(ur(ni,jj+1)-ur(ni,jj-1))/(r(ni)*dt)
+        do ii=2,ni-1
+           if(undeflag(ii,jj).eqv..false.)then
+              divr(ii,jj)=0.5d0*(ur(ii+1,jj)-ur(ii-1,jj))/dr  &
+  &                      +ur(ii,jj)/r(ii)  &
+  &                      +0.5d0*(vt(ii,jj+1)-vt(ii,jj-1))/(r(ii)*dt)
+              curl(ii,jj)=0.5d0*(vt(ii+1,jj)-vt(ii-1,jj))/dr  &
+  &                      +vt(ii,jj)/r(ii)  &
+  &                      -0.5d0*(ur(ii,jj+1)-ur(ii,jj-1))/(r(ii)*dt)
+           end if
+        end do
      end do
+
+     if(r(1)>0.0d0)then
+        do jj=2,nj-1
+           if(undeflag(1,jj).eqv..false.)then
+              divr(1,jj)=(ur(2,jj)-ur(1,jj))/dr  &
+  &                      +ur(1,jj)/r(1)  &
+  &                      +0.5d0*(vt(1,jj+1)-vt(1,jj-1))/(r(1)*dt)
+              curl(1,jj)=(vt(2,jj)-vt(1,jj))/dr  &
+  &                      +vt(1,jj)/r(1)  &
+  &                      -0.d50*(ur(1,jj+1)-ur(1,jj-1))/(r(1)*dt)
+           end if
+        end do
+     end if
+
+     do jj=2,nj-1
+        if(undeflag(ni,jj).eqv..false.)then
+           divr(ni,jj)=(ur(ni,jj)-ur(ni-1,jj))/dr  &
+  &                   +ur(ni,jj)/r(ni)  &
+  &                   +0.5d0*(vt(ni,jj+1)-vt(ni,jj-1))/(r(ni)*dt)
+           curl(ni,jj)=(vt(ni,jj)-vt(ni-1,jj))/dr  &
+  &                   +vt(ni,jj)/r(ni)  &
+  &                   -0.5d0*(ur(ni,jj+1)-ur(ni,jj-1))/(r(ni)*dt)
+        end if
+     end do
+
+     do ii=2,ni-1
+        if(undeflag(ii,1).eqv..false.)then
+           divr(ii,1)=0.5d0*(ur(ii+1,1)-ur(ii-1,1))/dr  &
+  &                   +ur(ii,1)/r(ii)  &
+  &                   +(vt(ii,2)-vt(ii,1))/(r(ii)*dt)
+           curl(ii,1)=0.5d0*(vt(ii+1,1)-vt(ii-1,1))/dr  &
+  &                   +vt(ii,1)/r(ii)  &
+  &                   -(ur(ii,2)-ur(ii,1))/(r(ii)*dt)
+        end if
+        if(undeflag(ii,nj).eqv..false.)then
+           divr(ii,nj)=0.5d0*(ur(ii+1,nj)-ur(ii-1,nj))/dr  &
+  &                   +ur(ii,nj)/r(ii)  &
+  &                   +(vt(ii,nj)-vt(ii,nj-1))/(r(ii)*dt)
+           curl(ii,nj)=0.5d0*(vt(ii+1,nj)-vt(ii-1,nj))/dr  &
+  &                   +vt(ii,nj)/r(ii)  &
+  &                   -(ur(ii,nj)-ur(ii,nj-1))/(r(ii)*dt)
+        end if
+     end do
+
+     if(r(1)>0.0d0)then
+        if(undeflag(1,1).eqv..false.)then
+           divr(1,1)=(ur(2,1)-ur(1,1))/dr  &
+  &                 +ur(1,1)/r(1)  &
+  &                 +(vt(1,2)-vt(1,1))/(r(1)*dt)
+           curl(1,1)=(vt(2,1)-vt(1,1))/dr  &
+  &                 +vt(1,1)/r(1)  &
+  &                 -(ur(1,2)-ur(1,1))/(r(1)*dt)
+        end if
+        if(undeflag(1,nj).eqv..false.)then
+           divr(1,nj)=(ur(2,nj)-ur(1,nj))/dr  &
+  &                 +ur(1,nj)/r(1)  &
+  &                 +(vt(1,nj)-vt(1,nj-1))/(r(1)*dt)
+           curl(1,nj)=(vt(2,nj)-vt(1,nj))/dr  &
+  &                 +vt(1,nj)/r(1)  &
+  &                 -(ur(1,nj)-ur(1,nj-1))/(r(1)*dt)
+        end if
+     end if
+
+     if(undeflag(ni,1).eqv..false.)then
+        divr(ni,1)=(ur(ni,1)-ur(ni-1,1))/dr  &
+  &                +ur(ni,1)/r(ni)  &
+  &                +(vt(ni,2)-vt(ni,1))/(r(ni)*dt)
+        curl(ni,1)=(vt(ni,1)-vt(ni-1,1))/dr  &
+  &                +vt(ni,1)/r(ni)  &
+  &                -(ur(ni,2)-ur(ni,1))/(r(ni)*dt)
+     end if
+     if(undeflag(ni,nj).eqv..false.)then
+        divr(ni,nj)=(ur(ni,nj)-ur(ni-1,nj))/dr  &
+  &                +ur(ni,nj)/r(ni)  &
+  &                +(vt(ni,nj)-vt(ni,nj-1))/(r(ni)*dt)
+        curl(ni,nj)=(vt(ni,nj)-vt(ni-1,nj))/dr  &
+  &                +vt(ni,nj)/r(ni)  &
+  &                -(ur(ni,nj)-ur(ni,nj-1))/(r(ni)*dt)
+     end if
+
   else
+
+     divr=0.0d0
+     curl=0.0d0
+
      do jj=2,nj-1
-        divr(ni,jj)=(ur(ni,jj)-ur(ni-1,jj))/dr  &
-  &                +ur(ni,jj)/r(ni)  &
-  &                +0.5d0*(vt(ni,jj+1)-vt(ni,jj-1))/(r(ni)*dt)
-        curl(ni,jj)=(vt(ni,jj)-vt(ni-1,jj))/dr  &
-  &                +vt(ni,jj)/r(ni)  &
-  &                -0.5d0*(ur(ni,jj+1)-ur(ni,jj-1))/(r(ni)*dt)
+        do ii=2,ni-1
+           divr(ii,jj)=0.5d0*(ur(ii+1,jj)-ur(ii-1,jj))/dr  &
+  &                   +ur(ii,jj)/r(ii)  &
+  &                   +0.5d0*(vt(ii,jj+1)-vt(ii,jj-1))/(r(ii)*dt)
+           curl(ii,jj)=0.5d0*(vt(ii+1,jj)-vt(ii-1,jj))/dr  &
+  &                   +vt(ii,jj)/r(ii)  &
+  &                   -0.5d0*(ur(ii,jj+1)-ur(ii,jj-1))/(r(ii)*dt)
+        end do
      end do
+
+     if(r(1)>0.0d0)then
+        do jj=2,nj-1
+           divr(1,jj)=(ur(2,jj)-ur(1,jj))/dr  &
+  &                   +ur(1,jj)/r(1)  &
+  &                   +0.5d0*(vt(1,jj+1)-vt(1,jj-1))/(r(1)*dt)
+           curl(1,jj)=(vt(2,jj)-vt(1,jj))/dr  &
+  &                   +vt(1,jj)/r(1)  &
+  &                   -0.d50*(ur(1,jj+1)-ur(1,jj-1))/(r(1)*dt)
+           divr(ni,jj)=(ur(ni,jj)-ur(ni-1,jj))/dr  &
+  &                   +ur(ni,jj)/r(ni)  &
+  &                   +0.5d0*(vt(ni,jj+1)-vt(ni,jj-1))/(r(ni)*dt)
+           curl(ni,jj)=(vt(ni,jj)-vt(ni-1,jj))/dr  &
+  &                   +vt(ni,jj)/r(ni)  &
+  &                   -0.5d0*(ur(ni,jj+1)-ur(ni,jj-1))/(r(ni)*dt)
+        end do
+     else
+        do jj=2,nj-1
+           divr(ni,jj)=(ur(ni,jj)-ur(ni-1,jj))/dr  &
+  &                   +ur(ni,jj)/r(ni)  &
+  &                   +0.5d0*(vt(ni,jj+1)-vt(ni,jj-1))/(r(ni)*dt)
+           curl(ni,jj)=(vt(ni,jj)-vt(ni-1,jj))/dr  &
+  &                   +vt(ni,jj)/r(ni)  &
+  &                   -0.5d0*(ur(ni,jj+1)-ur(ni,jj-1))/(r(ni)*dt)
+        end do
+     end if
+
+     do ii=2,ni-1
+        divr(ii,1)=0.5d0*(ur(ii+1,1)-ur(ii-1,1))/dr  &
+  &                +ur(ii,1)/r(ii)  &
+  &                +(vt(ii,2)-vt(ii,1))/(r(ii)*dt)
+        curl(ii,1)=0.5d0*(vt(ii+1,1)-vt(ii-1,1))/dr  &
+  &                +vt(ii,1)/r(ii)  &
+  &                -(ur(ii,2)-ur(ii,1))/(r(ii)*dt)
+        divr(ii,nj)=0.5d0*(ur(ii+1,nj)-ur(ii-1,nj))/dr  &
+  &                +ur(ii,nj)/r(ii)  &
+  &                +(vt(ii,nj)-vt(ii,nj-1))/(r(ii)*dt)
+        curl(ii,nj)=0.5d0*(vt(ii+1,nj)-vt(ii-1,nj))/dr  &
+  &                +vt(ii,nj)/r(ii)  &
+  &                -(ur(ii,nj)-ur(ii,nj-1))/(r(ii)*dt)
+     end do
+
+     if(r(1)>0.0d0)then
+        divr(1,1)=(ur(2,1)-ur(1,1))/dr  &
+  &              +ur(1,1)/r(1)  &
+  &              +(vt(1,2)-vt(1,1))/(r(1)*dt)
+        curl(1,1)=(vt(2,1)-vt(1,1))/dr  &
+  &              +vt(1,1)/r(1)  &
+  &              -(ur(1,2)-ur(1,1))/(r(1)*dt)
+        divr(1,nj)=(ur(2,nj)-ur(1,nj))/dr  &
+  &              +ur(1,nj)/r(1)  &
+  &              +(vt(1,nj)-vt(1,nj-1))/(r(1)*dt)
+        curl(1,nj)=(vt(2,nj)-vt(1,nj))/dr  &
+  &              +vt(1,nj)/r(1)  &
+  &              -(ur(1,nj)-ur(1,nj-1))/(r(1)*dt)
+     end if
+
+     divr(ni,1)=(ur(ni,1)-ur(ni-1,1))/dr  &
+  &             +ur(ni,1)/r(ni)  &
+  &             +(vt(ni,2)-vt(ni,1))/(r(ni)*dt)
+     curl(ni,1)=(vt(ni,1)-vt(ni-1,1))/dr  &
+  &             +vt(ni,1)/r(ni)  &
+  &             -(ur(ni,2)-ur(ni,1))/(r(ni)*dt)
+     divr(ni,nj)=(ur(ni,nj)-ur(ni-1,nj))/dr  &
+  &             +ur(ni,nj)/r(ni)  &
+  &             +(vt(ni,nj)-vt(ni,nj-1))/(r(ni)*dt)
+     curl(ni,nj)=(vt(ni,nj)-vt(ni-1,nj))/dr  &
+  &             +vt(ni,nj)/r(ni)  &
+  &             -(ur(ni,nj)-ur(ni,nj-1))/(r(ni)*dt)
   end if
-
-  do ii=2,ni-1
-     divr(ii,1)=0.5d0*(ur(ii+1,1)-ur(ii-1,1))/dr  &
-  &             +ur(ii,1)/r(ii)  &
-  &             +(vt(ii,2)-vt(ii,1))/(r(ii)*dt)
-     curl(ii,1)=0.5d0*(vt(ii+1,1)-vt(ii-1,1))/dr  &
-  &             +vt(ii,1)/r(ii)  &
-  &             -(ur(ii,2)-ur(ii,1))/(r(ii)*dt)
-     divr(ii,nj)=0.5d0*(ur(ii+1,nj)-ur(ii-1,nj))/dr  &
-  &             +ur(ii,nj)/r(ii)  &
-  &             +(vt(ii,nj)-vt(ii,nj-1))/(r(ii)*dt)
-     curl(ii,nj)=0.5d0*(vt(ii+1,nj)-vt(ii-1,nj))/dr  &
-  &             +vt(ii,nj)/r(ii)  &
-  &             -(ur(ii,nj)-ur(ii,nj-1))/(r(ii)*dt)
-  end do
-
-  if(r(1)>0.0d0)then
-     divr(1,1)=(ur(2,1)-ur(1,1))/dr  &
-  &           +ur(1,1)/r(1)  &
-  &           +(vt(1,2)-vt(1,1))/(r(1)*dt)
-     curl(1,1)=(vt(2,1)-vt(1,1))/dr  &
-  &           +vt(1,1)/r(1)  &
-  &           -(ur(1,2)-ur(1,1))/(r(1)*dt)
-     divr(1,nj)=(ur(2,nj)-ur(1,nj))/dr  &
-  &           +ur(1,nj)/r(1)  &
-  &           +(vt(1,nj)-vt(1,nj-1))/(r(1)*dt)
-     curl(1,nj)=(vt(2,nj)-vt(1,nj))/dr  &
-  &           +vt(1,nj)/r(1)  &
-  &           -(ur(1,nj)-ur(1,nj-1))/(r(1)*dt)
-  end if
-
-  divr(ni,1)=(ur(ni,1)-ur(ni-1,1))/dr  &
-  &          +ur(ni,1)/r(ni)  &
-  &          +(vt(ni,2)-vt(ni,1))/(r(ni)*dt)
-  curl(ni,1)=(vt(ni,1)-vt(ni-1,1))/dr  &
-  &          +vt(ni,1)/r(ni)  &
-  &          -(ur(ni,2)-ur(ni,1))/(r(ni)*dt)
-  divr(ni,nj)=(ur(ni,nj)-ur(ni-1,nj))/dr  &
-  &          +ur(ni,nj)/r(ni)  &
-  &          +(vt(ni,nj)-vt(ni,nj-1))/(r(ni)*dt)
-  curl(ni,nj)=(vt(ni,nj)-vt(ni-1,nj))/dr  &
-  &          +vt(ni,nj)/r(ni)  &
-  &          -(ur(ni,nj)-ur(ni,nj-1))/(r(ni)*dt)
 
 end subroutine div_curl_2d
 
@@ -1522,10 +1697,10 @@ subroutine max_val_1d(var, mamv, undef)
         if(var(i)/=undef)then
            if(undeflag.eqv..true.)then
               undeflag=.false.
-              mamv=var(i)
+              mamv=dabs(var(i))
            else
-              if(var(i)>mamv)then
-                 mamv=var(i)
+              if(dabs(var(i))>mamv)then
+                 mamv=dabs(var(i))
               end if
            end if
         end if
@@ -1537,19 +1712,60 @@ subroutine max_val_1d(var, mamv, undef)
 
   else
 
-     mamv=var(1)
+     mamv=dabs(var(1))
 
      do i=2,nx
-        if(var(i)>mamv)then
-           mamv=var(i)
+        if(dabs(var(i))>mamv)then
+           mamv=dabs(var(i))
         end if
      end do
   end if
 
 end subroutine max_val_1d
 
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine stand_devi( x, true_val, anor, undef )
+  ! Calculate RMSE of x for the "true_val"
+  ! Definition: anor = \sqrt{\sum^{N}_{i=1}{(1/N)*(x(i)-true_val)^2}}
+  implicit none
+  double precision, intent(in) :: x(:)  ! sampling data
+  double precision, intent(in) :: true_val  ! reference data
+  double precision, intent(out) :: anor  ! RMSE
+  double precision, intent(in), optional :: undef  ! missing value
+  integer :: i
+  integer :: nx  ! data number
+  integer :: nt
+  double precision :: anorval
+
+  nx=size(x)
+  anorval=0.0d0
+
+  if(present(undef))then
+     nt=0
+     do i=1,nx
+        if(x(i)/=undef)then
+           anorval=anorval+(x(i)-true_val)**2
+           nt=nt+1
+        end if
+     end do
+     if(anorval/=undef.and.nt/=0)then
+        anorval=dsqrt(anorval/dble(nt))
+     end if
+  else
+     do i=1,nx
+        anorval=anorval+(x(i)-true_val)**2
+     end do
+     anorval=dsqrt(anorval/dble(nx))
+  end if
+
+  anor=anorval
+
+end subroutine stand_devi
 
 !--------------------------------------------------------------
 !--------------------------------------------------------------
+
 
 end module ToRMHOWe_sub

@@ -170,7 +170,7 @@ program test_Rankine
 !-- Environmental wind
      us0=us
      vs0=vs
-     call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd )
+     call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd, undef=undef )
      call tangent_conv_scal( xd, yd, tc_xd, tc_yd, Vsra_xyd, rh_t, t_ref_t, Vsra_rt_t,  &
   &                          undef=undef, undefg=undef,  &
   &                          stdopt=.true. )

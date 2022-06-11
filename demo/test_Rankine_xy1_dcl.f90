@@ -84,6 +84,10 @@ program test_Rankine
   d2r=pi/180.0d0
   r2d=180.0d0/pi
 
+  if(flag_ToRMHOWe/=1)then
+     nrot=3
+  end if
+
 !-- Allocate and assign variables for coordinates
   allocate(xd(nxd),stat=cstat)  ! Drawing area for x on X-Y coordinate
   allocate(yd(nyd),stat=cstat)  ! Drawing area for y on X-Y coordinate
@@ -200,7 +204,7 @@ program test_Rankine
 !-- Environmental wind (Us, Vs) -> Vra(r_t,t_t), Vrn(r_t,t_t)
   us0=us
   vs0=vs
-  call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd )
+  call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd, undef=undef )
   call tangent_conv_scal( xd, yd, tc_xd, tc_yd, Vsra_xyd, rh_t, t_ref_t, Vsra_rt_t,  &
   &                       undef=undef, undefg=undef, stdopt=.true. )
 !ORG  tc_ra_r=dsqrt((tc_xd-ra_xd)**2+(tc_yd-ra_yd)**2)
@@ -243,6 +247,8 @@ program test_Rankine
 
 !-- Retrieving all components of horizontal winds (VRT, VRR, VDT, and VDR) from Vd
   call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )  ! Vd - proj(Vs)
+  call cart_conv_scal( rh_t, t_ref_t, Vra_rt_t, xd, yd, tc_xd, tc_yd, Vra_xyd,  &
+  &                    undef=undef, undefg=undef, stdopt=.true. )
   call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
 write(*,*) "val check", Vra1d
 
@@ -254,12 +260,12 @@ write(*,*) "val check", Vra1d
   &                          VRTn_rt_t, VRRn_rt_t,  &
   &                          VDTm_rt_t, VDRm_rt_t, undef, phin=phin_rt_t )
   case (2)  ! GVTD
-     call Retrieve_velocity_GVTD( nrot, rh_t, t_t, tdr_t, Vra_rt_T,  &
+     call Retrieve_velocity_GVTD( nrot, rh_t, t_t, tdr_t, Vra_rt_t,  &
   &                               Usrn, Vsrn, rad_tc,  &
   &                               VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                               VRTn_rt_t, VRRn_rt_t, undef )
-  case (3)  ! GVTD
-     call Retrieve_velocity_GBVTD( nrot, rh_t, t_t, tdr_t, Vra_rt_T,  &
+  case (3)  ! GBVTD
+     call Retrieve_velocity_GBVTD( nrot, rh_t, t_t, tdr_t, Vra_rt_t,  &
   &                                Usrn, Vsrn, rad_tc,  &
   &                                VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                                VRTn_rt_t, VRRn_rt_t, undef )
@@ -279,7 +285,7 @@ end do
   &                    undefg=undef, stdopt=.true. )
 
 !-- calculate divergence and rotation for the retrieved VR and VT
-  call div_curl_2d( rh_t, t_ref_t, Ut_rht_t, Vt_rht_t, div_rht_t, rot_rht_t )
+  call div_curl_2d( rh_t, t_ref_t, Ut_rht_t, Vt_rht_t, div_rht_t, rot_rht_t, undef=undef )
 !  call div_curl_2d( rh_t, t_t, VRtot_rt_t, VTtot_rt_t, div_rht_t, rot_rht_t )
   call cart_conv_scal( rh_t, t_ref_t, div_rht_t, xd, yd, tc_xd, tc_yd, div_xyd, undef=undef,  &
   &                    undefg=undef, stdopt=.true. )

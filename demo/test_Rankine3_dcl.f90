@@ -5,6 +5,8 @@ program test_Rankine
   use Dcl_Automatic
   use ToRMHOWe_sub
   use ToRMHOWe_main
+  use GVTD_main
+  use GBVTD_main
 !  use ToRMHOWe_main2
 
   implicit none
@@ -12,6 +14,7 @@ program test_Rankine
   integer, parameter :: nvp_max=100
 
 !-- namelist
+  integer :: flag_ToRMHOWe
   integer :: nvp, nup, nxd, nyd, nr_d, nr_t, nt_d, nt_t
   integer :: nrot, ndiv
   integer :: IWS, tone_grid, cmap
@@ -34,8 +37,8 @@ program test_Rankine
   logical :: col_rev, ropt
 
 !-- internal
-  integer :: i, j, k, cstat
-  double precision :: d2r, r2d, rad_tc, pseudo_rad_tc
+  integer :: i, j, k, cstat, ivmax
+  double precision :: d2r, r2d, rad_tc, pseudo_rad_tc, maxv
   double precision :: Usrn(2), Vsrn(2), Vra1d, thetad_tc, pseudo_thetad_tc
   double precision, dimension(2) :: vx_new, vy_new
   double precision :: dxd, dyd, dr_d, dr_t, dt_d, dt_t
@@ -61,7 +64,7 @@ program test_Rankine
   character(20) :: cvtmax, cvrmax, cvamax
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
-  &                us, vs, nrot, ndiv, ropt
+  &                us, vs, nrot, ndiv, ropt, flag_ToRMHOWe
   namelist /domain /nxd, nyd, nr_d, nr_t, nt_d, nt_t,  &
   &                 xdmin, xdmax, ydmin, ydmax,  &
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
@@ -81,6 +84,10 @@ program test_Rankine
 
   d2r=pi/180.0d0
   r2d=180.0d0/pi
+
+  if(flag_ToRMHOWe/=1)then
+     nrot=3
+  end if
 
 !-- Allocate and assign variables for coordinates
   allocate(xd(nxd),stat=cstat)  ! Drawing area for x on X-Y coordinate
@@ -217,7 +224,7 @@ program test_Rankine
 !-- Environmental wind (Us, Vs) -> Vsra(x,y)
   us0=us
   vs0=vs
-  call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd )
+  call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd, undef=undef )
 !ORG  tc_ra_r=dsqrt((tc_xd-ra_xd)**2+(tc_yd-ra_yd)**2)
 !ORG  tc_ra_t=datan2((tc_yd-ra_yd),(tc_xd-ra_xd))
 !MOD  Vsrn=vs*dcos(tc_ra_t)-us*dsin(tc_ra_t)
@@ -258,6 +265,8 @@ program test_Rankine
 !-- Retrieving all components of horizontal winds (VRT, VRR, VDT, and VDR) from Vd
   call proj_VtVr2Vrart( r_d, t_d, tdr_d, Vt_rt_d, Ut_rt_d, Vra_rt_d,  &
   &                     undef=undef )  ! Vra_rt = Vd - proj(Vs)
+  call cart_conv_scal( r_d, t_ref_d, Vra_rt_d, xd, yd, tc_xd, tc_yd, Vra_xyd,  &
+  &                    undef=undef, undefg=undef, stdopt=.true. )
   call sum_1d( Vra_rt_d(1,1:nt_d), Vra1d, undef )  ! calc. mean Vra
 write(*,*) "val check", Vra1d
 
@@ -265,12 +274,31 @@ write(*,*) "val check", Vra1d
   call tangent_conv_scal( xd, yd, pseudo_tc_xd, pseudo_tc_yd, Vra_xyd, rh_t, t_ref_t, VraP_rt_t,  &
   &                       undef=undef, undefg=undef, stdopt=.true. )
 
-  call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, VraP_rt_t,  &
-  &                       Usrn, Vsrn, pseudo_rad_tc,  &
-  &                       VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
-  &                       VDTm_rt_t, VDRm_rt_t, undef, phin=phin_rt_t )
+  select case (flag_ToRMHOWe)
+  case (1)  ! ToRMHOWe
+     call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, VraP_rt_t,  &
+  &                          Usrn, Vsrn, pseudo_rad_tc,  &
+  &                          VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
+  &                          VRTn_rt_t, VRRn_rt_t,  &
+  &                          VDTm_rt_t, VDRm_rt_t, undef, phin=phin_rt_t )
+  case (2)  ! GVTD
+     call Retrieve_velocity_GVTD( nrot, rh_t, t_t, tdr_t, VraP_rt_T,  &
+  &                               Usrn, Vsrn, pseudo_rad_tc,  &
+  &                               VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
+  &                               VRTn_rt_t, VRRn_rt_t, undef )
+  case (3)  ! GBVTD
+     call Retrieve_velocity_GBVTD( nrot, rh_t, t_t, tdr_t, VraP_rt_T,  &
+  &                                Usrn, Vsrn, pseudo_rad_tc,  &
+  &                                VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
+  &                                VRTn_rt_t, VRRn_rt_t, undef )
+  end select
   call stdout( "Retrieved velocity.", "main", 0 )
 
+!do i=1,nr_t
+!call interpo_search_1d( r_d, rh_t(i), ivmax )
+!write(*,'(a6,i3,1P3E22.15)') "check ", ivmax, rh_t(i), Vt_rt_d(ivmax,1), VRT0_rt_t(i,1)
+!end do
+  call interpo_search_1d( rh_t, rvmax, ivmax )
 !-- converting (r_t,t_ref_t) -> (xd,yd)
   call proj_VtVr2Vrart( rh_t, t_t, tdr_t, VTtot_rt_t, VRtot_rt_t, Vratot_rt_t, undef=undef )
   call cart_conv_scal( rh_t, t_ref_t, VTtot_rt_t, xd, yd, pseudo_tc_xd, pseudo_tc_yd, Vtott_xyd,  &
@@ -281,7 +309,7 @@ write(*,*) "val check", Vra1d
   &                    undef=undef, undefg=undef, stdopt=.true. )
 
 !-- calculate divergence and rotation for the retrieved VR and VT
-  call div_curl_2d( r_d, t_ref_d, Ut_rt_d, Vt_rt_d, div_rt_d, rot_rt_d )
+  call div_curl_2d( r_d, t_ref_d, Ut_rt_d, Vt_rt_d, div_rt_d, rot_rt_d, undef=undef )
 !  call div_curl_2d( rh_t, t_t, VRtot_rt_t, VTtot_rt_t, div_rht_t, rot_rht_t )
   call cart_conv_scal( r_d, t_ref_d, div_rt_d, xd, yd, tc_xd, tc_yd, div_xyd, undef=undef,  &
   &                    undefg=undef, stdopt=.true. )
@@ -305,6 +333,12 @@ write(*,*) "val check", Vra1d
   call display_2valdiff_max( Vt_xyd, Vtott_xyd, undef=undef, cout=cvtmax )
   call display_2valdiff_max( Ut_xyd, Utott_xyd, undef=undef, cout=cvrmax )
   call display_2valdiff_max( Vra_xyd, Vratot_xyd, undef=undef, cout=cvamax )
+
+!-- Check max value of VT0 and VR0
+  call stand_devi( VTtot_rt_t(ivmax,1:nt_t), vmax, maxv, undef=undef )
+!  call stand_devi( VRtot_rt_t(ivmax,1:nt_t), 0.0d0, maxv, undef=undef )
+  write(*,'(a22,1P3E16.8,a5)') "RMSE of VTmax at RMW: ", real(maxv),  &
+  &                            real(VRT0_rt_t(ivmax,1)), real(rh_t(ivmax)), "[m/s]"
 
 !-- DCL drawing
   call conv_d2r_1d( xd, draw_xd )

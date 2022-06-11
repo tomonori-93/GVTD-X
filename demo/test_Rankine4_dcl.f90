@@ -5,6 +5,8 @@ program test_Rankine
   use Dcl_Automatic
   use ToRMHOWe_sub
   use ToRMHOWe_main
+  use GVTD_main
+  use GBVTD_main
 !  use ToRMHOWe_main2
 
   implicit none
@@ -12,6 +14,7 @@ program test_Rankine
   integer, parameter :: nvp_max=100
 
 !-- namelist
+  integer :: flag_ToRMHOWe
   integer :: nvp, nup, nxd, nyd, nxp, nyp, nr_d, nr_t, nt_d, nt_t
   integer :: nrot, ndiv
   integer :: IWS, tone_grid, cmap
@@ -36,6 +39,7 @@ program test_Rankine
 
 !-- internal
   integer :: i, j, k, l, cstat
+  integer :: ivmax
   double precision :: d2r, r2d, rad_tc, pseudo_rad_tc, maxv
   double precision :: Usrn(2), Vsrn(2), Vra1d, thetad_tc, pseudo_thetad_tc
   double precision, dimension(2) :: vx_new, vy_new
@@ -60,7 +64,7 @@ program test_Rankine
   character(20) :: cvtmax, cvrmax, cvamax
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
-  &                us, vs, nrot, ndiv, ropt
+  &                us, vs, nrot, ndiv, ropt, flag_ToRMHOWe
   namelist /domain /nxd, nyd, nr_d, nr_t, nt_d, nt_t,  &
   &                 xdmin, xdmax, ydmin, ydmax,  &
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
@@ -81,6 +85,10 @@ program test_Rankine
 
   d2r=pi/180.0d0
   r2d=180.0d0/pi
+
+  if(flag_ToRMHOWe/=1)then
+     nrot=3
+  end if
 
 !-- Allocate and assign variables for coordinates
   allocate(xd(nxd),stat=cstat)  ! Observing area for x on X-Y coordinate
@@ -188,6 +196,9 @@ program test_Rankine
   end do
   t_d=t_ref_d-thetad_tc
 
+!-- check the index in r_d corresponding to rvmax
+  call interpo_search_1d( rh_t, rvmax, ivmax )
+
 !-- producing vortex profiles at vector points
   call prod_vortex_structure( r_d, t_d, rvmax, vmax, c1u, c2u,  &
   &                           Vt_rt_d, Ut_rt_d, vp(1:nvp), up(1:nup),  &
@@ -197,7 +208,7 @@ program test_Rankine
 !-- Environmental wind (Us, Vs) -> Vsra(x,y)
   us0=us
   vs0=vs
-  call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd )
+  call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd, undef=undef )
 !ORG  tc_ra_r=dsqrt((tc_xd-ra_xd)**2+(tc_yd-ra_yd)**2)
 !ORG  tc_ra_t=datan2((tc_yd-ra_yd),(tc_xd-ra_xd))
 !MOD  Vsrn=vs*dcos(tc_ra_t)-us*dsin(tc_ra_t)
@@ -238,6 +249,8 @@ program test_Rankine
 !-- Retrieving all components of horizontal winds (VRT, VRR, VDT, and VDR) from Vd
   call proj_VtVr2Vrart( r_d, t_d, tdr_d, Vt_rt_d, Ut_rt_d, Vra_rt_d,  &
   &                     undef=undef )  ! Vra_rt = Vd - proj(Vs)
+  call cart_conv_scal( r_d, t_ref_d, Vra_rt_d, xd, yd, tc_xd, tc_yd, Vra_xyd,  &
+  &                    undef=undef, undefg=undef, stdopt=.true. )
   call sum_1d( Vra_rt_d(1,1:nt_d), Vra1d, undef )  ! calc. mean Vra
 !write(*,*) "val check", Vra1d
 
@@ -252,9 +265,11 @@ program test_Rankine
         !-- Note: tdr_t is located with the pseudo-center
         do l=1,nt_t
            do k=1,nr_t
-              tdr_t(k,l)=datan2(((pseudo_tc_yd-ra_yd)+rh_t(k)*dsin(t_t(l))),  &
-  &                             ((pseudo_tc_xd-ra_xd)+rh_t(k)*dcos(t_t(l))))  &
-  &                     -pseudo_thetad_tc
+              tdr_t(k,l)=datan2(((pseudo_tc_yd-ra_yd)+rh_t(k)*dsin(t_ref_t(l))),  &
+  &                             ((pseudo_tc_xd-ra_xd)+rh_t(k)*dcos(t_ref_t(l))))-pseudo_thetad_tc
+!              tdr_t(k,l)=datan2(((pseudo_tc_yd-ra_yd)+rh_t(k)*dsin(t_t(l))),  &
+!  &                             ((pseudo_tc_xd-ra_xd)+rh_t(k)*dcos(t_t(l))))  &
+!  &                     -pseudo_thetad_tc
            end do
         end do
 
@@ -263,18 +278,36 @@ program test_Rankine
   &                             rh_t, t_ref_t, VraP_rt_t,  &
   &                             undef=undef, undefg=undef, stdopt=.true. )
 
-        call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, VraP_rt_t,  &
-  &                             Usrn, Vsrn, pseudo_rad_tc,  &
-  &                             VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
-  &                             VRTn_rt_t, VRRn_rt_t,  &
-  &                             VDTm_rt_t, VDRm_rt_t, undef )
+        select case (flag_ToRMHOWe)
+        case (1)  ! ToRMHOWe
+           call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, VraP_rt_t,  &
+  &                                Usrn, Vsrn, pseudo_rad_tc,  &
+  &                                VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
+  &                                VRTn_rt_t, VRRn_rt_t,  &
+  &                                VDTm_rt_t, VDRm_rt_t, undef )
+        case (2)  ! GVTD
+           call Retrieve_velocity_GVTD( nrot, rh_t, t_t, tdr_t, VraP_rt_T,  &
+  &                                     Usrn, Vsrn, pseudo_rad_tc,  &
+  &                                     VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
+  &                                     VRTn_rt_t, VRRn_rt_t, undef )
+        case (3)  ! GBVTD
+           call Retrieve_velocity_GBVTD( nrot, rh_t, t_t, tdr_t, VraP_rt_T,  &
+  &                                      Usrn, Vsrn, pseudo_rad_tc,  &
+  &                                      VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
+  &                                      VRTn_rt_t, VRRn_rt_t, undef )
+        end select
         call stdout( "Retrieved velocity.", "main", 0 )
 
 !-- Check max value of VT0 and VR0
-        call max_val_1d( VRT0_rt_t(1:nr_t,1), maxv, undef )
-        draw_dVt_max(i,j)=real(maxv-vmax)
-        call max_val_1d( VDR0_rt_t(1:nr_t,1), maxv, undef )
-        draw_dVr_max(i,j)=real(maxv)
+!        call max_val_1d( VRT0_rt_t(1:nr_t,1), maxv, undef )
+!        call stand_devi( VTtot_rt_t(ivmax,1:nt_t), vmax, maxv, undef=undef )
+        draw_dVt_max(i,j)=abs(real(VRT0_rt_t(ivmax,1)-vmax))
+!        draw_dVt_max(i,j)=real(maxv)
+!        call max_val_1d( VDR0_rt_t(1:nr_t,1), maxv, undef )
+!        call stand_devi( VRtot_rt_t(ivmax,1:nt_t), 0.0d0, maxv, undef=undef )
+        draw_dVr_max(i,j)=abs(real(VDR0_rt_t(ivmax,1)))
+!        draw_dVr_max(i,j)=real(maxv)
+
 write(*,*) "Difference", draw_dVt_max(i,j), draw_dVr_max(i,j)
 !-- converting (r_t,t_ref_t) -> (xd,yd)
 !        call proj_VtVr2Vrart( rh_t, t_t, tdr_t, VTtot_rt_t, VRtot_rt_t, Vratot_rt_t, undef=undef )
@@ -292,8 +325,8 @@ write(*,*) "Difference", draw_dVt_max(i,j), draw_dVr_max(i,j)
   call conv_d2r_1d( yd, draw_yd )
   draw_xd=draw_xd*real(xax_fact)
   draw_yd=draw_yd*real(yax_fact)
-  call conv_d2r_1d( xp, draw_xp )
-  call conv_d2r_1d( yp, draw_yp )
+  call conv_d2r_1d( xp-tc_xd, draw_xp )
+  call conv_d2r_1d( yp-tc_yd, draw_yp )
   draw_xp=draw_xp*real(xax_fact)
   draw_yp=draw_yp*real(yax_fact)
   call conv_d2r_2d( Vt_xyd, draw_Vt )
