@@ -31,6 +31,8 @@ TGSRC4	=  \
 TGSRC5	=  \
 	  test_Rankine4_dcl.f90
 TGSRC6	=  \
+	  test_Rankine6_dcl.f90
+TGSRC7	=  \
 	  test_draw.f90
 #SRC1	=  \
 #	  sub_mod.f90 \
@@ -49,10 +51,12 @@ TARGET4	=  \
 TARGET5	=  \
 	  test_Rankine4_dcl
 TARGET6	=  \
+	  test_Rankine6_dcl
+TARGET7	=  \
 	  test_draw
 
 #all: $(TARGET) $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4)
-all: $(TARGET1) $(TARGET3) $(TARGET4) $(TARGET5) $(TARGET6)
+all: $(TARGET1) $(TARGET3) $(TARGET4) $(TARGET5) $(TARGET6) $(TARGET7)
 $(TARGET): %:%.f90
 	$(FC) $(FFLAGS) $< -o $@
 
@@ -74,8 +78,11 @@ $(TARGET5): $(TGSRC5) $(OBJ1)
 $(TARGET6): $(TGSRC6) $(OBJ1)
 	$(DCLFC) $(FFLAGS) -I${DCINC} -I${TMWINC} $< -o $@ -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB}
 
+$(TARGET7): $(TGSRC7) $(OBJ1)
+	$(DCLFC) $(FFLAGS) -I${DCINC} -I${TMWINC} $< -o $@ -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB}
+
 #$(OBJ1): %.o:%.f90
 #	$(DCLFC) $(FFLAGS) -c -I${STINC} -I${DCINC} $< -o $@ -L${STDIR} -l${STLIB} -L${DCDIR} -l${DCLIB}
 
 clean:
-	rm -rf $(TARGET) $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5) #*.mod *.o
+	rm -rf $(TARGET) $(TARGET1) $(TARGET2) $(TARGET3) $(TARGET4) $(TARGET5) $(TARGET6) #*.mod *.o
