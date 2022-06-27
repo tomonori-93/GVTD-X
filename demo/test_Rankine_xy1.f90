@@ -6,8 +6,8 @@ program test_Rankine
   use Math_Const
   use typhoon_analy
   use ToRMHOWe_sub
-!  use ToRMHOWe_main
-  use ToRMHOWe_main2
+  use ToRMHOWe_main
+!  use ToRMHOWe_main2
 
   implicit none
 
@@ -264,10 +264,11 @@ program test_Rankine
   call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )  ! Vd - proj(Vs)
   call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
 write(*,*) "val check", Vra1d
-  call Retrieve_velocity2( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
-  &                        (/Vsrn,0.0d0/), (/0.0d0,0.0d0/), rad_tc,  &
-  &                        VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
-  &                        VDTm_rt_t, VDRm_rt_t, undef, phi1=phi1_rt_t )
+  !call Retrieve_velocity2( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
+  call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
+  &                       (/Vsrn,0.0d0/), (/0.0d0,0.0d0/), rad_tc,  &
+  &                       VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
+  &                       VDTm_rt_t, VDRm_rt_t, undef, phi1=phi1_rt_t )
   call stdout( "Retrieved velocity.", "main", 0 )
 
 do i=1,nr_t
