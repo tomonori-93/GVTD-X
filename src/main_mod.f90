@@ -339,7 +339,7 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
 
   !-- internal variables
   integer :: nnr, nnt, ii, jj, kk, pp, nmax, cstat, ncyc, ncyc2, nrot2
-  double precision :: rad1_in_coef
+  double precision :: r1_out_coef
 !  double precision :: rmax, rmax_inv
   double precision, dimension(size(rd)) :: dr, dr_inv, alp
   double precision, dimension(size(rd)+1) :: vareps
@@ -400,13 +400,6 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
   end do
 !  rmax=rd(nnr)
 !  rmax_inv=1.0d0/rmax
-
-  if(2.0d0*rd(1)-dr(1)==0.0d0)then
-     call stdout( "2r(1) must not be identical to r(2)-r(1). stop.", "calc_fkij", -1 )
-     stop
-  else
-     rad1_in_coef=1.0d0/(2.0d0*rd(1)-dr(1))
-  end if
 
 !$omp parallel default(shared)
 
@@ -540,24 +533,26 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
 
 !-- Set coefficients for Phi_s and Phi_c 
 !--     at one inner radius from the outermost (nnr-1,jj) for wavenumber 1
-!$omp do schedule(runtime) private(jj)
+!$omp do schedule(runtime) private(jj,r1_out_coef)
      do jj=1,nnt
+       r1_out_coef=1.0d0/(rd(nnr-1)+alp(nnr-1)*dr(nnr-1))
+
         fkij(2+1+ncyc*(nnr-2),nnr-1,jj)  &
-  &    =-dr_inv(nnr-1)*sinen(1,jj)*sines(nnr-1,jj)  &
-  &     +(1.0d0-alp(nnr-1))*r_inv(nnr-1)*cosinen(1,jj)*cosines(nnr-1,jj)
+  &    =-(sinen(1,jj)*sines(nnr-1,jj)-cosinen(1,jj)*cosines(nnr-1,jj)-cosinen(1,jj))  &
+  &      *r1_out_coef
 
         fkij(2+nrot+1+ncyc*(nnr-2),nnr-1,jj)  &
-  &    =-dr_inv(nnr-1)*cosinen(1,jj)*sines(nnr-1,jj)  &
-  &     -(1.0d0-alp(nnr-1))*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj)
+  &    =-(2.0d0*cosinen(1,jj)*sines(nnr-1,jj)+sinen(1,jj))  &
+  &      *r1_out_coef
 
         if(undeflag(nnr-1,jj).eqv..false.)then
 write(*,*) "before Vd at the outer", Vdij(nnr-1,jj), jj
            Vdij(nnr-1,jj)  &
   &       =Vdij(nnr-1,jj)  &
-  &       +Usrn(2)*(sinen(1,jj)*sines(nnr-1,jj)  &
-  &                +(1.0d0-alp(nnr-1))*dr(nnr-1)*r_inv(nnr-1)*cosinen(1,jj)*cosines(nnr-1,jj)) &
-  &       -Vsrn(2)*(cosinen(1,jj)*sines(nnr-1,jj)  &
-  &                -(1.0d0-alp(nnr-1))*dr(nnr-1)*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj))
+  &       -(Usrn(2)-Usrn(1))*r1_out_coef*(rd(nnr-1)*sinen(1,jj)*sines(nnr-1,jj)  &
+  &                +alp(nnr-1)*dr(nnr-1)*(cosinen(1,jj)+cosinen(1,jj)*cosines(nnr-1,jj))) &
+  &       -(Vsrn(2)-Vsrn(1))*r1_out_coef*(-rd(nnr-1)*cosinen(1,jj)*sines(nnr-1,jj)  &
+  &                +alp(nnr-1)*dr(nnr-1)*(sinen(1,jj)+sinen(1,jj)*cosines(nnr-1,jj)))
 write(*,*) "after Vd at the outer", Vdij(nnr-1,jj), jj
         end if
      end do
