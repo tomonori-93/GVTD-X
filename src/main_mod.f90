@@ -1488,59 +1488,96 @@ subroutine calc_Phi2Zetan( nrot, nnr, nnt, vmax, rmax, rdh, theta, phis_nr, phic
   integer, intent(in) :: nnt
   double precision, intent(in) :: vmax
   double precision, intent(in) :: rmax
-  double precision, intent(in) :: rdh(nnr)  ! Normalized radius
+  double precision, intent(in) :: rdh(nnr)  ! Normalized radius at scalar
   double precision, intent(in) :: theta(nnt)
   double precision, intent(in) :: phis_nr(nrot,nnr)
   double precision, intent(in) :: phic_nr(nrot,nnr)
   double precision, intent(out) :: zeta_nr(nrot,nnr,nnt)
 
   integer :: ii, jj, kk, cstat
-  double precision, dimension(nnr) :: drc, drf, drb
+  double precision, dimension(nrot,nnr) :: d2psdr2, d2pcdr2, dpsdr, dpcdr, psinv, pcinv
+  double precision, dimension(nrot,nnr) :: sinen, cosinen
+  double precision, dimension(nrot,0:nnr+1) :: tmpphis, tmpphic
   double precision, dimension(nnr) ::  drc_inv, drf_inv, drb_inv, rh_inv, rh2_inv
   double precision :: dpfs, dpfc, dpbs, dpbc, rmax_inv
 
   call stdout( "Enter procedure.", "calc_Phi2Zetan", 0 )
 
-  drc(1)=rdh(2)-rdh(1)
-  drc(nnr)=rdh(nnr)-rdh(nnr-1)
-  drb(1)=rdh(2)-rdh(1)
-  drb(nnr)=rdh(nnr)-rdh(nnr-1)
-  drf(1)=rdh(2)-rdh(1)
-  drf(nnr)=rdh(nnr)-rdh(nnr-1)
+  if(nrot<1)then
+     call stdout( "nrot is greater than 0. stop.", "calc_Phi2Zetan", -1 )
+     stop
+  end if
+
+  drc_inv(1)=1.0d0/(rdh(2)-rdh(1))
+  drc_inv(nnr)=1.0d0/(rdh(nnr)-rdh(nnr-1))
+  drb_inv(1)=1.0d0/(rdh(2)-rdh(1))
+  drb_inv(nnr)=1.0d0/(rdh(nnr)-rdh(nnr-1))
+  drf_inv(1)=1.0d0/(rdh(2)-rdh(1))
+  drf_inv(nnr)=1.0d0/(rdh(nnr)-rdh(nnr-1))
   if(rdh(1)==0.0d0)then
      rh_inv(1)=0.0d0
   end if
   do ii=2,nnr-1
-     drc(ii)=rdh(ii+1)-rdh(ii-1)
-     drb(ii)=rdh(ii)-rdh(ii-1)
-     drf(ii)=rdh(ii+1)-rdh(ii)
+     drc_inv(ii)=1.0d0/(rdh(ii+1)-rdh(ii-1))
+     drb_inv(ii)=1.0d0/(rdh(ii)-rdh(ii-1))
+     drf_inv(ii)=1.0d0/(rdh(ii+1)-rdh(ii))
      rh_inv(ii)=1.0/rdh(ii)
   end do
-  drc_inv=1.0d0/drc
-  drb_inv=1.0d0/drb
-  drf_inv=1.0d0/drf
 
   rmax_inv=1.0d0/rmax
   rh2_inv=rh_inv**2
 
+  tmpphis(1:nrot,1:nnr)=phis_nr(1:nrot,1:nnr)
+  tmpphic(1:nrot,1:nnr)=phic_nr(1:nrot,1:nnr)
+  tmpphis(1:nrot,0)=phis_nr(1:nrot,1)        ! dummy
+  tmpphis(1:nrot,nnr+1)=phis_nr(1:nrot,nnr)  ! dummy
+  tmpphic(1:nrot,0)=phic_nr(1:nrot,1)        ! dummy
+  tmpphic(1:nrot,nnr+1)=phic_nr(1:nrot,nnr)  ! dummy
+
   zeta_nr=0.0d0
 
 !$omp parallel default(shared)
-!$omp do schedule(runtime) private(kk,ii,jj,dpfs,dpfc,dpbs,dpbc)
+!$omp do schedule(runtime) private(kk,ii)
 
   do jj=1,nnt
-     do ii=2,nnr-1
+     do kk=1,nrot
+        sinen(kk,jj)=dsin(dble(kk)*theta(jj))
+        cosinen(kk,jj)=dcos(dble(kk)*theta(jj))
+     end do
+  end do
+
+!$omp end do
+!$omp barrier
+!$omp do schedule(runtime) private(kk,ii)
+
+  do ii=1,nnr
+     do kk=1,nrot
+        d2psdr2(kk,ii)=2.0d0*drc_inv(ii)  &
+  &                         *((tmpphis(kk,ii+1)-tmpphis(kk,ii))*drf_inv(ii)  &
+  &                          +(tmpphis(kk,ii-1)-tmpphis(kk,ii))*drb_inv(ii))
+        d2pcdr2(kk,ii)=2.0d0*drc_inv(ii)  &
+  &                         *((tmpphic(kk,ii+1)-tmpphic(kk,ii))*drf_inv(ii)  &
+  &                          +(tmpphic(kk,ii-1)-tmpphic(kk,ii))*drb_inv(ii))
+        dpsdr(kk,ii)=0.5d0*((tmpphis(kk,ii+1)-tmpphis(kk,ii))*drf_inv(ii)  &
+  &                        -(tmpphis(kk,ii-1)-tmpphis(kk,ii))*drb_inv(ii))
+        dpcdr(kk,ii)=0.5d0*((tmpphic(kk,ii+1)-tmpphic(kk,ii))*drf_inv(ii)  &
+  &                        -(tmpphic(kk,ii-1)-tmpphic(kk,ii))*drb_inv(ii))
+     end do
+  end do
+
+!$omp end do
+!$omp barrier
+!$omp do schedule(runtime) private(kk,ii,jj)
+
+  do jj=1,nnt
+     do ii=1,nnr
         do kk=1,nrot
-           dpfs=(phis_nr(kk,ii+1)-phis_nr(kk,ii))*drf_inv(ii)
-           dpbs=(phis_nr(kk,ii-1)-phis_nr(kk,ii))*drb_inv(ii)
-           dpfc=(phic_nr(kk,ii+1)-phic_nr(kk,ii))*drf_inv(ii)
-           dpbc=(phic_nr(kk,ii-1)-phic_nr(kk,ii))*drb_inv(ii)
-           zeta_nr(kk,ii,jj)=((2.0d0*drc_inv(ii)*(dpfs+dpbs)  &
-  &                           +0.5d0*rh_inv(ii)*(dpfs-dpbs)  &
-  &                           -dble(kk**2)*rh2_inv(ii)*phis_nr(kk,ii))*dsin(theta(jj))  &
-  &                         +((2.0d0*drc_inv(ii)*(dpfc+dpbc)  &
-  &                           +0.5d0*rh_inv(ii)*(dpfc-dpbc)  &
-  &                           -dble(kk**2)*rh2_inv(ii)*phic_nr(kk,ii))*dcos(theta(jj))))  &
+           zeta_nr(kk,ii,jj)=((d2psdr2(kk,ii)+dpsdr(kk,ii)*rh_inv(ii)  &
+  &                           -((dble(kk)*rh_inv(ii))**2)*phis_nr(kk,ii))  &
+  &                           *sinen(kk,jj)  &
+  &                          +(d2pcdr2(kk,ii)+dpcdr(kk,ii)*rh_inv(ii)  &
+  &                           -((dble(kk)*rh_inv(ii))**2)*phic_nr(kk,ii))  &
+  &                           *cosinen(kk,jj))  &
   &                         *vmax*rmax_inv
         end do
      end do

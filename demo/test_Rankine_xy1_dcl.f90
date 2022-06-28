@@ -211,6 +211,7 @@ program test_Rankine
 !ORG  tc_ra_t=datan2((tc_yd-ra_yd),(tc_xd-ra_xd))
 !MOD  Vsrn=vs*dcos(tc_ra_t)-us*dsin(tc_ra_t)
 !ORG  Vsrn=vs*dcos(tc_ra_t+dasin(rh_t(1)/tc_ra_r))-us*dsin(tc_ra_t+dasin(rh_t(1)/tc_ra_r))
+  Usrn=0.0d0
   Vsrn=0.0d0
 
 !-- Environmental wind (Us, Vs) -> Vsr(r_t,t_ref_t), Vst(r_t,t_ref_t) for only drawing
