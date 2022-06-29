@@ -400,6 +400,7 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
   end do
 !  rmax=rd(nnr)
 !  rmax_inv=1.0d0/rmax
+!  r1_out_coef=1.0d0/(rd(nnr-1)+alp(nnr-1)*dr(nnr-1))
 
 !$omp parallel default(shared)
 
@@ -533,27 +534,38 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
 
 !-- Set coefficients for Phi_s and Phi_c 
 !--     at one inner radius from the outermost (nnr-1,jj) for wavenumber 1
-!$omp do schedule(runtime) private(jj,r1_out_coef)
+!$omp do schedule(runtime) private(jj)
      do jj=1,nnt
-       r1_out_coef=1.0d0/(rd(nnr-1)+alp(nnr-1)*dr(nnr-1))
 
         fkij(2+1+ncyc*(nnr-2),nnr-1,jj)  &
-  &    =-(sinen(1,jj)*sines(nnr-1,jj)-cosinen(1,jj)*cosines(nnr-1,jj)-cosinen(1,jj))  &
-  &      *r1_out_coef
+  &    =(dr_inv(nnr-1)*sinen(1,jj))*(-sines(nnr-1,jj))  &
+  &    +((1.0d0-alp(nnr-1))*cosinen(1,jj))  &
+  &     *(r_inv(nnr-1)*cosines(nnr-1,jj))
 
         fkij(2+nrot+1+ncyc*(nnr-2),nnr-1,jj)  &
-  &    =-(2.0d0*cosinen(1,jj)*sines(nnr-1,jj)+sinen(1,jj))  &
-  &      *r1_out_coef
+  &    =(dr_inv(nnr-1)*cosinen(1,jj))*(-sines(nnr-1,jj))  &
+  &    -((1.0d0-alp(nnr-1))*sinen(1,jj))  &
+  &     *(r_inv(nnr-1)*cosines(nnr-1,jj))
 
-        if(undeflag(nnr-1,jj).eqv..false.)then
-write(*,*) "before Vd at the outer", Vdij(nnr-1,jj), jj
+        if(undeflag(nnr-1,jj).eqv..false.)then  ! Remove WN-1 Vm at one inner radius
+write(*,*) "before Vd at one inner", Vdij(nnr-1,jj), jj
            Vdij(nnr-1,jj)  &
   &       =Vdij(nnr-1,jj)  &
-  &       -(Usrn(2)-Usrn(1))*r1_out_coef*(rd(nnr-1)*sinen(1,jj)*sines(nnr-1,jj)  &
-  &                +alp(nnr-1)*dr(nnr-1)*(cosinen(1,jj)+cosinen(1,jj)*cosines(nnr-1,jj))) &
-  &       -(Vsrn(2)-Vsrn(1))*r1_out_coef*(-rd(nnr-1)*cosinen(1,jj)*sines(nnr-1,jj)  &
-  &                +alp(nnr-1)*dr(nnr-1)*(sinen(1,jj)+sinen(1,jj)*cosines(nnr-1,jj)))
+  &       -(Usrn(2)-Usrn(1))*(dr_inv(nnr-1)*sinen(1,jj)*sines(nnr-1,jj)  &
+  &                          +alp(nnr-1)*r_inv(nnr-1)*cosinen(1,jj)*cosines(nnr-1,jj))  &
+  &       -(Vsrn(2)-Vsrn(1))*(dr_inv(nnr-1)*cosinen(1,jj)*sines(nnr-1,jj)  &
+  &                          -alp(nnr-1)*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj))
 write(*,*) "after Vd at the outer", Vdij(nnr-1,jj), jj
+        end if
+        if(undeflag(nnr,jj).eqv..false.)then  ! Remove WN-1 Vm at the outermost radius
+write(*,*) "before Vd at the outer", Vdij(nnr,jj), jj
+           Vdij(nnr,jj)  &
+  &       =Vdij(nnr,jj)  &
+  &       -(Usrn(2)-Usrn(1))*(sinen(1,jj)*sines(nnr,jj)  &
+  &                          +cosinen(1,jj)*cosines(nnr,jj))  &
+  &       -(Vsrn(2)-Vsrn(1))*(-cosinen(1,jj)*sines(nnr,jj)  &
+  &                           +sinen(1,jj)*cosines(nnr,jj))
+write(*,*) "after Vd at the outer", Vdij(nnr,jj), jj
         end if
      end do
 !$omp end do
@@ -906,33 +918,36 @@ write(*,*) "check [VRT0, VDR0] = ", VRT0(nnr), VDR0(nnr), nnr
 !-- Set Phi_s and Phi_c
   if(nrot>0)then
 !$omp parallel default(shared)
-!$omp do schedule(runtime) private(ii)
-!-- For wn1
-     do ii=1,nnr-1
-        phis_n(1,ii)=xk(2+1+ncyc*(ii-1))
-        phic_n(1,ii)=xk(2+nrot+1+ncyc*(ii-1))
-     end do
-!$omp end do
 
-!$omp barrier
+!!$omp do schedule(runtime) private(ii)
+!!-- For wn1
+!     do ii=1,nnr-1
+!        phis_n(1,ii)=xk(2+1+ncyc*(ii-1))
+!        phic_n(1,ii)=xk(2+nrot+1+ncyc*(ii-1))
+!     end do
+!!$omp end do
+!
+!!$omp barrier
+!
+!     if(nrot>1)then  !-- For over wn2
 
-     if(nrot>1)then  !-- For over wn2
 !$omp do schedule(runtime) private(kk,ii)
-        do ii=1,nnr-2
-           do kk=2,nrot
+        do ii=1,nnr-1
+           do kk=1,nrot
               phis_n(kk,ii)=xk(2+kk+ncyc*(ii-1))
               phic_n(kk,ii)=xk(2+nrot+kk+ncyc*(ii-1))
            end do
         end do
 !$omp end do
-!$omp barrier
-!$omp do schedule(runtime) private(kk)
-        do kk=2,nrot
-           phis_n(kk,nnr-1)=xk(2+(kk-1)+ncyc*(nnr-2))
-           phic_n(kk,nnr-1)=xk(2+nrot2+(kk-1)+ncyc*(nnr-2))
-        end do
-!$omp end do
-     end if
+
+!!$omp barrier
+!!$omp do schedule(runtime) private(kk)
+!        do kk=2,nrot
+!           phis_n(kk,nnr-1)=xk(2+(kk-1)+ncyc*(nnr-2))
+!           phic_n(kk,nnr-1)=xk(2+nrot2+(kk-1)+ncyc*(nnr-2))
+!        end do
+!!$omp end do
+!     end if
 
 !$omp end parallel
   end if
@@ -1062,10 +1077,11 @@ subroutine calc_phi2Vrot( nrot, Usrn, Vsrn, vmax, rd, rdh, theta, VRT0_r,  &
      VRR_nrt=0.0d0
 
      !-- set the outermost boundary for wavenumber 1
-     phis_nr(1,nnr+1)=Usrn_n(2)*dr(nnr)
-     phic_nr(1,nnr+1)=-Vsrn_n(2)*dr(nnr)
-     phis_nr(1,nnr)=-Usrn_n(2)*dr(nnr)
-     phic_nr(1,nnr)=Vsrn_n(2)*dr(nnr)
+     
+     phis_nr(1,nnr+1)=rdh(nnr+1)*Usrn_n(2)
+     phic_nr(1,nnr+1)=-rdh(nnr+1)*Vsrn_n(2)
+     phis_nr(1,nnr)=rdh(nnr)*Usrn_n(2)
+     phic_nr(1,nnr)=-rdh(nnr)*Vsrn_n(2)
 
      !-- set the outermost boundary for wavenumber 2
      if(nrot>1)then
