@@ -286,7 +286,7 @@ subroutine Retrieve_velocity2( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
   end if
 
   if((present(zetan)).and.(nrot>0))then
-     call calc_Phi2Zetan( nrot, nr+1, nt, vmax, rh(nr+1), rh, t, phis_nr, phic_nr, zetan )
+     call calc_Phi2Zetan( nrot, nr+1, nt, vmax, rh(nr+1), rh_n, t, phis_nr, phic_nr, zetan )
   end if
 
   if(present(VRT0_GVTD).and.(nrot>0))then
@@ -1470,16 +1470,28 @@ subroutine calc_Phi2Phin( nrot, nnr, nnt, vmax, rmax, theta, phis_nr, phic_nr, p
   double precision, intent(out) :: phi_nr(nrot,nnr,nnt)
 
   integer :: ii, jj, kk
+  double precision, dimension(nrot,nnt) :: sinen, cosinen
 
   call stdout( "Enter procedure.", "calc_Phi2Phin", 0 )
 
 !$omp parallel default(shared)
+!$omp do schedule(runtime) private(kk,ii)
+
+  do jj=1,nnt
+     do kk=1,nrot
+        sinen(kk,jj)=dsin(dble(kk)*theta(jj))
+        cosinen(kk,jj)=dcos(dble(kk)*theta(jj))
+     end do
+  end do
+
+!$omp end do
+!$omp barrier
 !$omp do schedule(runtime) private(kk,ii,jj)
 
   do jj=1,nnt
      do ii=1,nnr
         do kk=1,nrot
-           phi_nr(kk,ii,jj)=(phis_nr(kk,ii)*dsin(theta(jj))+phic_nr(kk,ii)*dcos(theta(jj)))*vmax*rmax
+           phi_nr(kk,ii,jj)=(phis_nr(kk,ii)*sinen(kk,jj)+phic_nr(kk,ii)*cosinen(kk,jj))*vmax*rmax
         end do
      end do
   end do
@@ -1510,7 +1522,7 @@ subroutine calc_Phi2Zetan( nrot, nnr, nnt, vmax, rmax, rdh, theta, phis_nr, phic
 
   integer :: ii, jj, kk, cstat
   double precision, dimension(nrot,nnr) :: d2psdr2, d2pcdr2, dpsdr, dpcdr, psinv, pcinv
-  double precision, dimension(nrot,nnr) :: sinen, cosinen
+  double precision, dimension(nrot,nnt) :: sinen, cosinen
   double precision, dimension(nrot,0:nnr+1) :: tmpphis, tmpphic
   double precision, dimension(nnr) ::  drc_inv, drf_inv, drb_inv, rh_inv, rh2_inv
   double precision :: dpfs, dpfc, dpbs, dpbc, rmax_inv
