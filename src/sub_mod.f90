@@ -12,7 +12,7 @@ contains
 
 subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   &                               Vt, Vr, Vt_pert, Vr_pert, Vt_pert_ang, Vr_pert_ang,  &
-  &                               ropt, Vt_0, Vr_0, Uxm, Vym )
+  &                               ropt, dopt, Vt_0, Vr_0, Uxm, Vym )
 !-- Producing vortex structure with rmax, vmax, and umax
   implicit none
   double precision, intent(in) :: r(:)  ! radius [m]
@@ -28,6 +28,7 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   double precision, intent(in), optional :: Vt_pert_ang(size(Vt_pert))  ! angles of tangential wind [rad]
   double precision, intent(in), optional :: Vr_pert_ang(size(Vr_pert))  ! angles of radial wind [rad]
   logical, intent(in), optional :: ropt  ! option for radial variation of perturbation Vt and Vr
+  logical, intent(in), optional :: dopt  ! option for divergent components of perturbation Vt and Vr
   double precision, intent(out), optional :: Vt_0(size(r))  ! Radial profile of axisymmetric Vt [m s-1]
   double precision, intent(out), optional :: Vr_0(size(r))  ! Radial profile of axisymmetric Vr [m s-1]
   double precision, intent(out), optional :: Uxm(2)  ! Azimuthal averaged X-wind of wavenumber-1 component [m s-1]
@@ -35,9 +36,10 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
 
   integer :: nr, nt, i, j, k, nvtp, nvrp, nvpmax
   double precision :: tmp_vtp1, tmp_vrp1, tmp_vtp2n, tmp_vrp2n, rad_coef, radp_coef, lin_coef, dr
+  double precision :: tmp_vtp1_div, tmp_vrp1_div
   double precision :: umean(2), vmean(2)
   double precision :: r_inv(size(r))
-  double precision, allocatable, dimension(:,:) :: zetap
+  double precision, allocatable, dimension(:,:) :: zetap, divp
   double precision, allocatable, dimension(:,:,:) :: gkrr, dgkrr
   logical rad_opt
 
@@ -55,9 +57,11 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
         allocate(gkrr(nvpmax,nr+1,nr+1))
         allocate(dgkrr(nvpmax,nr+1,nr+1))
         allocate(zetap(nvpmax,nr+1))
+        allocate(divp(nvpmax,nr+1))
         gkrr=0.0d0
         dgkrr=0.0d0
         zetap=0.0d0
+        divp=0.0d0
         do k=1,nvpmax
            do j=1,nr
               do i=1,nr
@@ -84,6 +88,9 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
               if(r(i)>=0.1d0*rmax.and.r(i)<2.0d0*rmax)then
                  zetap(k,i)=abs(Vt_pert(k))/rmax
               end if
+              if(r(i)>=rmax.and.r(i)<1.5d0*rmax)then
+                 divp(k,i)=-abs(Vr_pert(k))/rmax
+              end if
            end do
         end do
      end if
@@ -103,6 +110,8 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
         tmp_vrp1=0.0d0
         tmp_vtp2n=0.0d0
         tmp_vrp2n=0.0d0
+        tmp_vtp1_div=0.0d0
+        tmp_vrp1_div=0.0d0
         if(present(Vt_pert))then
            if(rad_opt.eqv..true.)then
               if(nvtp>1)then

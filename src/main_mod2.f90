@@ -57,8 +57,8 @@ subroutine Retrieve_velocity2( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
   double precision, intent(out) :: VDTm(ndiv,size(r),size(t))  ! retrieved tangential component of divergent wind [m s-1]
   double precision, intent(out) :: VDRm(ndiv,size(r),size(t))  ! retrieved radial component of divergent wind [m s-1]
   double precision, intent(in), optional :: undef  ! undefined value for Vd
-  double precision, intent(out), optional :: phin(nrot,size(r)+1,size(t))   ! retrieved stream function [m2 s-1]
-  double precision, intent(out), optional :: zetan(nrot,size(r)+1,size(t))  ! retrieved vorticity [s-1]
+  double precision, intent(out), optional :: phin(nrot,size(r),size(t))   ! retrieved stream function [m2 s-1]
+  double precision, intent(out), optional :: zetan(nrot,size(r),size(t))  ! retrieved vorticity [s-1]
   double precision, intent(out), optional :: VRT0_GVTD(size(r),size(t))  ! retrieved axisymmetric radial component of pseudo-GVTD tangential wind [m s-1]
   double precision, intent(out), optional :: VDR0_GVTD(size(r),size(t))  ! retrieved axisymmetric tangential component of pseudo-GVTD tangential wind [m s-1]
   double precision, intent(out), optional :: VRTns(nrot,size(r),size(t))  ! Sine component of retrieved asymmetric radial wind [m s-1]
@@ -282,11 +282,11 @@ subroutine Retrieve_velocity2( nrot, ndiv, r, t, rh, td, Vd, Un, Vn, RadTC,  &
 
 !-- monitor variables
   if((present(phin)).and.(nrot>0))then
-     call calc_Phi2Phin( nrot, nr+1, nt, vmax, rh(nr+1), t, phis_nr, phic_nr, phin )
+     call calc_Phi2Phin( nrot, vmax, rh(nr+1), r_n, rh_n, t, phis_nr, phic_nr, phin )
   end if
 
   if((present(zetan)).and.(nrot>0))then
-     call calc_Phi2Zetan( nrot, nr+1, nt, vmax, rh(nr+1), rh_n, t, phis_nr, phic_nr, zetan )
+     call calc_Phi2Zetan( nrot, vmax, rh(nr+1), r_n, rh_n, t, phis_nr, phic_nr, zetan )
   end if
 
   if(present(VRT0_GVTD).and.(nrot>0))then
@@ -398,7 +398,7 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
      r_inv(ii)=1.0d0/rd(ii)
      alp(ii)=(rd(ii)-rdh(ii))/(rdh(ii+1)-rdh(ii))
   end do
-  r_infty=10.0d0*rd(nnr)  ! arbitrary radius
+  r_infty=2.0d0*rd(nnr)  ! arbitrary radius
 !  rmax=rd(nnr)
 !  rmax_inv=1.0d0/rmax
 !  r1_out_coef=1.0d0/(rd(nnr-1)+alp(nnr-1)*dr(nnr-1))
@@ -1091,10 +1091,10 @@ subroutine calc_phi2Vrot( nrot, Usrn, Vsrn, vmax, rd, rdh, theta, VRT0_r,  &
      VRR_nrt=0.0d0
 
      !-- set the outermost boundary for wavenumber 1
-     phis_nr(1,nnr+1)=rdh(nnr+1)*Usrn_n(2)
-     phic_nr(1,nnr+1)=-rdh(nnr+1)*Vsrn_n(2)
-     phis_nr(1,nnr)=rdh(nnr)*Usrn_n(2)
-     phic_nr(1,nnr)=-rdh(nnr)*Vsrn_n(2)
+     phis_nr(1,nnr+1)=rdh(nnr+1)*(Usrn_n(2)-Usrn_n(1))
+     phic_nr(1,nnr+1)=-rdh(nnr+1)*(Vsrn_n(2)-Vsrn_n(1))
+     phis_nr(1,nnr)=rdh(nnr)*(Usrn_n(2)-Usrn_n(1))
+     phic_nr(1,nnr)=-rdh(nnr)*(Vsrn_n(2)-Vsrn(1))
 
      !-- set the outermost boundary for wavenumber 2
      if(nrot>1)then
@@ -1472,22 +1472,27 @@ end subroutine set_undef_value
 ! Calculate streamfunction for each wavenumber
 !--------------------------------------------------
 
-subroutine calc_Phi2Phin( nrot, nnr, nnt, vmax, rmax, theta, phis_nr, phic_nr, phi_nr )
+subroutine calc_Phi2Phin( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr, phi_nr )
   implicit none
   integer, intent(in) :: nrot
-  integer, intent(in) :: nnr
-  integer, intent(in) :: nnt
   double precision, intent(in) :: vmax
   double precision, intent(in) :: rmax
-  double precision, intent(in) :: theta(nnt)
-  double precision, intent(in) :: phis_nr(nrot,nnr)
-  double precision, intent(in) :: phic_nr(nrot,nnr)
-  double precision, intent(out) :: phi_nr(nrot,nnr,nnt)
+  double precision, intent(in) :: rd(:)  ! Normalized radius
+  double precision, intent(in) :: rdh(size(rd)+1)
+  double precision, intent(in) :: theta(:)
+  double precision, intent(in) :: phis_nr(nrot,size(rd)+1)
+  double precision, intent(in) :: phic_nr(nrot,size(rd)+1)
+  double precision, intent(out) :: phi_nr(nrot,size(rd),size(theta))
 
-  integer :: ii, jj, kk
-  double precision, dimension(nrot,nnt) :: sinen, cosinen
+  integer :: ii, jj, kk, nnr, nnt, cstat
+  double precision, dimension(size(rd)) :: alp
+  double precision, dimension(nrot,size(theta)) :: sinen, cosinen
+  double precision :: phisi, phici
 
   call stdout( "Enter procedure.", "calc_Phi2Phin", 0 )
+
+  nnr=size(rd)
+  nnt=size(theta)
 
 !$omp parallel default(shared)
 !$omp do schedule(runtime) private(kk,ii)
@@ -1500,13 +1505,21 @@ subroutine calc_Phi2Phin( nrot, nnr, nnt, vmax, rmax, theta, phis_nr, phic_nr, p
   end do
 
 !$omp end do
-!$omp barrier
-!$omp do schedule(runtime) private(kk,ii,jj)
+!$omp end parallel
+
+  do ii=1,nnr
+     alp(ii)=(rd(ii)-rdh(ii))/(rdh(ii+1)-rdh(ii))
+  end do
+
+!$omp parallel default(shared)
+!$omp do schedule(runtime) private(kk,ii,jj,phisi,phici)
 
   do jj=1,nnt
      do ii=1,nnr
         do kk=1,nrot
-           phi_nr(kk,ii,jj)=(phis_nr(kk,ii)*sinen(kk,jj)+phic_nr(kk,ii)*cosinen(kk,jj))*vmax*rmax
+           phisi=alp(ii)*phis_nr(kk,ii+1)+(1.0d0-alp(ii))*phis_nr(kk,ii)
+           phici=alp(ii)*phic_nr(kk,ii+1)+(1.0d0-alp(ii))*phic_nr(kk,ii)
+           phi_nr(kk,ii,jj)=(phisi*sinen(kk,jj)+phici*cosinen(kk,jj))*vmax*rmax
         end do
      end do
   end do
@@ -1522,25 +1535,27 @@ end subroutine calc_Phi2Phin
 ! Calculate vorticity for each wavenumber
 !--------------------------------------------------
 
-subroutine calc_Phi2Zetan( nrot, nnr, nnt, vmax, rmax, rdh, theta, phis_nr, phic_nr, zeta_nr )
+subroutine calc_Phi2Zetan( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr, zeta_nr )
   implicit none
   integer, intent(in) :: nrot
-  integer, intent(in) :: nnr
-  integer, intent(in) :: nnt
   double precision, intent(in) :: vmax
   double precision, intent(in) :: rmax
-  double precision, intent(in) :: rdh(nnr)  ! Normalized radius at scalar
-  double precision, intent(in) :: theta(nnt)
-  double precision, intent(in) :: phis_nr(nrot,nnr)
-  double precision, intent(in) :: phic_nr(nrot,nnr)
-  double precision, intent(out) :: zeta_nr(nrot,nnr,nnt)
+  double precision, intent(in) :: rd(:)  ! Normalized radius
+  double precision, intent(in) :: rdh(size(rd)+1)
+  double precision, intent(in) :: theta(:)
+  double precision, intent(in) :: phis_nr(nrot,size(rd)+1)
+  double precision, intent(in) :: phic_nr(nrot,size(rd)+1)
+  double precision, intent(out) :: zeta_nr(nrot,size(rd),size(theta))
 
-  integer :: ii, jj, kk, cstat
-  double precision, dimension(nrot,nnr) :: d2psdr2, d2pcdr2, dpsdr, dpcdr, psinv, pcinv
-  double precision, dimension(nrot,nnt) :: sinen, cosinen
-  double precision, dimension(nrot,0:nnr+1) :: tmpphis, tmpphic
-  double precision, dimension(nnr) ::  drc_inv, drf_inv, drb_inv, rh_inv, rh2_inv
+  integer :: ii, jj, kk, nnr, nnt, cstat
+  double precision, dimension(size(rd)) :: alp
+  double precision, dimension(nrot,size(rd)+1) :: d2psdr2, d2pcdr2, dpsdr, dpcdr, psinv, pcinv
+  double precision, dimension(nrot,size(theta)) :: sinen, cosinen
+  double precision, dimension(nrot,0:size(rd)+2) :: tmpphis, tmpphic
+  double precision, dimension(size(rd)+1) :: drc_inv, drf_inv, drb_inv, rh_inv, rh2_inv
+  double precision, dimension(size(rd)) :: r_inv
   double precision :: dpfs, dpfc, dpbs, dpbc, rmax_inv
+  double precision :: d2psdr2i, dpsdri, d2pcdr2i, dpcdri, phisi, phici
 
   call stdout( "Enter procedure.", "calc_Phi2Zetan", 0 )
 
@@ -1549,33 +1564,45 @@ subroutine calc_Phi2Zetan( nrot, nnr, nnt, vmax, rmax, rdh, theta, phis_nr, phic
      stop
   end if
 
+  nnr=size(rd)
+  nnt=size(theta)
+
   drc_inv(1)=1.0d0/(rdh(2)-rdh(1))
-  drc_inv(nnr)=1.0d0/(rdh(nnr)-rdh(nnr-1))
+  drc_inv(nnr+1)=1.0d0/(rdh(nnr+1)-rdh(nnr))
   drb_inv(1)=1.0d0/(rdh(2)-rdh(1))
-  drb_inv(nnr)=1.0d0/(rdh(nnr)-rdh(nnr-1))
+  drb_inv(nnr+1)=1.0d0/(rdh(nnr+1)-rdh(nnr))
   drf_inv(1)=1.0d0/(rdh(2)-rdh(1))
-  drf_inv(nnr)=1.0d0/(rdh(nnr)-rdh(nnr-1))
+  drf_inv(nnr+1)=1.0d0/(rdh(nnr+1)-rdh(nnr))
+  rh_inv(nnr+1)=1.0/rdh(nnr+1)
   if(rdh(1)==0.0d0)then
      rh_inv(1)=0.0d0
   end if
-  do ii=2,nnr-1
+  if(rd(1)==0.0d0)then
+     r_inv(1)=0.0d0
+  end if
+  do ii=2,nnr
      drc_inv(ii)=1.0d0/(rdh(ii+1)-rdh(ii-1))
      drb_inv(ii)=1.0d0/(rdh(ii)-rdh(ii-1))
      drf_inv(ii)=1.0d0/(rdh(ii+1)-rdh(ii))
-     rh_inv(ii)=1.0/rdh(ii)
+     rh_inv(ii)=1.0d0/rdh(ii)
+     r_inv(ii)=1.0d0/rd(ii)
   end do
 
   rmax_inv=1.0d0/rmax
   rh2_inv=rh_inv**2
 
-  tmpphis(1:nrot,1:nnr)=phis_nr(1:nrot,1:nnr)
-  tmpphic(1:nrot,1:nnr)=phic_nr(1:nrot,1:nnr)
-  tmpphis(1:nrot,0)=phis_nr(1:nrot,1)        ! dummy
-  tmpphis(1:nrot,nnr+1)=phis_nr(1:nrot,nnr)  ! dummy
-  tmpphic(1:nrot,0)=phic_nr(1:nrot,1)        ! dummy
-  tmpphic(1:nrot,nnr+1)=phic_nr(1:nrot,nnr)  ! dummy
+  tmpphis(1:nrot,1:nnr+1)=phis_nr(1:nrot,1:nnr+1)
+  tmpphic(1:nrot,1:nnr+1)=phic_nr(1:nrot,1:nnr+1)
+  tmpphis(1:nrot,0)=phis_nr(1:nrot,1)          ! dummy
+  tmpphis(1:nrot,nnr+2)=phis_nr(1:nrot,nnr+1)  ! dummy
+  tmpphic(1:nrot,0)=phic_nr(1:nrot,1)          ! dummy
+  tmpphic(1:nrot,nnr+2)=phic_nr(1:nrot,nnr+1)  ! dummy
 
   zeta_nr=0.0d0
+
+  do ii=1,nnr
+     alp(ii)=(rd(ii)-rdh(ii))/(rdh(ii+1)-rdh(ii))
+  end do
 
 !$omp parallel default(shared)
 !$omp do schedule(runtime) private(kk,ii)
@@ -1591,7 +1618,7 @@ subroutine calc_Phi2Zetan( nrot, nnr, nnt, vmax, rmax, rdh, theta, phis_nr, phic
 !$omp barrier
 !$omp do schedule(runtime) private(kk,ii)
 
-  do ii=1,nnr
+  do ii=1,nnr+1
      do kk=1,nrot
         d2psdr2(kk,ii)=2.0d0*drc_inv(ii)  &
   &                         *((tmpphis(kk,ii+1)-tmpphis(kk,ii))*drf_inv(ii)  &
@@ -1608,16 +1635,22 @@ subroutine calc_Phi2Zetan( nrot, nnr, nnt, vmax, rmax, rdh, theta, phis_nr, phic
 
 !$omp end do
 !$omp barrier
-!$omp do schedule(runtime) private(kk,ii,jj)
+!$omp do schedule(runtime) private(kk,ii,jj,d2psdr2i,dpsdri,d2pcdr2i,dpcdri,phisi,phici)
 
   do jj=1,nnt
      do ii=1,nnr
         do kk=1,nrot
-           zeta_nr(kk,ii,jj)=((d2psdr2(kk,ii)+dpsdr(kk,ii)*rh_inv(ii)  &
-  &                           -((dble(kk)*rh_inv(ii))**2)*phis_nr(kk,ii))  &
+           phisi=alp(ii)*phis_nr(kk,ii+1)+(1.0d0-alp(ii))*phis_nr(kk,ii)
+           phici=alp(ii)*phic_nr(kk,ii+1)+(1.0d0-alp(ii))*phic_nr(kk,ii)
+           d2psdr2i=alp(ii)*d2psdr2(kk,ii+1)+(1.0d0-alp(ii))*d2psdr2(kk,ii)
+           dpsdri=alp(ii)*dpsdr(kk,ii+1)+(1.0d0-alp(ii))*dpsdr(kk,ii)
+           d2pcdr2i=alp(ii)*d2pcdr2(kk,ii+1)+(1.0d0-alp(ii))*d2pcdr2(kk,ii)
+           dpcdri=alp(ii)*dpcdr(kk,ii+1)+(1.0d0-alp(ii))*dpcdr(kk,ii)
+           zeta_nr(kk,ii,jj)=((d2psdr2i+dpsdri*r_inv(ii)  &
+  &                           -((dble(kk)*r_inv(ii))**2)*phisi)  &
   &                           *sinen(kk,jj)  &
-  &                          +(d2pcdr2(kk,ii)+dpcdr(kk,ii)*rh_inv(ii)  &
-  &                           -((dble(kk)*rh_inv(ii))**2)*phic_nr(kk,ii))  &
+  &                          +(d2pcdr2i+dpcdri*r_inv(ii)  &
+  &                           -((dble(kk)*r_inv(ii))**2)*phici)  &
   &                           *cosinen(kk,jj))  &
   &                         *vmax*rmax_inv
         end do

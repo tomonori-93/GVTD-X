@@ -132,7 +132,7 @@ program test_Rankine
   allocate(vs0_rt_d(nr_d,nt_d),stat=cstat)  ! Y-component of homogeneous wind on R-T coordinate
   allocate(div_rt_d(nr_d,nt_d),stat=cstat)  ! divergence on R-T coordinate
   allocate(rot_rt_d(nr_d,nt_d),stat=cstat)  ! rotation on R-T coordinate
-  allocate(phin_rt_t(nrot,nr_t+1,nt_t),stat=cstat)  ! phin on R-T coordinate
+  allocate(phin_rt_t(nrot,nr_t,nt_t),stat=cstat)  ! phin on R-T coordinate
   allocate(div_xyd(nxd,nyd),stat=cstat)  ! divergence on X-Y coordinate
   allocate(rot_xyd(nxd,nyd),stat=cstat)  ! rotation on X-Y coordinate
   allocate(phin_xyd(nrot,nxd,nyd),stat=cstat)  ! phin on X-Y coordinate
@@ -317,13 +317,13 @@ write(*,*) "val check", Vra1d
   &                    undefg=undef, stdopt=.true. )
   if(nrot>0)then
      do k=1,nrot
-        call cart_conv_scal( r_t, t_ref_t, phin_rt_t(k,1:nr_t+1,1:nt_t),  &
+        call cart_conv_scal( rh_t, t_ref_t, phin_rt_t(k,1:nr_t,1:nt_t),  &
   &                          xd, yd, tc_xd, tc_yd,  &
   &                          phin_xyd(k,1:nxd,1:nyd), undef=undef,  &
   &                          undefg=undef, stdopt=.true. )
      end do
   else
-     call cart_conv_scal( r_t, t_ref_t, phin_rt_t(nrot,1:nr_t+1,1:nt_t),  &
+     call cart_conv_scal( rh_t, t_ref_t, phin_rt_t(nrot,1:nr_t,1:nt_t),  &
   &                       xd, yd, tc_xd, tc_yd,  &
   &                       phin_xyd(nrot,1:nxd,1:nyd), undef=undef,  &
   &                       undefg=undef, stdopt=.true. )

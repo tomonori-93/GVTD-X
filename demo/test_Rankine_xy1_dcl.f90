@@ -134,10 +134,10 @@ program test_Rankine
   allocate(vs0_rht_t(nr_t,nt_t),stat=cstat)  ! Y-component of homogeneous wind on R-T coordinate
   allocate(div_rht_t(nr_t,nt_t),stat=cstat)  ! divergence on R-T coordinate
   allocate(rot_rht_t(nr_t,nt_t),stat=cstat)  ! rotation on R-T coordinate
-  allocate(phin_rt_t(nrot,nr_t+1,nt_t),stat=cstat)  ! phin on R-T coordinate
-  allocate(zeta0_rt_t(nr_t+1,nt_t),stat=cstat)  ! zeta0 on R-T coordinate
-  allocate(dummy_rt_t(nr_t+1,nt_t),stat=cstat)  ! dummy array
-  allocate(zetan_rt_t(nrot,nr_t+1,nt_t),stat=cstat)  ! zetan on R-T coordinate
+  allocate(phin_rt_t(nrot,nr_t,nt_t),stat=cstat)  ! phin on R-T coordinate
+  allocate(zeta0_rt_t(nr_t,nt_t),stat=cstat)  ! zeta0 on R-T coordinate
+  allocate(dummy_rt_t(nr_t,nt_t),stat=cstat)  ! dummy array
+  allocate(zetan_rt_t(nrot,nr_t,nt_t),stat=cstat)  ! zetan on R-T coordinate
   allocate(div_xyd(nxd,nyd),stat=cstat)  ! divergence on X-Y coordinate
   allocate(rot_xyd(nxd,nyd),stat=cstat)  ! rotation on X-Y coordinate
   allocate(phin_xyd(nrot,nxd,nyd),stat=cstat)  ! phin on X-Y coordinate
@@ -304,7 +304,7 @@ end do
   &                 dummy_rt_t(1:nr_t,1:nt_t), zeta0_rt_t(1:nr_t,1:nt_t) )
   if(nrot>0)then
      do k=1,nrot
-        call cart_conv_scal( r_t, t_ref_t, phin_rt_t(k,1:nr_t+1,1:nt_t),  &
+        call cart_conv_scal( rh_t, t_ref_t, phin_rt_t(k,1:nr_t,1:nt_t),  &
   &                          xd, yd, tc_xd, tc_yd,  &
   &                          phin_xyd(k,1:nxd,1:nyd), undef=undef,  &
   &                          undefg=undef, stdopt=.true. )
@@ -312,12 +312,12 @@ end do
   &                  zetan_rt_t(k,1:nr_t+1,1:nt_t), undef=undef )
      end do
   else
-     call cart_conv_scal( r_t, t_ref_t, phin_rt_t(nrot,1:nr_t+1,1:nt_t),  &
+     call cart_conv_scal( rh_t, t_ref_t, phin_rt_t(nrot,1:nr_t,1:nt_t),  &
   &                       xd, yd, tc_xd, tc_yd,  &
   &                       phin_xyd(nrot,1:nxd,1:nyd), undef=undef,  &
   &                       undefg=undef, stdopt=.true. )
   end if
-  call cart_conv_scal( r_t, t_ref_t, zeta0_rt_t(1:nr_t+1,1:nt_t),  &
+  call cart_conv_scal( rh_t, t_ref_t, zeta0_rt_t(1:nr_t,1:nt_t),  &
   &                    xd, yd, tc_xd, tc_yd,  &
   &                    zeta_xyd(1:nxd,1:nyd), undef=undef,  &
   &                    undefg=undef, stdopt=.true. )
