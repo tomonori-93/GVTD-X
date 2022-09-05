@@ -339,7 +339,7 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
 
   !-- internal variables
   integer :: nnr, nnt, ii, jj, kk, pp, nmax, cstat, ncyc, ncyc2, nrot2
-  double precision :: r1_out_coef, r_infty
+  double precision :: r1_out_coef  !MOD, r_infty
 !  double precision :: rmax, rmax_inv
   double precision, dimension(size(rd)) :: dr, dr_inv, alp
   double precision, dimension(size(rd)+1) :: vareps
@@ -1095,7 +1095,7 @@ subroutine calc_phi2Vrot( nrot, Usrn, Vsrn, vmax, rd, rdh, theta, VRT0_r,  &
      phis_nr(1,nnr+1)=rdh(nnr+1)*(Usrn_n(2)-Usrn_n(1))
      phic_nr(1,nnr+1)=-rdh(nnr+1)*(Vsrn_n(2)-Vsrn_n(1))
      phis_nr(1,nnr)=rdh(nnr)*(Usrn_n(2)-Usrn_n(1))
-     phic_nr(1,nnr)=-rdh(nnr)*(Vsrn_n(2)-Vsrn(1))
+     phic_nr(1,nnr)=-rdh(nnr)*(Vsrn_n(2)-Vsrn_n(1))
 
      !-- set the outermost boundary for wavenumber 2
      if(nrot>1)then
