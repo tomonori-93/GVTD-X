@@ -398,7 +398,7 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
      r_inv(ii)=1.0d0/rd(ii)
      alp(ii)=(rd(ii)-rdh(ii))/(rdh(ii+1)-rdh(ii))
   end do
-  r_infty=2.0d0*rd(nnr)  ! arbitrary radius
+!MOD  r_infty=2.0d0*rd(nnr)  ! arbitrary radius
 !  rmax=rd(nnr)
 !  rmax_inv=1.0d0/rmax
 !  r1_out_coef=1.0d0/(rd(nnr-1)+alp(nnr-1)*dr(nnr-1))
@@ -539,37 +539,37 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
      do jj=1,nnt
 
         fkij(2+1+ncyc*(nnr-2),nnr-1,jj)  &
-  &    =((1.0d0/(r_infty-rdh(nnr-1)))*sinen(1,jj))*(-sines(nnr-1,jj))  &
-  &    +(((r_infty-rd(nnr-1))/(r_infty-rdh(nnr-1)))*cosinen(1,jj))  &
+!MOD  &    =((1.0d0/(r_infty-rdh(nnr-1)))*sinen(1,jj))*(-sines(nnr-1,jj))  &
+!MOD  &    +(((r_infty-rd(nnr-1))/(r_infty-rdh(nnr-1)))*cosinen(1,jj))  &
+!MOD  &     *(r_inv(nnr-1)*cosines(nnr-1,jj))
+  &    =(dr_inv(nnr-1)*sinen(1,jj))*(-sines(nnr-1,jj))  &
+  &    +((1.0d0-alp(nnr-1))*cosinen(1,jj))  &
   &     *(r_inv(nnr-1)*cosines(nnr-1,jj))
-!ORG  &    =(dr_inv(nnr-1)*sinen(1,jj))*(-sines(nnr-1,jj))  &
-!ORG  &    +((1.0d0-alp(nnr-1))*cosinen(1,jj))  &
-!ORG  &     *(r_inv(nnr-1)*cosines(nnr-1,jj))
 
         fkij(2+nrot+1+ncyc*(nnr-2),nnr-1,jj)  &
-  &    =((1.0d0/(r_infty-rdh(nnr-1)))*cosinen(1,jj))*(-sines(nnr-1,jj))  &
-  &    -(((r_infty-rd(nnr-1))/(r_infty-rdh(nnr-1)))*sinen(1,jj))  &
+!MOD  &    =((1.0d0/(r_infty-rdh(nnr-1)))*cosinen(1,jj))*(-sines(nnr-1,jj))  &
+!MOD  &    -(((r_infty-rd(nnr-1))/(r_infty-rdh(nnr-1)))*sinen(1,jj))  &
+!MOD  &     *(r_inv(nnr-1)*cosines(nnr-1,jj))
+  &    =(dr_inv(nnr-1)*cosinen(1,jj))*(-sines(nnr-1,jj))  &
+  &    -((1.0d0-alp(nnr-1))*sinen(1,jj))  &
   &     *(r_inv(nnr-1)*cosines(nnr-1,jj))
-!ORG  &    =(dr_inv(nnr-1)*cosinen(1,jj))*(-sines(nnr-1,jj))  &
-!ORG  &    -((1.0d0-alp(nnr-1))*sinen(1,jj))  &
-!ORG  &     *(r_inv(nnr-1)*cosines(nnr-1,jj))
 
         if(undeflag(nnr-1,jj).eqv..false.)then  ! Remove WN-1 Vm at one inner radius
 write(*,*) "before Vd at one inner", Vdij(nnr-1,jj), jj
            Vdij(nnr-1,jj)  &
   &       =Vdij(nnr-1,jj)  &
-  &       -(Usrn(2)-Usrn(1))/(1.0d0-rdh(nnr-1)/r_infty)  &
-  &        *(sinen(1,jj)*sines(nnr-1,jj)  &
-  &         +(1.0d0-rdh(nnr-1)*r_inv(nnr-1))*cosinen(1,jj)*cosines(nnr-1,jj))  &
-  &       -(Vsrn(2)-Vsrn(1))/(1.0d0-rdh(nnr-1)/r_infty)  &
-  &        *(-cosinen(1,jj)*sines(nnr-1,jj)  &
-  &          -(1.0d0-rdh(nnr-1)*r_inv(nnr-1))*sinen(1,jj)*cosines(nnr-1,jj))
-!ORG  &       -rdh(nnr)*(Usrn(2)-Usrn(1))  &
-!ORG  &        *(dr_inv(nnr-1)*sinen(1,jj)*sines(nnr-1,jj)  &
-!ORG  &         +alp(nnr-1)*r_inv(nnr-1)*cosinen(1,jj)*cosines(nnr-1,jj))  &
-!ORG  &       -rdh(nnr)*(Vsrn(2)-Vsrn(1))  &
-!ORG  &        *(dr_inv(nnr-1)*cosinen(1,jj)*sines(nnr-1,jj)  &
-!ORG  &         -alp(nnr-1)*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj))
+!MOD  &       -(Usrn(2)-Usrn(1))/(1.0d0-rdh(nnr-1)/r_infty)  &
+!MOD  &        *(sinen(1,jj)*sines(nnr-1,jj)  &
+!MOD  &         +(1.0d0-rdh(nnr-1)*r_inv(nnr-1))*cosinen(1,jj)*cosines(nnr-1,jj))  &
+!MOD  &       -(Vsrn(2)-Vsrn(1))/(1.0d0-rdh(nnr-1)/r_infty)  &
+!MOD  &        *(-cosinen(1,jj)*sines(nnr-1,jj)  &
+!MOD  &          -(1.0d0-rdh(nnr-1)*r_inv(nnr-1))*sinen(1,jj)*cosines(nnr-1,jj))
+  &       -rdh(nnr)*(Usrn(2)-Usrn(1))  &
+  &        *(dr_inv(nnr-1)*sinen(1,jj)*sines(nnr-1,jj)  &
+  &         +alp(nnr-1)*r_inv(nnr-1)*cosinen(1,jj)*cosines(nnr-1,jj))  &
+  &       -rdh(nnr)*(Vsrn(2)-Vsrn(1))  &
+  &        *(dr_inv(nnr-1)*cosinen(1,jj)*sines(nnr-1,jj)  &
+  &         -alp(nnr-1)*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj))
 write(*,*) "after Vd at one inner", Vdij(nnr-1,jj), jj
         end if
         if(undeflag(nnr,jj).eqv..false.)then  ! Remove WN-1 Vm at the outermost radius
