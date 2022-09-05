@@ -25,8 +25,8 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   double precision, intent(out) :: Vr(size(r),size(t))  ! Profile of radial wind
   double precision, intent(in), optional :: Vt_pert(:)  ! perturbations of tangential wind [m s-1]
   double precision, intent(in), optional :: Vr_pert(:)  ! perturbations of radial wind [m s-1]
-  double precision, intent(in), optional :: Vt_pert_ang(size(Vt_pert))  ! angles of tangential wind [rad]
-  double precision, intent(in), optional :: Vr_pert_ang(size(Vr_pert))  ! angles of radial wind [rad]
+  double precision, intent(in), optional :: Vt_pert_ang(:)  ! angles of tangential wind [rad]
+  double precision, intent(in), optional :: Vr_pert_ang(:)  ! angles of radial wind [rad]
   logical, intent(in), optional :: ropt  ! option for radial variation of perturbation Vt and Vr
   logical, intent(in), optional :: dopt  ! option for divergent components of perturbation Vt and Vr
   double precision, intent(out), optional :: Vt_0(size(r))  ! Radial profile of axisymmetric Vt [m s-1]
@@ -45,8 +45,16 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
 
   nr=size(r)
   nt=size(t)
-  nvtp=size(Vt_pert)
-  nvrp=size(Vr_pert)
+  if(present(Vt_pert))then
+     nvtp=size(Vt_pert)
+  else
+     nvtp=0
+  end if
+  if(present(Vr_pert))then
+     nvrp=size(Vr_pert)
+  else
+     nvrp=0
+  end if
   nvpmax=max(nvtp,nvrp)
   dr=r(2)-r(1)
 
