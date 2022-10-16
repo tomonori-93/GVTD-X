@@ -1182,6 +1182,40 @@ end subroutine fp_gauss
 !--------------------------------------------------------------
 !--------------------------------------------------------------
 
+subroutine invert_mat( ax, xx )
+! Calculate the inverse "xx" for the matrix "ax"
+  implicit none
+  double precision, intent(in) :: ax(:,:)  ! Input matrix
+  double precision, intent(inout) :: xx(size(ax,1),size(ax,2))  ! Inverse
+  integer :: i, j, k
+  double precision :: c(size(ax,1),size(ax,2))
+  double precision :: d(size(ax,1),size(ax,2))
+  integer :: nx
+
+  nx=size(ax,1)
+
+  c=0.0d0
+
+  do i=1,nx
+     c(i,i)=1.0d0
+  end do
+
+  do i=1,nx
+
+     do j=1,nx
+        do k=1,nx
+           d(k,j)=ax(k,j)
+        end do
+     end do
+
+     call fp_gauss( d, c(:,i), xx(:,i) )
+  end do
+
+end subroutine invert_mat
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
 subroutine tangent_conv_scal( x, y, xc, yc, u, r, theta, v,  &
   &                           undef, undefg, stdopt )
   ! Convert the Cartesian grid to polar grid with the origin of the storm center. 

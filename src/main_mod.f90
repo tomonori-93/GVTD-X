@@ -88,6 +88,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,
   double precision, allocatable, dimension(:) :: b_k        ! known vector given by observed values
   double precision, allocatable, dimension(:,:) :: a_kp     ! coefficient matrix for x_k
   double precision, allocatable, dimension(:,:,:) :: f_kij  ! a_kp = sum_{i,j}(f_kij * f_pij)
+  double precision, allocatable, dimension(:,:) :: ainv_kp  ! inverse of a_kp
   double precision :: dundef, vmax, tmprho
   double precision, dimension(size(r)) :: r_n               ! Nondimensional r
   double precision, dimension(size(rh)) :: rh_n             ! Nondimensional rh
@@ -176,7 +177,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,
 
 !-- Set total number for unknown variables in a_k
   if(nrot>0)then
-     nk=(2+2*nrot)*(nr-1)+2+2+ndiv*nrdiv
+     nk=(2+2*nrot)*(nr-1)+2+2+1+ndiv*nrdiv
   else
      nk=(2+2*nrot)*(nr-1)+2+ndiv*nrdiv
   end if
@@ -191,6 +192,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,
   allocate(x_k(nk),stat=cstat)
   allocate(b_k(nk),stat=cstat)
   allocate(a_kp(nk,nk),stat=cstat)
+  allocate(ainv_kp(nk,nk),stat=cstat)
   allocate(f_kij(nk,nr,nt),stat=cstat)
   allocate(undeflag(nr,nt),stat=cstat)
 
@@ -212,6 +214,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,
   x_k=0.0d0
   b_k=0.0d0
   a_kp=0.0d0
+  ainv_kp=0.0d0
   f_kij=0.0d0
 
 !-- Calculate f_kij
@@ -238,10 +241,13 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,
 !  call tri_gauss( a_kp, b_k, x_k )
 !  call gausss( a_kp, b_k, x_k )
   call fp_gauss( a_kp, b_k, x_k )
+  call invert_mat( a_kp, ainv_kp )  ! For X'X^{-1} in restricted LSE
+write(*,*) "check ainv", ainv_kp(1:nk,(2+2*nrot)*(nr-1)+2+2+1)
 !  call SOR_Gau_Sei( a_kp, b_k, 1.0d-5, 1.0d0, x_k )
 
 !-- Set each unknown variable from x_k
-  call set_xk2variables( nrot, ndiv, nrdiv, x_k, Vrott_r, Vdivr_r,  &
+  call set_xk2variables( nrot, ndiv, nrdiv, Un, Vn, vmax, rh_n(nr),  &
+  &                      x_k, ainv_kp, Vrott_r, Vdivr_r,  &
   &                      phis_nr, phic_nr, divc_mr, undef=dundef )
 !  &                      phis_nr, phic_nr, divs_mr, divc_mr, undef=dundef )
 
@@ -370,7 +376,7 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
   end if
 
   if(nrot>0)then
-     nrot1=2
+     nrot1=2+1
      if(nnk/=ncyc*(nnr-1)+2+nrot1+ndiv*nnrdiv)then
         call stdout( "nnk is not identical to (2+2N)(m-1)+2+2+M*(mm-1). stop.", "calc_fkij", -1 )
         stop
@@ -518,7 +524,7 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
         !-- Phi(c)*delta(s,nnr-2)
         fkij(2+nrot+1+ncyc*(nnr-2),nnr-1,jj)  &
   &    =(dr_inv(nnr-1)*cosinen(1,jj))*(-sines(nnr-1,jj))  &
-  &    -((1.0d0-alp(nnr-1))*sinen(1,jj))  &
+  &    -((1.0d0-alp(nnr-1))*dble(1)*sinen(1,jj))  &
   &     *(r_inv(nnr-1)*cosines(nnr-1,jj))
 
         !-- Phi(s)*delta(s,nnr-1)
@@ -527,15 +533,21 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
   &    +(alp(nnr-1)*cosinen(1,jj))  &
   &     *(r_inv(nnr-1)*cosines(nnr-1,jj))
 
-        if(undeflag(nnr-1,jj).eqv..false.)then  ! Remove WN-1 Vm at one inner radius
-write(*,*) "before Vd at one inner", Vdij(nnr-1,jj), jj
-           Vdij(nnr-1,jj)  &
-  &       =Vdij(nnr-1,jj)  &
-  &       +rdh(nnr)*(Vsrn(2)-Vsrn(1))  &
-  &        *(dr_inv(nnr-1)*cosinen(1,jj)*sines(nnr-1,jj)  &
-  &         -alp(nnr-1)*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj))
-write(*,*) "after Vd at one inner", Vdij(nnr-1,jj), jj
-        end if
+        !-- Phi(c)*delta(s,nnr-1)
+        fkij(2+2+1+ncyc*(nnr-1),nnr-1,jj)  &
+  &    =(dr_inv(nnr-1)*cosinen(1,jj))*(sines(nnr-1,jj))  &
+  &    -(alp(nnr-1)*dble(1)*sinen(1,jj))  &
+  &     *(r_inv(nnr-1)*cosines(nnr-1,jj))
+
+!        if(undeflag(nnr-1,jj).eqv..false.)then  ! Remove WN-1 Vm at one inner radius
+!write(*,*) "before Vd at one inner", Vdij(nnr-1,jj), jj
+!           Vdij(nnr-1,jj)  &
+!  &       =Vdij(nnr-1,jj)  &
+!  &       +rdh(nnr)*(Vsrn(2)-Vsrn(1))  &
+!  &        *(dr_inv(nnr-1)*cosinen(1,jj)*sines(nnr-1,jj)  &
+!  &         -alp(nnr-1)*r_inv(nnr-1)*sinen(1,jj)*cosines(nnr-1,jj))
+!write(*,*) "after Vd at one inner", Vdij(nnr-1,jj), jj
+!        end if
 
      end do
 !$omp end do
@@ -878,14 +890,20 @@ end subroutine calc_fkijVd2bk
 !-- Set each unknown variable from x_k
 !--------------------------------------------------
 
-subroutine set_xk2variables( nrot, ndiv, nnrdiv, xk, VRT0, VDR0,  &
+subroutine set_xk2variables( nrot, ndiv, nnrdiv, Usrn, Vsrn, vmax, rdh_outer,  &
+  &                          xk, ainv, VRT0, VDR0,  &
 !  &                          phis_n, phic_n, Ds_m, Dc_m, undef )
   &                          phis_n, phic_n, Ds_m, undef )
   implicit none
   integer, intent(in) :: nrot
   integer, intent(in) :: ndiv
   integer, intent(in) :: nnrdiv
+  double precision, intent(in) :: Usrn(2)
+  double precision, intent(in) :: Vsrn(2)
+  double precision, intent(in) :: vmax
+  double precision, intent(in) :: rdh_outer  ! normalized radius at nnr-1 of the velocity coord
   double precision, intent(in) :: xk(:)  ! solved unknown variable vector
+  double precision, intent(in) :: ainv(size(xk),size(xk))  ! inverse of A
   double precision, intent(out) :: VRT0(:)
   double precision, intent(out) :: VDR0(size(VRT0))
   double precision, intent(out), optional :: phis_n(nrot,size(VRT0)+1)
@@ -894,27 +912,41 @@ subroutine set_xk2variables( nrot, ndiv, nnrdiv, xk, VRT0, VDR0,  &
 !  double precision, intent(out), optional :: Dc_m(ndiv,size(VRT0)+1)
   double precision, intent(in), optional :: undef
 
-  integer :: ii, kk, nnr, ncyc, nrot1
+  integer :: ii, kk, nnr, ncyc, nrot1, n_wn1outer
+  double precision :: xdk(size(xk))  ! restricted vector for xk
+  double precision :: ainv_outer, r_Rb
+  double precision :: Usrn_n(2), Vsrn_n(2)
 
   call stdout( "Enter procedure.", "set_xk2variables", 0 )
 
   nnr=size(VRT0)
   ncyc=2+2*nrot
+  Usrn_n(1:2)=Usrn(1:2)/vmax
+  Vsrn_n(1:2)=Vsrn(1:2)/vmax
+  n_wn1outer=(2+2*nrot)*(nnr-1)+2+2+1  ! Phi1(c) at nnr-1
+  ainv_outer=1.0d0/ainv(n_wn1outer,n_wn1outer)
+  r_Rb=-rdh_outer*(Vsrn_n(2)-Vsrn_n(1))-xk(n_wn1outer)
 
   if(nrot>0)then
-     nrot1=2
+     nrot1=2+1
   else
      nrot1=0
   end if
 
+  do ii=1,size(xk)
+     xdk(ii)=xk(ii)+ainv(ii,n_wn1outer)*ainv_outer*r_Rb
+     write(*,'(1P3E16.8,i4)') xdk(ii), xk(ii), ainv(ii,n_wn1outer), ii
+  end do
+write(*,*) "check stop", ainv_outer, r_Rb
+
 !-- Set VRT0 and VDR0
   do ii=1,nnr-1
-     VRT0(ii)=xk(1+ncyc*(ii-1))
-     VDR0(ii)=xk(2+ncyc*(ii-1))
+     VRT0(ii)=xdk(1+ncyc*(ii-1))
+     VDR0(ii)=xdk(2+ncyc*(ii-1))
 write(*,*) "check [VRT0, VDR0] = ", VRT0(ii), VDR0(ii), ii
   end do
-  VRT0(nnr)=xk(1+ncyc*(nnr-1))
-  VDR0(nnr)=xk(2+ncyc*(nnr-1))
+  VRT0(nnr)=xdk(1+ncyc*(nnr-1))
+  VDR0(nnr)=xdk(2+ncyc*(nnr-1))
 write(*,*) "check [VRT0, VDR0] = ", VRT0(nnr), VDR0(nnr), nnr
 
 !-- Set Phi_s and Phi_c
@@ -936,15 +968,17 @@ write(*,*) "check [VRT0, VDR0] = ", VRT0(nnr), VDR0(nnr), nnr
 !$omp do schedule(runtime) private(kk,ii)
         do ii=1,nnr-1
            do kk=1,nrot
-              phis_n(kk,ii)=xk(2+kk+ncyc*(ii-1))
-              phic_n(kk,ii)=xk(2+nrot+kk+ncyc*(ii-1))
+              phis_n(kk,ii)=xdk(2+kk+ncyc*(ii-1))
+              phic_n(kk,ii)=xdk(2+nrot+kk+ncyc*(ii-1))
            end do
         end do
 !$omp end do
 !$omp end parallel
 
-        phis_n(1,nnr)=xk(2+1+ncyc*(nnr-1))
-        phis_n(1,nnr+1)=xk(2+2+ncyc*(nnr-1))
+        phic_n(1,nnr-1)=xdk(n_wn1outer)
+write(*,*) "check phic_n1", phic_n(1,nnr-1), xdk(2+2+1+ncyc*(nnr-1)), xdk(2+nrot+1+ncyc*(nnr-2))
+        phis_n(1,nnr)=xdk(2+1+ncyc*(nnr-1))
+        phis_n(1,nnr+1)=xdk(2+2+ncyc*(nnr-1))
 
 !!$omp barrier
 !!$omp do schedule(runtime) private(kk)
@@ -964,7 +998,7 @@ write(*,*) "check [VRT0, VDR0] = ", VRT0(nnr), VDR0(nnr), nnr
 !$omp do schedule(runtime) private(kk,ii)
      do ii=1,nnrdiv
         do kk=1,ndiv
-           Ds_m(kk,ii)=xk(ncyc*(nnr-1)+2+nrot1+kk+ndiv*(ii-1))
+           Ds_m(kk,ii)=xdk(ncyc*(nnr-1)+2+nrot1+kk+ndiv*(ii-1))
 !           Ds_m(kk,ii+1)=xk(2+2*nrot+kk+ncyc*(ii-1))
 !           Dc_m(kk,ii+1)=xk(2+2*nrot+ndiv+kk+ncyc*(ii-1))
 !           Dc_m(kk,ii+1)=xk(2+2*nrot+kk+ncyc*(ii-1))
