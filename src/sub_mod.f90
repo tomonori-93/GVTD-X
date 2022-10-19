@@ -1182,7 +1182,7 @@ end subroutine fp_gauss
 !--------------------------------------------------------------
 !--------------------------------------------------------------
 
-subroutine invert_mat( ax, xx )
+subroutine fp_invert_mat( ax, xx )
 ! Calculate the inverse "xx" for the matrix "ax"
   implicit none
   double precision, intent(in) :: ax(:,:)  ! Input matrix
@@ -1200,18 +1200,19 @@ subroutine invert_mat( ax, xx )
      c(i,i)=1.0d0
   end do
 
+  d(1:nx,1:nx)=ax(1:nx,1:nx)
+
+!$omp parallel default(shared)
+!$omp do schedule(runtime) private(i)
+
   do i=1,nx
-
-     do j=1,nx
-        do k=1,nx
-           d(k,j)=ax(k,j)
-        end do
-     end do
-
-     call fp_gauss( d, c(:,i), xx(:,i) )
+     call fp_gauss( d, c(1:nx,i), xx(1:nx,i) )
   end do
 
-end subroutine invert_mat
+!$omp end do
+!$omp end parallel
+
+end subroutine fp_invert_mat
 
 !--------------------------------------------------------------
 !--------------------------------------------------------------
