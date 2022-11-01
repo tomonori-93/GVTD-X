@@ -263,7 +263,7 @@ write(*,*) "val check", Vra1d
 
   select case (flag_ToRMHOWe)
   case (1)  ! ToRMHOWe
-     call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
+     call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, r_t, Vra_rt_t,  &
   &                          Usrn, Vsrn, rad_tc,  &
   &                          VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                          VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t,  &
@@ -308,8 +308,8 @@ end do
   &                          xd, yd, tc_xd, tc_yd,  &
   &                          phin_xyd(k,1:nxd,1:nyd), undef=undef,  &
   &                          undefg=undef, stdopt=.true. )
-        call add_2d( zeta0_rt_t(1:nr_t+1,1:nt_t),  &
-  &                  zetan_rt_t(k,1:nr_t+1,1:nt_t), undef=undef )
+        call add_2d( zeta0_rt_t(1:nr_t,1:nt_t),  &
+  &                  zetan_rt_t(k,1:nr_t,1:nt_t), undef=undef )
      end do
   else
      call cart_conv_scal( rh_t, t_ref_t, phin_rt_t(nrot,1:nr_t,1:nt_t),  &
