@@ -167,8 +167,8 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,
   do i=1,nrdiv
      call interpo_search_1d( rh, rdiv(i), irad )
      if((irad==nr+1).and.(rh(nr+1)<rdiv(i)))then
-        write(*,*) "Detect outer range [stop], ", rdiv(i), irad, nr+1
-stop
+        call stdout( "Detect out of range. stop.", "Retrieve_velocity", -1 )
+        stop
      end if
      rdiv_n(2*i-1)=rh(irad)/rh(nr+1)
      rdiv_n(2*i)=rh(irad+1)/rh(nr+1)
@@ -1283,7 +1283,7 @@ subroutine calc_D2Vdiv( ndiv, vmax, rd, rdh, theta, rddiv, VDR0_r,  &
      ! At the outer boundary for r
      do ii=1,nnr+1  ! For r_p
         do kk=1,ndiv
-           gkrr(kk,ii,nnr+1)=green_func( rdh(ii), rd(nnr+1), kk )
+           gkrr(kk,ii,nnr+1)=green_func( rdh(ii), rdh(nnr+1), kk )
         end do
      end do
 !$omp end do
