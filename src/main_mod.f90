@@ -68,10 +68,11 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,
   double precision, intent(out), optional :: VRRnc(nrot,size(r),size(t))  ! Cosine component of retrieved asymmetric tangential wind [m s-1]
 
   !-- internal variables
-  integer :: i, j, k, p, cstat  ! dummy indexes
+  integer :: i, j, k, p, irad, cstat  ! dummy indexes
   integer :: nr, nt  ! array numbers for r and t, respectively
   integer :: nk      ! array number of a_k
   integer :: nrdiv   ! array number for rdiv
+  integer :: nrdiv2  ! array number for rdiv_n
   integer :: nbound  ! element number for variables related to the outermost radius (i.e., 2*nrot-1)
   double precision, allocatable, dimension(:) :: Vdivr_r    ! axisymmetric divergent wind (VDR0(r))
   double precision, allocatable, dimension(:) :: Vrott_r    ! axisymmetric rotating wind (VRT0(r))
@@ -92,7 +93,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,
   double precision :: dundef, vmax, tmprho
   double precision, dimension(size(r)) :: r_n               ! Nondimensional r
   double precision, dimension(size(rh)) :: rh_n             ! Nondimensional rh
-  double precision, dimension(size(rdiv)) :: rdiv_n         ! Nondimensional rdiv
+  double precision, dimension(size(rdiv)*2) :: rdiv_n       ! Nondimensional rdiv (internal variable)
   double precision :: rtc_n                                 ! Nondimensional RadTC
   double precision, dimension(size(r),size(t)) :: delta     ! delta_ij
   logical, allocatable, dimension(:,:) :: undeflag ! Flag for Vd grid with undef
@@ -102,6 +103,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,
   nr=size(r)
   nt=size(t)
   nrdiv=size(rdiv)
+  nrdiv2=size(rdiv)*2
   vmax=50.0d0
 
   if(present(undef))then
@@ -158,8 +160,19 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,
 !-- Normalized r and rh
   r_n=r/rh(nr+1)
   rh_n=rh/rh(nr+1)
-  rdiv_n=rdiv/rh(nr+1)
+!  rdiv_n=rdiv/rh(nr+1)
   rtc_n=RadTC/rh(nr+1)
+
+!-- Check and search divergent radii
+  do i=1,nrdiv
+     call interpo_search_1d( rh, rdiv(i), irad )
+     if((irad==nr+1).and.(rh(nr+1)<rdiv(i)))then
+        call stdout( "Detect out of range. stop.", "Retrieve_velocity", -1 )
+        stop
+     end if
+     rdiv_n(2*i-1)=rh(irad)/rh(nr+1)
+     rdiv_n(2*i)=rh(irad+1)/rh(nr+1)
+  end do
 
 !-- Calculate delta_ij
 !$omp parallel default(shared)
@@ -351,10 +364,10 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
   logical, intent(in) :: undeflag(size(rd),size(theta))
 
   !-- internal variables
-  integer :: nnr, nnt, nnrdiv, ii, jj, kk, pp, nmax, cstat, ncyc
+  integer :: nnr, nnt, nnrdiv, nnrdiv2, ii, jj, kk, pp, nmax, cstat, ncyc
   double precision :: r1_out_coef  !MOD, r_infty
   double precision, dimension(size(rd)) :: dr, dr_inv, alp
-  double precision, dimension(size(rd)+1) :: vareps
+!  double precision, dimension(size(rddiv)) :: vareps
   double precision, dimension(size(rd)) :: r_inv
   double precision, dimension(size(rd),size(theta)) :: sines, cosines
   double precision, allocatable, dimension(:,:) :: sinen, cosinen
@@ -364,18 +377,19 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
 
   nnr=size(rd)
   nnt=size(theta)
-  nnrdiv=size(rddiv)
+  nnrdiv2=size(rddiv)
+  nnrdiv=nnrdiv2/2
   ncyc=2+2*nrot  ! unknown variable number at a certain radius
   nmax=max(max(0,nrot),ndiv)   ! maximum wave number for rotating and divergent components
   fkij=0.0d0
-  vareps=1.0d0
-  vareps(1)=0.5d0
-  vareps(nnr+1)=0.5d0
+!  vareps=1.0d0
+!  vareps(1)=0.5d0
+!  vareps(nnr+1)=0.5d0
 
   if(nmax>0)then
      allocate(sinen(nmax,nnt),stat=cstat)
      allocate(cosinen(nmax,nnt),stat=cstat)
-     allocate(gkrr(nmax,nnrdiv,nnr+1),stat=cstat)  ! Gk(r_p,r), r_p at rdh, r at rd
+     allocate(gkrr(nmax,nnrdiv2,nnr+1),stat=cstat)  ! Gk(r_p,r), r_p at rdh, r at rd
      if(cstat/=0)then
         call stdout( "Failed to allocate variables. stop.", "calc_fkij", -1 )
         stop
@@ -435,7 +449,7 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
 
 !$omp do schedule(runtime) private(kk,ii,jj)
      do jj=1,nnr  ! For r
-        do ii=1,nnrdiv  ! For rdiv
+        do ii=1,nnrdiv2  ! For rdiv
            do kk=1,nmax
               gkrr(kk,ii,jj)=green_func( rddiv(ii), rd(jj), kk )
            end do
@@ -446,7 +460,7 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
 !$omp barrier
 
 !$omp do schedule(runtime) private(kk,ii)
-     do ii=1,nnrdiv  ! For rddiv
+     do ii=1,nnrdiv2  ! For rddiv
         do kk=1,nmax
            gkrr(kk,ii,nnr+1)=green_func( rddiv(ii), rd(nnr)+dr(nnr), kk )
         end do
@@ -689,11 +703,14 @@ write(*,*) "after Vd at the outer", Vdij(nnr,jj), jj
 !  &                       *sinen(kk,jj)*cosines(ii,jj))
 !
 !                 fkij(2+2*nrot+ndiv+kk+ncyc*(pp-2),ii,jj)  &
-  &             =-vareps(pp)*rddiv(pp)  &  ! For Dc
-  &                      *(dble(kk)*dr(ii)*r_inv(ii)*gkrr(kk,pp,ii)  &
-  &                       *sinen(kk,jj)*sines(ii,jj)  &
-  &                      +(gkrr(kk,pp,ii+1)-gkrr(kk,pp,ii))  &
-  &                       *cosinen(kk,jj)*cosines(ii,jj))
+!  &             =-vareps(pp)*rddiv(pp)  &  ! For Dc
+  &             =-(r_inv(ii)*dble(kk)*0.5d0*(rddiv(2*pp)-rddiv(2*pp-1))  &  ! For Dc
+  &                *(rddiv(2*pp)*gkrr(kk,2*pp,ii)+rddiv(2*pp-1)*gkrr(kk,2*pp-1,ii))  &
+  &                *sinen(kk,jj)*sines(ii,jj)  &
+  &               +0.5d0*(rddiv(2*pp)-rddiv(2*pp-1))*dr_inv(ii)  &
+  &                *(rddiv(2*pp)*(gkrr(kk,2*pp,ii+1)-gkrr(kk,2*pp,ii))  &
+  &                 +rddiv(2*pp-1)*(gkrr(kk,2*pp-1,ii+1)-gkrr(kk,2*pp-1,ii)))  &
+  &                *cosinen(kk,jj)*cosines(ii,jj))
               end do
            end do
         end do
@@ -1196,25 +1213,27 @@ subroutine calc_D2Vdiv( ndiv, vmax, rd, rdh, theta, rddiv, VDR0_r,  &
 !  double precision, intent(in), optional :: Dc_mr(ndiv,size(rd)+1)
   double precision, intent(in), optional :: undef
 
-  integer :: ii, jj, kk, nnr, nnt, nnrdiv, cstat
+  integer :: ii, jj, kk, nnr, nnt, nnrdiv, nnrdiv2, cstat, irad
 !  double precision :: rmax_inv
   double precision, dimension(size(rd)) :: dr_inv, dr, r_inv
   double precision, allocatable, dimension(:,:) :: cosinen, sinen
 !  double precision, allocatable, dimension(:,:) :: gkrrhDs, gkrrhDc, dgkrrDs, dgkrrDc
   double precision, allocatable, dimension(:,:,:) :: gkrr, gkrrh, dgkrr
+  double precision :: tmp_Ds_mr(ndiv,size(rd)+1)
 
   call stdout( "Enter procedure.", "calc_D2Vdiv", 0 )
 
   nnr=size(rd)
   nnt=size(theta)
-  nnrdiv=size(rddiv)
+  nnrdiv2=size(rddiv)
+  nnrdiv=nnrdiv2/2
 
   if(ndiv>0)then
      allocate(cosinen(ndiv,nnt),stat=cstat)
      allocate(sinen(ndiv,nnt),stat=cstat)
-     allocate(gkrr(ndiv,nnrdiv,nnr+1),stat=cstat)  ! Gk(r_p,r), r_p at rdh, r at rdh
-     allocate(gkrrh(ndiv,nnrdiv,nnr+1),stat=cstat)  ! Gk(r_p,r), r_p at rdh, r at rdh
-     allocate(dgkrr(ndiv,nnrdiv,nnr+1),stat=cstat)  ! Gk(r_p,r+1)-Gk(r_p,r), r_p at rdh, r at rdh
+     allocate(gkrr(ndiv,nnr+1,nnr+1),stat=cstat)  ! Gk(r_p,r), r_p at rdh, r at rdh
+     allocate(gkrrh(ndiv,nnr+1,nnr+1),stat=cstat)  ! Gk(r_p,r), r_p at rdh, r at rdh
+     allocate(dgkrr(ndiv,nnr+1,nnr+1),stat=cstat)  ! Gk(r_p,r+1)-Gk(r_p,r), r_p at rdh, r at rdh
      if(cstat/=0)then
         call stdout( "Failed to allocate variables. stop.", "calc_D2Vdiv", -1 )
         stop
@@ -1224,6 +1243,16 @@ subroutine calc_D2Vdiv( ndiv, vmax, rd, rdh, theta, rddiv, VDR0_r,  &
      gkrr=0.0d0
      gkrrh=0.0d0
      dgkrr=0.0d0
+
+     tmp_Ds_mr=0.0d0
+     do kk=1,ndiv
+        do ii=1,nnrdiv
+           call interpo_search_1d( rdh, rddiv(2*ii-1), irad )
+           tmp_Ds_mr(kk,irad)=Ds_mr(kk,ii)
+           call interpo_search_1d( rdh, rddiv(2*ii), irad )
+           tmp_Ds_mr(kk,irad)=Ds_mr(kk,ii)
+        end do
+     end do
   end if
 
   do ii=1,nnr
@@ -1231,6 +1260,7 @@ subroutine calc_D2Vdiv( ndiv, vmax, rd, rdh, theta, rddiv, VDR0_r,  &
      dr_inv(ii)=1.0d0/dr(ii)
   end do
   r_inv(1:nnr)=1.0d0/rd(1:nnr)
+
 !  rmax_inv=1.0d0/rmax
 
   do ii=1,nnr
@@ -1256,9 +1286,9 @@ subroutine calc_D2Vdiv( ndiv, vmax, rd, rdh, theta, rddiv, VDR0_r,  &
 
 !$omp do schedule(runtime) private(kk,ii,jj)
      do jj=1,nnr  ! For r
-        do ii=1,nnrdiv  ! For r_p
+        do ii=1,nnr+1  ! For r_p
            do kk=1,ndiv
-              gkrr(kk,ii,jj)=green_func( rddiv(ii), rd(jj), kk )
+              gkrr(kk,ii,jj)=green_func( rdh(ii), rd(jj), kk )
            end do
         end do
      end do
@@ -1268,9 +1298,9 @@ subroutine calc_D2Vdiv( ndiv, vmax, rd, rdh, theta, rddiv, VDR0_r,  &
 
 !$omp do schedule(runtime) private(kk,ii)
      ! At the outer boundary for r
-     do ii=1,nnrdiv  ! For r_p
+     do ii=1,nnr+1  ! For r_p
         do kk=1,ndiv
-           gkrr(kk,ii,nnr+1)=green_func( rddiv(ii), rd(nnr)+dr(nnr), kk )
+           gkrr(kk,ii,nnr+1)=green_func( rdh(ii), rdh(nnr+1), kk )
         end do
      end do
 !$omp end do
@@ -1279,9 +1309,9 @@ subroutine calc_D2Vdiv( ndiv, vmax, rd, rdh, theta, rddiv, VDR0_r,  &
 
 !$omp do schedule(runtime) private(kk,ii,jj)
      do jj=1,nnr+1  ! For r
-        do ii=1,nnrdiv  ! For r_p
+        do ii=1,nnr+1  ! For r_p
            do kk=1,ndiv
-              gkrrh(kk,ii,jj)=green_func( rddiv(ii), rdh(jj), kk )
+              gkrrh(kk,ii,jj)=green_func( rdh(ii), rdh(jj), kk )
            end do
         end do
      end do
@@ -1291,7 +1321,7 @@ subroutine calc_D2Vdiv( ndiv, vmax, rd, rdh, theta, rddiv, VDR0_r,  &
 
 !$omp do schedule(runtime) private(kk,ii,jj)
      do jj=1,nnr  ! For r
-        do ii=1,nnrdiv  ! For r_p
+        do ii=1,nnr+1  ! For r_p
            do kk=1,ndiv
               dgkrr(kk,ii,jj)=gkrr(kk,ii,jj+1)-gkrr(kk,ii,jj)
            end do
@@ -1308,7 +1338,7 @@ subroutine calc_D2Vdiv( ndiv, vmax, rd, rdh, theta, rddiv, VDR0_r,  &
               VDT_mrt(kk,ii,jj)=-(dr(ii)*dble(kk)*r_inv(ii)*vmax)  &
 !  &                              *(line_integral( nnr, rdh(1:nnr+1), gkrr(kk,1:nnr+1,ii), Ds_mr(kk,1:nnr+1) )  &
 !  &                                *cosinen(kk,jj)) ! &
-  &                               *(-line_integral( nnr, rddiv(1:nnrdiv), gkrr(kk,1:nnrdiv,ii), Ds_mr(kk,1:nnrdiv) )  &
+  &                               *(-line_integral( nnr, rdh(1:nnr+1), gkrr(kk,1:nnr+1,ii), tmp_Ds_mr(kk,1:nnr+1) )  &
   &                                 *sinen(kk,jj))
 !  &                               *(-line_integral( nnr, rdh(1:nnr+1), gkrr(kk,1:nnr+1,ii), Dc_mr(kk,1:nnr+1) )  &
 !  &                                 *sinen(kk,jj))
@@ -1316,7 +1346,7 @@ subroutine calc_D2Vdiv( ndiv, vmax, rd, rdh, theta, rddiv, VDR0_r,  &
               VDR_mrt(kk,ii,jj)=-(vmax)  &
 !  &                              *(line_integral( nnr, rdh(1:nnr+1), dgkrr(kk,1:nnr+1,ii), Ds_mr(kk,1:nnr+1) )  &
 !  &                               *sinen(kk,jj)) ! &
-  &                              *(+line_integral( nnr, rddiv(1:nnrdiv), dgkrr(kk,1:nnrdiv,ii), Ds_mr(kk,1:nnrdiv) )  &
+  &                              *(+line_integral( nnr, rdh(1:nnr+1), dgkrr(kk,1:nnr+1,ii), tmp_Ds_mr(kk,1:nnr+1) )  &
   &                                 *cosinen(kk,jj))
 !  &                              *(+line_integral( nnr, rdh(1:nnr+1), dgkrr(kk,1:nnr+1,ii), Dc_mr(kk,1:nnr+1) )  &
 !  &                                 *cosinen(kk,jj))
