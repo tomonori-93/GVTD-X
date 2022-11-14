@@ -172,6 +172,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,
            stop
         else  ! Not use of rdiv
            call stdout( "Detect out of range.", "Retrieve_velocity", 1 )
+           irad=nr
         end if
      end if
      rdiv_n(2*i-1)=rh(irad)/rh(nr+1)
