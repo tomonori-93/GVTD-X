@@ -167,8 +167,12 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,
   do i=1,nrdiv
      call interpo_search_1d( rh, rdiv(i), irad )
      if((irad==nr+1).and.(rh(nr+1)<rdiv(i)))then
-        call stdout( "Detect out of range. stop.", "Retrieve_velocity", -1 )
-        stop
+        if(ndiv==0)then
+           call stdout( "Detect out of range. stop.", "Retrieve_velocity", -1 )
+           stop
+        else
+           call stdout( "Detect out of range.", "Retrieve_velocity", 1 )
+        end if
      end if
      rdiv_n(2*i-1)=rh(irad)/rh(nr+1)
      rdiv_n(2*i)=rh(irad+1)/rh(nr+1)
