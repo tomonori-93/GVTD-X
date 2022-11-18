@@ -199,7 +199,7 @@ subroutine Retrieve_velocity( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,
      !-- all arrays and matrices are composed of nk + nbound
      !-- The last "nbound" is asigned for "lambda" (i.e., additional constraints)
      nk=(2+2*nrot)*(nr-1)+2+2+ndiv*nrdiv+(2*nrot-1)
-     nbound=2*nrot-1  ! check
+     nbound=2*nrot-1
   else
      nk=2*(nr-1)+2+ndiv*nrdiv
      nbound=0
