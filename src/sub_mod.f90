@@ -142,7 +142,6 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
                  do k=1,nvrp
                     lin_coef=line_integral( nr-1, r, gkrr(k,1:nr,i), zetap(k,1:nr) )*dr
                     tmp_vrp2n=tmp_vrp2n+(-dble(k)*lin_coef*dsin(dble(k)*(t(j)+Vt_pert_ang(k)))*r_inv(i))  ! same as Vt_pert_ang
-!ORG                    tmp_vrp2n=tmp_vrp2n+Vr_pert(k)*(-lin_coef*dsin(dble(k)*(t(j)+Vt_pert_ang(k)))/r(i))  ! same as Vt_pert_ang
                  end do
               end if
            else
@@ -428,75 +427,6 @@ double precision function line_integral( nr, rdh, gkrr, div_r, undef )
   return
 
 end function line_integral
-
-!subroutine prod_VM( x, y, us, vs, Usx, Vsy )
-!!-- produce environmental wind on X-Y coordinates
-!  implicit none
-!  double precision, intent(in) :: x(:)  ! X-coordinate
-!  double precision, intent(in) :: y(:)  ! Y-coordinate
-!  double precision, intent(in) :: um0   ! coefficient for X-component of environmental wind
-!  double precision, intent(in) :: vm0   ! coefficient for Y-component of environmental wind
-!  double precision, intent(in) :: um1   ! coefficient 1 of environmental wind
-!  double precision, intent(in) :: um2   ! coefficient 2 of environmental wind
-!  double precision, intent(in) :: vm1   ! coefficient 3 of environmental wind
-!  double precision, intent(out) :: Um(size(x),size(y))  ! X-component of environmental wind
-!  double precision, intent(out) :: Vm(size(x),size(y))  ! Y-component of environmental wind
-!  integer :: nx, ny, i, j
-!
-!  nx=size(x)
-!  ny=size(y)
-!
-!  do j=1,ny
-!     do i=1,nx
-!        Um(i,j)=um0+um1*x(i)+um2*y(j)
-!        Vm(i,j)=vm0+vm1*x(i)-um1*y(j)
-!     end do
-!  end do
-!
-!end subroutine prod_VM
-
-!subroutine norm_VxVy2Vrnxy( x, y, rax, ray, Vx, Vy, Vrnxy, undef )
-!!-- calculate Vx and Vy to Vn normal to radar beams on X-Y coodinates
-!  implicit none
-!  double precision, intent(in) :: x(:)  ! X-coordinate
-!  double precision, intent(in) :: y(:)  ! Y-coordinate
-!  double precision, intent(in) :: rax   ! X-coodinate of radar location
-!  double precision, intent(in) :: ray   ! Y-coodinate of radar location
-!  double precision, intent(in) :: Vx(size(x),size(y))  ! X-component of wind on X-Y coordinates
-!  double precision, intent(in) :: Vy(size(x),size(y))  ! Y-component of wind on X-Y coordinates
-!  double precision, intent(out) :: Vrnxy(size(x),size(y))  ! velocity normal to beam on X-Y coordinates
-!  double precision, intent(in), optional :: undef
-!  integer :: nx, ny, i, j
-!  double precision :: rad
-!
-!  nx=size(x)
-!  ny=size(y)
-!
-!  if(present(undef))then
-!     Vrnxy=undef
-!     do j=1,ny
-!        do i=1,nx
-!           rad=dsqrt((x(i)-rax)**2+(y(j)-ray)**2)
-!           if(rad>0.0d0)then
-!              if(Vx(i,j)/=undef.and.Vy(i,j)/=undef)then
-!                 Vrnxy(i,j)=((x(i)-rax)/rad)*Vy(i,j)-((y(j)-ray)/rad)*Vx(i,j)
-!              end if
-!           end if
-!        end do
-!     end do
-!  else
-!     Vrnxy=0.0d0
-!     do j=1,ny
-!        do i=1,nx
-!           rad=dsqrt((x(i)-rax)**2+(y(j)-ray)**2)
-!           if(rad>0.0d0)then
-!              Vrnxy(i,j)=((x(i)-rax)/rad)*Vy(i,j)-((y(j)-ray)/rad)*Vx(i,j)
-!           end if
-!        end do
-!     end do
-!  end if
-!
-!end subroutine norm_VxVy2Vrnxy
 
 double precision function green_func( rc, r, nval )
 !-- def: -(1/(2*nval))*(r/rc)^nval, r<rc
