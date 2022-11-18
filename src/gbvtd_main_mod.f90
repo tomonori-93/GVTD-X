@@ -1,6 +1,6 @@
 module GBVTD_main
 
-  use ToRMHOWe_sub
+  use GVTDX_sub
 
   implicit none
 

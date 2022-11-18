@@ -1,9 +1,9 @@
 program test_Rankine
 !-- A retrieval program for a 2-dim analytical vortex
 
-  use ToRMHOWe_sub
-  use ToRMHOWe_main
-!  use ToRMHOWe_main2
+  use GVTDX_sub
+  use GVTDX_main
+!  use GVTDX_main2
 
   implicit none
 
@@ -258,7 +258,7 @@ program test_Rankine
   call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )  ! Vd - proj(Vs)
   call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
 write(*,*) "val check", Vra1d
-  call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
+  call Retrieve_velocity_GVTDX( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
   &                       Usrn, Vsrn, rad_tc,  &
   &                       VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
   &                       VDTm_rt_t, VDRm_rt_t, undef, phin=phin_rt_t )

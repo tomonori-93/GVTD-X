@@ -1,22 +1,23 @@
-program test_Rankine
+program test_Rankine1
 !-- A retrieval program for a 2-dim analytical vortex
 
   use dcl
   use Dcl_Automatic
-  use ToRMHOWe_sub
-  use ToRMHOWe_main
+  use GVTDX_sub
+  use GVTDX_main
   use GVTD_main
   use GBVTD_main
-!  use ToRMHOWe_main2
+!  use GVTDX_main2
 
   implicit none
 
   integer, parameter :: nvp_max=100
+  integer, parameter :: nrdiv_max=100
 
 !-- namelist
-  integer :: flag_ToRMHOWe
+  integer :: flag_GVTDX
   integer :: nvp, nup, nxd, nyd, nr_d, nr_t, nt_d, nt_t
-  integer :: nrot, ndiv
+  integer :: nrot, ndiv, nrdiv
   integer :: IWS, tone_grid, cmap
   integer :: contour_num, contour_num2, contour_num3
   integer :: shade_num, min_tab, max_tab
@@ -32,6 +33,7 @@ program test_Rankine
   double precision :: tc_xd, tc_yd, ra_xd, ra_yd, tc_ra_r, tc_ra_t
   double precision :: rvmax, vmax, c1u, c2u
   double precision :: vp(nvp_max), up(nvp_max), vpa(nvp_max), upa(nvp_max)
+  double precision, dimension(nrdiv_max) :: rdiv
   character(20) :: form_typec, form_typec2, form_typec3, form_types
   logical :: col_rev, ropt
 
@@ -66,7 +68,7 @@ program test_Rankine
   character(1) :: tmpk
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
-  &                us, vs, nrot, ndiv, ropt, flag_ToRMHOWe
+  &                us, vs, nrot, ndiv, ropt, nrdiv, rdiv, flag_GVTDX
   namelist /domain /nxd, nyd, nr_d, nr_t, nt_d, nt_t,  &
   &                 xdmin, xdmax, ydmin, ydmax,  &
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
@@ -87,7 +89,7 @@ program test_Rankine
   d2r=pi/180.0d0
   r2d=180.0d0/pi
 
-  if(flag_ToRMHOWe/=1)then
+  if(flag_GVTDX/=1)then
      nrot=3
   end if
 
@@ -261,13 +263,13 @@ program test_Rankine
   call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
 write(*,*) "val check", Vra1d
 
-  select case (flag_ToRMHOWe)
-  case (1)  ! ToRMHOWe
-     call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
-  &                          Usrn, Vsrn, rad_tc,  &
-  &                          VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
-  &                          VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t,  &
-  &                          undef, phin=phin_rt_t, zetan=zetan_rt_t )
+  select case (flag_GVTDX)
+  case (1)  ! GVTDX
+     call Retrieve_velocity_GVTDX( nrot, ndiv, rh_t, t_t, r_t, tdr_t, rdiv(1:nrdiv),  &
+  &                                Vra_rt_t, Usrn, Vsrn, rad_tc,  &
+  &                                VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
+  &                                VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t,  &
+  &                                undef, phin=phin_rt_t, zetan=zetan_rt_t )
   case (2)  ! GVTD
      call Retrieve_velocity_GVTD( nrot, rh_t, t_t, tdr_t, Vra_rt_t,  &
   &                               Usrn, Vsrn, rad_tc,  &

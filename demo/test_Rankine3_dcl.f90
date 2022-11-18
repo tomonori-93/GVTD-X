@@ -3,18 +3,18 @@ program test_Rankine
 
   use dcl
   use Dcl_Automatic
-  use ToRMHOWe_sub
-  use ToRMHOWe_main
+  use GVTDX_sub
+  use GVTDX_main
   use GVTD_main
   use GBVTD_main
-!  use ToRMHOWe_main2
+!  use GVTDX_main2
 
   implicit none
 
   integer, parameter :: nvp_max=100
 
 !-- namelist
-  integer :: flag_ToRMHOWe
+  integer :: flag_GVTDX
   integer :: nvp, nup, nxd, nyd, nr_d, nr_t, nt_d, nt_t
   integer :: nrot, ndiv
   integer :: IWS, tone_grid, cmap
@@ -64,7 +64,7 @@ program test_Rankine
   character(20) :: cvtmax, cvrmax, cvamax
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
-  &                us, vs, nrot, ndiv, ropt, flag_ToRMHOWe
+  &                us, vs, nrot, ndiv, ropt, flag_GVTDX
   namelist /domain /nxd, nyd, nr_d, nr_t, nt_d, nt_t,  &
   &                 xdmin, xdmax, ydmin, ydmax,  &
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
@@ -85,7 +85,7 @@ program test_Rankine
   d2r=pi/180.0d0
   r2d=180.0d0/pi
 
-  if(flag_ToRMHOWe/=1)then
+  if(flag_GVTDX/=1)then
      nrot=3
   end if
 
@@ -274,9 +274,9 @@ write(*,*) "val check", Vra1d
   call tangent_conv_scal( xd, yd, pseudo_tc_xd, pseudo_tc_yd, Vra_xyd, rh_t, t_ref_t, VraP_rt_t,  &
   &                       undef=undef, undefg=undef, stdopt=.true. )
 
-  select case (flag_ToRMHOWe)
-  case (1)  ! ToRMHOWe
-     call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, VraP_rt_t,  &
+  select case (flag_GVTDX)
+  case (1)  ! GVTDX
+     call Retrieve_velocity_GVTDX( nrot, ndiv, rh_t, t_t, r_t, tdr_t, VraP_rt_t,  &
   &                          Usrn, Vsrn, pseudo_rad_tc,  &
   &                          VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                          VRTn_rt_t, VRRn_rt_t,  &

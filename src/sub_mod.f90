@@ -1,5 +1,5 @@
-module ToRMHOWe_sub
-! core library for ToRMHOWe procedures.
+module GVTDX_sub
+! core library for GVTDX procedures.
   implicit none
   real, parameter :: pi=3.14159265e0   ! Pi for real
   complex, parameter :: img=(0.0,1.0)  ! Imaginary unit for real
@@ -1750,4 +1750,4 @@ end subroutine stand_devi
 !--------------------------------------------------------------
 
 
-end module ToRMHOWe_sub
+end module GVTDX_sub
