@@ -1,6 +1,6 @@
 module ToRMHOWe_main
 
-  use ToRMHOWe_sub  ! check
+  use ToRMHOWe_sub
 
   implicit none
 
