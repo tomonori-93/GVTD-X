@@ -1,5 +1,5 @@
 program test_Rankine
-!-- Lee et al. (1999) で与えられる解析的な台風渦分布を可視化するプログラム
+!-- Test the dependency of azimuthal phase for asymmetric components in an analytical vortex
 
   use dcl
   use Dcl_Automatic
@@ -9,10 +9,11 @@ program test_Rankine
   implicit none
 
   integer, parameter :: nvp_max=100
+  integer, parameter :: nrdiv_max=100
 
 !-- namelist
   integer :: nvp, nup, nxd, nyd, nr_d, nr_t, nt_d, nt_t
-  integer :: nrot, ndiv
+  integer :: nrot, ndiv, nrdiv
   integer :: IWS, tone_grid, cmap
   integer :: contour_num, contour_num2, contour_num3
   integer :: shade_num, min_tab, max_tab
@@ -28,6 +29,7 @@ program test_Rankine
   double precision :: tc_xd, tc_yd, ra_xd, ra_yd, tc_ra_r, tc_ra_t
   double precision :: rvmax, vmax, c1u, c2u
   double precision :: vp(nvp_max), up(nvp_max), vpa(nvp_max), upa(nvp_max)
+  double precision, dimension(nrdiv_max) :: rdiv
   character(20) :: form_typec, form_typec2, form_typec3, form_types
   logical :: col_rev, ropt
 
@@ -53,7 +55,7 @@ program test_Rankine
   real, allocatable, dimension(:,:) :: draw_dVt, draw_dVr, draw_Vt, draw_Vr, draw_Vt_ret, draw_Vr_ret
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
-  &                us, vs, nrot, ndiv, ropt
+  &                us, vs, nrot, ndiv, ropt, nrdiv, rdiv
   namelist /domain /nxd, nyd, nr_d, nr_t, nt_d, nt_t,  &
   &                 xdmin, xdmax, ydmin, ydmax,  &
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
@@ -174,40 +176,21 @@ program test_Rankine
      call tangent_conv_scal( xd, yd, tc_xd, tc_yd, Vsra_xyd, rh_t, t_ref_t, Vsra_rt_t,  &
   &                          undef=undef, undefg=undef,  &
   &                          stdopt=.true. )
-!ORG  tc_ra_r=dsqrt((tc_xd-ra_xd)**2+(tc_yd-ra_yd)**2)
-!ORG  tc_ra_t=datan2((tc_yd-ra_yd),(tc_xd-ra_xd))
-!MOD  Vsrn=vs*dcos(tc_ra_t)-us*dsin(tc_ra_t)
-!ORG  Vsrn=vs*dcos(tc_ra_t+dasin(rh_t(1)/tc_ra_r))-us*dsin(tc_ra_t+dasin(rh_t(1)/tc_ra_r))
      Vsrn=0.0d0
 
 !-- converting (Vr,Vt)(r_t,t_t) -> (Vx,Vy)(r_t,t_t)
-!  call conv_VtVr2VxVy( rh_t, t_t, Vt_rht_t, Ut_rht_t, Vx_rht_t, Vy_rht_t )
-!  call cart_conv_scal( rh_t, t_t, Vx_rht_t, xd, yd, tc_xd, tc_yd, Vx_xyd_t, undef=undef,  &
-!  &                    undefg=undef, stdopt=.true. )
-!  call cart_conv_scal( rh_t, t_t, Vy_rht_t, xd, yd, tc_xd, tc_yd, Vy_xyd_t, undef=undef,  &
-!  &                    undefg=undef, stdopt=.true. )
-!  call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, Vx_xyd_t, Vy_xyd_t, Vra_xyd, undef=undef )
      call proj_VtVr2Vrart( rh_t, t_t, tdr_t, Vt_rht_t, Ut_rht_t, Vra_rt_t, undef=undef )
-!  call proj_VxVy2Vra( xd, yd, ra_xd, ra_yd, Um_xyd, Vm_xyd, Vmra_xyd )
-!  Vra_xyd_t=Vra_xyd_t!+Vmra_xyd
 
      call stdout( "Projected winds.", "main", 0 )
 
-!!-- converting (r_t,t_t) -> (xd,yd)
-!  call cart_conv_scal( rh_t, t_t, Vt_rht_t, xd, yd, tc_xd, tc_yd, Vt_xyd, undef=undef,  &
-!  &                    undefg=undef, stdopt=.true. )
-!  call cart_conv_scal( rh_t, t_t, Ut_rht_t, xd, yd, tc_xd, tc_yd, Ut_xyd, undef=undef,  &
-!  &                    undefg=undef, stdopt=.true. )
-
-!  call stdout( "Converted r-t -> x-y.", "main", 0 )
-
 !-- Retrieving all components of horizontal winds (VRT, VRR, VDT, and VDR) from Vd
      call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )  ! Vd - proj(Vs)
-     call Retrieve_velocity_GVTDX( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t,  &
-  &                          (/Vsrn,0.0d0/), (/0.0d0,0.0d0/), rad_tc,  &
-  &                          VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
-  &                          VRTn_rt_t, VRRn_rt_t,  &
-  &                          VDTm_rt_t, VDRm_rt_t, undef )
+     call Retrieve_velocity_GVTDX( nrot, ndiv, rh_t, t_t, r_t, tdr_t,  &
+  &                                rdiv(1:nrdiv), Vra_rt_t,  &
+  &                                (/0.0d0,0.0d0/), (/0.0d0,0.0d0/), rad_tc,  &
+  &                                VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
+  &                                VRTn_rt_t, VRRn_rt_t,  &
+  &                                VDTm_rt_t, VDRm_rt_t, undef )
      call stdout( "Retrieved velocity.", "main", 0 )
 
      call conv_d2r_2d( VRT0_rt_t(1:nr_t,1:1), draw_Vt_ret(1:nr_t,k:k) )

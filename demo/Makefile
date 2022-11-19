@@ -59,7 +59,7 @@ $(TARGETD): %:%.f90
 	$(DCLFC) $(FFLAGS) -I${DCINC} -I${TMWINC} $< -o $@ -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB}
 
 use_nc: $(TARGETN)
-$(TARGETN): $(SRCD)
+$(TARGETN): %:%.f90
 	$(GTFC) $(FFLAGS) -I${TMWINC} $< -o $@ -L${TMWDIR} -l${TMWLIB}
 
 #$(OBJ1): %.o:%.f90

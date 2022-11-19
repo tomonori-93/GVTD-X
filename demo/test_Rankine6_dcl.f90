@@ -12,11 +12,12 @@ program test_Rankine
   implicit none
 
   integer, parameter :: nvp_max=100
+  integer, parameter :: nrdiv_max=100
 
 !-- namelist
   integer :: flag_GVTDX
   integer :: nvp, nup, nxd, nyd, nxm, nym, nr_d, nr_t, nt_d, nt_t
-  integer :: nrot, ndiv
+  integer :: nrot, ndiv, nrdiv
   integer :: IWS, tone_grid, cmap
   integer :: contour_num, contour_num2, contour_num3
   integer :: shade_num, min_tab, max_tab
@@ -33,6 +34,7 @@ program test_Rankine
   double precision :: dVm_min, dVm_max, dTm_min, dTm_max
   double precision :: rvmax, vmax, c1u, c2u
   double precision :: vp(nvp_max), up(nvp_max), vpa(nvp_max), upa(nvp_max)
+  double precision, dimension(nrdiv_max) :: rdiv
   character(20) :: form_typec, form_typec2, form_typec3, form_types
   logical :: col_rev, ropt
 
@@ -63,7 +65,7 @@ program test_Rankine
   character(20) :: cvtmax, cvrmax, cvamax
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
-  &                us, vs, nrot, ndiv, ropt, flag_GVTDX
+  &                us, vs, nrot, ndiv, ropt, nrdiv, rdiv, flag_GVTDX
   namelist /domain /nxd, nyd, nr_d, nr_t, nt_d, nt_t,  &
   &                 xdmin, xdmax, ydmin, ydmax,  &
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
@@ -297,7 +299,8 @@ program test_Rankine
 
         select case (flag_GVTDX)
         case (1)  ! GVTDX
-           call Retrieve_velocity_GVTDX( nrot, ndiv, rh_t, t_t, r_t, tdr_t, VraP_rt_t,  &
+           call Retrieve_velocity_GVTDX( nrot, ndiv, rh_t, t_t, r_t, tdr_t,  &
+  &                                rdiv(1:nrdiv), VraP_rt_t,  &
   &                                Usrn, Vsrn, rad_tc,  &
   &                                VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                                VRTn_rt_t, VRRn_rt_t,  &
@@ -320,8 +323,8 @@ program test_Rankine
 !        call stand_devi( VTtot_rt_t(ivmax,1:nt_t), vmax, maxv, undef=undef )
         draw_dVt_max(i,j)=abs(real(VRT0_rt_t(ivmax,1)-vmax))
 !        draw_dVt_max(i,j)=real(maxv)
-        draw_dVt_max(i,j)=real(maxv-vmax)
-        call max_val_1d( VDR0_rt_t(1:nr_t,1), maxv, undef )
+!        draw_dVt_max(i,j)=real(maxv-vmax)
+!        call max_val_1d( VDR0_rt_t(1:nr_t,1), maxv, undef )
 !        call stand_devi( VRtot_rt_t(ivmax,1:nt_t), 0.0d0, maxv, undef=undef )
         draw_dVr_max(i,j)=abs(real(VDR0_rt_t(ivmax,1)))
 !        draw_dVr_max(i,j)=real(maxv)

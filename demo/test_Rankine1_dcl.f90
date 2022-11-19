@@ -217,10 +217,6 @@ program test_Rankine1
   call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd, undef=undef )
   call tangent_conv_scal( xd, yd, tc_xd, tc_yd, Vsra_xyd, rh_t, t_ref_t, Vsra_rt_t,  &
   &                       undef=undef, undefg=undef, stdopt=.true. )
-!ORG  tc_ra_r=dsqrt((tc_xd-ra_xd)**2+(tc_yd-ra_yd)**2)
-!ORG  tc_ra_t=datan2((tc_yd-ra_yd),(tc_xd-ra_xd))
-!MOD  Vsrn=vs*dcos(tc_ra_t)-us*dsin(tc_ra_t)
-!ORG  Vsrn=vs*dcos(tc_ra_t+dasin(rh_t(1)/tc_ra_r))-us*dsin(tc_ra_t+dasin(rh_t(1)/tc_ra_r))
   Usrn=0.0d0
   Vsrn=0.0d0
 
@@ -241,8 +237,6 @@ program test_Rankine1
   call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, Vx_xyd_t, Vy_xyd_t, Vra_xyd, undef=undef )
   call proj_VtVr2Vrart( rh_t, t_t, tdr_t, Vt_rht_t, Ut_rht_t, Vra_rt_t, undef=undef )
   call subst_2d( Vra_xyd, Vsra_xyd, undef=undef )
-!  call proj_VxVy2Vra( xd, yd, ra_xd, ra_yd, Um_xyd, Vm_xyd, Vmra_xyd )
-!  Vra_xyd_t=Vra_xyd_t!+Vmra_xyd
 
   call stdout( "Projected winds.", "main", 0 )
 
@@ -283,9 +277,6 @@ write(*,*) "val check", Vra1d
   end select
   call stdout( "Retrieved velocity.", "main", 0 )
 
-do i=1,nr_t
-write(*,'(a6,1P3E22.15)') "check ", rh_t(i), Vt_rht_t(i,1), VRT0_rt_t(i,1)
-end do
 !-- converting (r_t,t_ref_t) -> (xd,yd)
   call proj_VtVr2Vrart( rh_t, t_t, tdr_t, VTtot_rt_t, VRtot_rt_t, Vratot_rt_t, undef=undef )
   call cart_conv_scal( rh_t, t_ref_t, VTtot_rt_t, xd, yd, tc_xd, tc_yd, Vtott_xyd, undef=undef,  &
@@ -310,8 +301,8 @@ end do
   &                          xd, yd, tc_xd, tc_yd,  &
   &                          phin_xyd(k,1:nxd,1:nyd), undef=undef,  &
   &                          undefg=undef, stdopt=.true. )
-        call add_2d( zeta0_rt_t(1:nr_t+1,1:nt_t),  &
-  &                  zetan_rt_t(k,1:nr_t+1,1:nt_t), undef=undef )
+        call add_2d( zeta0_rt_t(1:nr_t,1:nt_t),  &
+  &                  zetan_rt_t(k,1:nr_t,1:nt_t), undef=undef )
      end do
   else
      call cart_conv_scal( rh_t, t_ref_t, phin_rt_t(nrot,1:nr_t,1:nt_t),  &
@@ -357,10 +348,6 @@ end do
   end if
   call conv_d2r_2d( zeta_xyd(1:nxd,1:nyd), draw_zeta(1:nxd,1:nyd) )
 
-write(*,*) "checkVt0", VRT0_rt_t(:,1)
-write(*,*) "checkUt0", VDR0_rt_t(:,1)
-!write(*,*) "Vt", draw_Vt
-!write(*,*) "Vt", draw_Vt_ret
   call SGISET( 'IFONT', 1 )
   call SWLSET( 'LSYSFNT', .true. )
   CALL GLLSET( 'LMISS', .TRUE. )
@@ -639,9 +626,6 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &       (/0.2, 0.8/), c_num=(/contour_num3, shade_num/),  &
   &       no_tone=.true. )
 
-!  write(*,*) "rot", draw_rot
-!  write(*,*) "div", draw_div
-
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
   call Dcl_2D_cont_shade( 'Rotation of retrieved wind',  &
@@ -657,7 +641,6 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
   if(nrot>0)then
-!write(*,*) "draw_phi", draw_phi1(1:nxd,nyd/2)
      contour_num3=9
      fixc_val3(1:contour_num3)=(/-20.0,-10.0,-5.0,-2.5,0.0,2.5,5.0,10.0,20.0/)*1.e3
      fixc_idx3(1:contour_num3)=(/13,13,13,13,13,13,13,13,13/)
