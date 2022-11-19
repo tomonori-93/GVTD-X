@@ -22,7 +22,9 @@
  nrot = 3
  ndiv = 1
  ropt = .false.
- flag_ToRMHOWe = 1
+ nrdiv = 1
+ rdiv = 80.0e3
+ flag_GVTDX = 1
 /
 &domain
  nxd = 400

@@ -19,12 +19,14 @@
 ! upa = 180.0, 0.0, 0.0
  us = 0.0
  vs = 0.0
- nrot = 5
- ndiv = 1
- ropt = .true.  ! For ToRMHOWe
+ nrot = 3
+ ndiv = 0
+ ropt = .true.  ! For GVTDX
 ! ropt = .false.  ! For GVTD/GBVTD
- flag_ToRMHOWe = 1  ! ToRMHOWe
-! flag_ToRMHOWe = 2  ! GVTD
+ nrdiv = 1
+ rdiv = 80.0e3
+ flag_GVTDX = 1  ! GVTDX
+! flag_GVTDX = 2  ! GVTD
 /
 &domain
  nxd = 400
@@ -59,7 +61,7 @@
  ra_yd = 0.0
 /
 &draw_info
- IWS = 1
+ IWS = 2
  tone_grid = 10
  cmap = 4
  col_rev = .false.

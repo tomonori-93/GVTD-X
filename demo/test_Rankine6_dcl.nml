@@ -20,9 +20,11 @@
  us = 10.0
  vs = 0.0
  nrot = 3
- ndiv = 1
+ ndiv = 0
  ropt = .false.
- flag_ToRMHOWe = 1
+ nrdiv = 1
+ rdiv = 80.0e3
+ flag_GVTDX = 1
 /
 &domain
  nxd = 400

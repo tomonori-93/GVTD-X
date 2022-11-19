@@ -1,5 +1,4 @@
 # Mkinclude
-BIN	= /home/satoki/usr/local/bin
 DCLFC	= dclfrt
 
 AF90LIB	= dclaf90

@@ -19,8 +19,10 @@
  !upa = 0.0, 0.0, 0.0
  us = 0.0
  vs = 0.0
- nrot = 2
+ nrot = 3
  ndiv = 0
+ nrdiv = 1
+ rdiv = 80.0e3
  ropt = .true.
 /
 &domain
@@ -28,22 +30,22 @@
  nyd = 400
  nr_d = 400
  !nr_t = 2
- nr_t = 25
+ nr_t = 35
  nt_d = 400
- nt_t = 25
- xdmin = -60.0e3
- xdmax = 60.0e3
+ nt_t = 100
+ xdmin = -80.0e3
+ xdmax = 80.0e3
  ydmin = 0.0
- ydmax = 120.0e3
+ ydmax = 160.0e3
  r_dmin = 0.0
  r_dmax = 100.0e3
  t_dmin = 0.0
  t_dmax = 360.0
  !r_tmin = 0.0 
- r_tmin = 2.0e3
+ r_tmin = 5.0e3
  !r_tmin = 10.0e3
  !r_tmax = 5.0e3
- r_tmax = 55.0e3
+ r_tmax = 75.0e3
  t_tmin = 0.0
  t_tmax = 360.0
 /
