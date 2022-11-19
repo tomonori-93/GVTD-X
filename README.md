@@ -12,7 +12,7 @@ GVTD-HeCs is pronounced as "GVTD-X".
 # Methods
 [Paper](https://doi.org/)
 
-[Document](ford-doc/index.html)
+[Document](https://tomonori-93.github.io/GVTD-HeCs/ford-doc/index.html)
 
 [Jaoanese document](doc/formulation.pdf)
 
