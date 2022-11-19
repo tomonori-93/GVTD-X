@@ -1,11 +1,10 @@
-module GVTDX_main
-!! The main module of GVTD-X
+module GVTDX_main2
 
   use GVTDX_sub
 
   implicit none
 
-  public :: Retrieve_velocity_GVTDX
+  public :: Retrieve_velocity2_GVTDX
 
   private :: calc_fkij
   private :: calc_fkij2akp
@@ -24,49 +23,49 @@ module GVTDX_main
 
 contains
 
-subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,  &
-  &                                 VT, VR, VRT0, VDR0, VRTn, VRRn, VDTm, VDRm,  &
-  &                                 undef, phin, zetan, VRT0_GVTD, VDR0_GVTD,  &
-  &                                 VRTns, VRTnc, VRRns, VRRnc )
-!! Solve unknown variables and return wind velocity on R-T coordinates. <br>
-!!------------------------------------------------------- <br>
-!!-- [relationship between r and rh] -- <br>
-!!------------------------------------------------------- <br>
-!!--   i-1    i    i+1 <br>
-!!-- ...|-- --|-- --|... : r(1:size(r)) = velocity radii <br>
-!!-- |-- --|-- --|-- --| : rh(1,size(r)+1) = potential radii <br>
-!!--i-1    i    i+1   i+2 <br>
-!!-------------------------------------------------------
+subroutine Retrieve_velocity2_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,  &
+  &                           VT, VR, VRT0, VDR0, VRTn, VRRn, VDTm, VDRm,  &
+  &                           undef, phin, zetan, VRT0_GVTD, VDR0_GVTD,  &
+  &                           VRTns, VRTnc, VRRns, VRRnc )
+!-- solve unknown variables and return wind velocity on R-T coordinates.
+!-------------------------------------------------------
+!-- [relationship between r and rh] --
+!-------------------------------------------------------
+!--   i-1    i    i+1
+!-- ...|-- --|-- --|... : r(1:size(r)) = velocity radii
+!-- |-- --|-- --|-- --| : rh(1,size(r)+1) = potential radii
+!--i-1    i    i+1   i+2
+!-------------------------------------------------------
   implicit none
   !-- input/output
-  integer, intent(in) :: nrot  !! wave number for rotating wind
-  integer, intent(in) :: ndiv  !! wave number for divergent wind
-  double precision, intent(in) :: r(:)   !! radial coordinate on which Vd is defined [m]
-  double precision, intent(in) :: t(:)   !! azimuthal coordinate on which Vd is defined [rad]
-  double precision, intent(in) :: rh(size(r)+1)  !! radial coordinate on which Phi (staggered for Vd) is defined [m]
-  double precision, intent(in) :: td(size(r),size(t))  !! radar azimuthal angle defined at Vd(r,t) [rad]
-  double precision, intent(in) :: rdiv(:)  !! radial coordinate on which Dc (staggered for Vd) is defined [m]
-  double precision, intent(inout) :: Vd(size(r),size(t))  !! Doppler velocity defined on r-t [m s-1]
-  double precision, intent(in) :: Un(2)                !! Parallel component to radar in environmental wind, defined on r-t [m s-1]
-  double precision, intent(in) :: Vn(2)                !! Normal component to radar in environmental wind, defined on r-t [m s-1]
-  double precision, intent(in) :: RadTC                !! Distance from radar to TC center [m]
-  double precision, intent(out) :: VT(size(r),size(t))  !! retrieved total tangential wind [m s-1]
-  double precision, intent(out) :: VR(size(r),size(t))  !! retrieved total radial wind [m s-1]
-  double precision, intent(out) :: VRT0(size(r),size(t))  !! retrieved axisymmetric radial component of rotating wind [m s-1]
-  double precision, intent(out) :: VDR0(size(r),size(t))  !! retrieved axisymmetric tangential component of divergent wind [m s-1]
-  double precision, intent(out) :: VRTn(nrot,size(r),size(t))  !! retrieved tangential component of rotating wind [m s-1]
-  double precision, intent(out) :: VRRn(nrot,size(r),size(t))  !! retrieved radial component of rotating wind [m s-1]
-  double precision, intent(out) :: VDTm(ndiv,size(r),size(t))  !! retrieved tangential component of divergent wind [m s-1]
-  double precision, intent(out) :: VDRm(ndiv,size(r),size(t))  !! retrieved radial component of divergent wind [m s-1]
-  double precision, intent(in), optional :: undef  !! undefined value for Vd
-  double precision, intent(out), optional :: phin(nrot,size(r),size(t))   !! retrieved stream function [m2 s-1]
-  double precision, intent(out), optional :: zetan(nrot,size(r),size(t))  !! retrieved vorticity [s-1]
-  double precision, intent(out), optional :: VRT0_GVTD(size(r),size(t))  !! retrieved axisymmetric radial component of pseudo-GVTD tangential wind [m s-1]
-  double precision, intent(out), optional :: VDR0_GVTD(size(r),size(t))  !! retrieved axisymmetric tangential component of pseudo-GVTD tangential wind [m s-1]
-  double precision, intent(out), optional :: VRTns(nrot,size(r),size(t))  !! Sine component of retrieved asymmetric radial wind [m s-1]
-  double precision, intent(out), optional :: VRTnc(nrot,size(r),size(t))  !! Cosine component of retrieved asymmetric radial wind [m s-1]
-  double precision, intent(out), optional :: VRRns(nrot,size(r),size(t))  !! Sine component of retrieved asymmetric tangential wind [m s-1]
-  double precision, intent(out), optional :: VRRnc(nrot,size(r),size(t))  !! Cosine component of retrieved asymmetric tangential wind [m s-1]
+  integer, intent(in) :: nrot  ! wave number for rotating wind
+  integer, intent(in) :: ndiv  ! wave number for divergent wind
+  double precision, intent(in) :: r(:)   ! radial coordinate on which Vd is defined [m]
+  double precision, intent(in) :: t(:)   ! azimuthal coordinate on which Vd is defined [rad]
+  double precision, intent(in) :: rh(size(r)+1)  ! radial coordinate on which Phi (staggered for Vd) is defined [m]
+  double precision, intent(in) :: td(size(r),size(t))  ! radar azimuthal angle defined at Vd(r,t) [rad]
+  double precision, intent(in) :: rdiv(:)  ! radial coordinate on which Dc (staggered for Vd) is defined [m]
+  double precision, intent(inout) :: Vd(size(r),size(t))  ! Doppler velocity defined on r-t [m s-1]
+  double precision, intent(in) :: Un(2)                ! Parallel component to radar in environmental wind, defined on r-t [m s-1]
+  double precision, intent(in) :: Vn(2)                ! Normal component to radar in environmental wind, defined on r-t [m s-1]
+  double precision, intent(in) :: RadTC                ! Distance from radar to TC center [m]
+  double precision, intent(out) :: VT(size(r),size(t))  ! retrieved total tangential wind [m s-1]
+  double precision, intent(out) :: VR(size(r),size(t))  ! retrieved total radial wind [m s-1]
+  double precision, intent(out) :: VRT0(size(r),size(t))  ! retrieved axisymmetric radial component of rotating wind [m s-1]
+  double precision, intent(out) :: VDR0(size(r),size(t))  ! retrieved axisymmetric tangential component of divergent wind [m s-1]
+  double precision, intent(out) :: VRTn(nrot,size(r),size(t))  ! retrieved tangential component of rotating wind [m s-1]
+  double precision, intent(out) :: VRRn(nrot,size(r),size(t))  ! retrieved radial component of rotating wind [m s-1]
+  double precision, intent(out) :: VDTm(ndiv,size(r),size(t))  ! retrieved tangential component of divergent wind [m s-1]
+  double precision, intent(out) :: VDRm(ndiv,size(r),size(t))  ! retrieved radial component of divergent wind [m s-1]
+  double precision, intent(in), optional :: undef  ! undefined value for Vd
+  double precision, intent(out), optional :: phin(nrot,size(r),size(t))   ! retrieved stream function [m2 s-1]
+  double precision, intent(out), optional :: zetan(nrot,size(r),size(t))  ! retrieved vorticity [s-1]
+  double precision, intent(out), optional :: VRT0_GVTD(size(r),size(t))  ! retrieved axisymmetric radial component of pseudo-GVTD tangential wind [m s-1]
+  double precision, intent(out), optional :: VDR0_GVTD(size(r),size(t))  ! retrieved axisymmetric tangential component of pseudo-GVTD tangential wind [m s-1]
+  double precision, intent(out), optional :: VRTns(nrot,size(r),size(t))  ! Sine component of retrieved asymmetric radial wind [m s-1]
+  double precision, intent(out), optional :: VRTnc(nrot,size(r),size(t))  ! Cosine component of retrieved asymmetric radial wind [m s-1]
+  double precision, intent(out), optional :: VRRns(nrot,size(r),size(t))  ! Sine component of retrieved asymmetric tangential wind [m s-1]
+  double precision, intent(out), optional :: VRRnc(nrot,size(r),size(t))  ! Cosine component of retrieved asymmetric tangential wind [m s-1]
 
   !-- internal variables
   integer :: i, j, k, p, irad, cstat  ! dummy indexes
@@ -98,7 +97,7 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, 
   double precision, dimension(size(r),size(t)) :: delta     ! delta_ij
   logical, allocatable, dimension(:,:) :: undeflag ! Flag for Vd grid with undef
 
-  call stdout( "Enter procedure.", "Retrieve_velocity_GVTDX", 0 )
+  call stdout( "Enter procedure.", "Retrieve_velocity2_GVTDX", 0 )
 
   nr=size(r)
   nt=size(t)
@@ -149,11 +148,11 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, 
 
 !-- Check retrieved asymmetric wave number
   if(nrot<0)then
-     call stdout( "nrot is greater equal to 0. stop.", "Retrieve_velocity_GVTDX", -1 )
+     call stdout( "nrot is greater equal to 0. stop.", "Retrieve_velocity2_GVTDX", -1 )
      stop
   end if
   if(ndiv<0)then
-     call stdout( "ndiv is greater equal to 0. stop.", "Retrieve_velocity_GVTDX", -1 )
+     call stdout( "ndiv is greater equal to 0. stop.", "Retrieve_velocity2_GVTDX", -1 )
      stop
   end if
 
@@ -167,10 +166,10 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, 
      call interpo_search_1d( rh, rdiv(i), irad )
      if((irad==nr+1).and.(rh(nr+1)<rdiv(i)))then
         if(ndiv>0)then
-           call stdout( "Detect out of range. stop.", "Retrieve_velocity_GVTDX", -1 )
+           call stdout( "Detect out of range. stop.", "Retrieve_velocity2_GVTDX", -1 )
            stop
         else  ! Not use of rdiv
-           call stdout( "Detect out of range.", "Retrieve_velocity_GVTDX", 1 )
+           call stdout( "Detect out of range.", "Retrieve_velocity2_GVTDX", 1 )
            irad=nr
         end if
      end if
@@ -183,8 +182,8 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, 
 !$omp do schedule(runtime) private(i,j,tmprho)
   do j=1,nt
      do i=1,nr
-        if(r_n(i)>0.0d0)then
-           tmprho=rtc_n/r_n(i)
+        if(rtc_n>0.0d0)then
+           tmprho=r_n(i)/rtc_n
            delta(i,j)=dsqrt(tmprho**2+2.0d0*tmprho*dcos(t(j))+1.0d0)
         end if
      end do
@@ -221,7 +220,7 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, 
   call check_undef_grid( Vd, dundef, undeflag )
 
   if(cstat/=0)then
-     call stdout( "Failed to allocate variables. stop.", "Retrieve_velocity_GVTDX", -1 )
+     call stdout( "Failed to allocate variables. stop.", "Retrieve_velocity2_GVTDX", -1 )
      stop
   end if
 
@@ -325,29 +324,31 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, 
      end do
   end if
 
-  call stdout( "Finish procedure.", "Retrieve_velocity_GVTDX", 0 )
+  call stdout( "Finish procedure.", "Retrieve_velocity2_GVTDX", 0 )
 
-end subroutine Retrieve_velocity_GVTDX
+end subroutine Retrieve_velocity2_GVTDX
 
+!--------------------------------------------------
+!-- calculate f_kij
+!--------------------------------------------------
 
 subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, rddiv,  &
   &                   fkij, Vdij, undeflag )
-!! Calculate the coefficient matrix \(f_{kij}\)
   implicit none
-  integer, intent(in) :: nrot  !! Maximum wavenumber for stream function
-  integer, intent(in) :: ndiv  !! Maximum wavenumber for velocity potential
-  integer, intent(in) :: nnk  !! Matrix dimension for fkij
-  double precision, intent(in) :: Usrn(2)  !! Environmental wind (not use)
-  double precision, intent(in) :: Vsrn(2)  !! Environmental wind normal to radar [m/s]
-  double precision, intent(in) :: rtc  !! Distance between the radar to vortex center [m]
-  double precision, intent(in) :: rd(:)  !! Normalized radius [1]
-  double precision, intent(in) :: theta(:)  !! Azimuthal angle [rad]
-  double precision, intent(in) :: rdh(size(rd)+1)  !! Normalized radius [1]
-  double precision, intent(in) :: thetad(size(rd),size(theta))  !! \(\theta_d \)
-  double precision, intent(in) :: rddiv(:)  !! Normalized radius of the defined point for divergence [1]
-  double precision, intent(out) :: fkij(nnk,size(rd),size(theta))  !! Coefficient matrix
-  double precision, intent(inout) :: Vdij(size(rd),size(theta))  !! Doppler velocity [m/s]
-  logical, intent(in) :: undeflag(size(rd),size(theta))  !! Undefined flag at each sampling point
+  integer, intent(in) :: nrot
+  integer, intent(in) :: ndiv
+  integer, intent(in) :: nnk
+  double precision, intent(in) :: Usrn(2)
+  double precision, intent(in) :: Vsrn(2)
+  double precision, intent(in) :: rtc
+  double precision, intent(in) :: rd(:)  ! Normalized radius
+  double precision, intent(in) :: theta(:)
+  double precision, intent(in) :: rdh(size(rd)+1)  ! Normalized radius
+  double precision, intent(in) :: thetad(size(rd),size(theta))
+  double precision, intent(in) :: rddiv(:)  ! Normalized radius
+  double precision, intent(out) :: fkij(nnk,size(rd),size(theta))
+  double precision, intent(inout) :: Vdij(size(rd),size(theta))
+  logical, intent(in) :: undeflag(size(rd),size(theta))
 
   !-- internal variables
   integer :: nnr, nnt, nnrdiv, nnrdiv2, ii, jj, kk, pp, nmax, cstat, ncyc
@@ -406,8 +407,8 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
 !$omp do schedule(runtime) private(ii,jj)
   do jj=1,nnt
      do ii=1,nnr
-        sines(ii,jj)=rtc*r_inv(ii)*dsin(theta(jj))  ! MOD = delta x sin(theta-thetad)
-        cosines(ii,jj)=1.0d0+rtc*r_inv(ii)*dcos(theta(jj))  ! MOD = delta x cos(theta-thetad)
+        sines(ii,jj)=dsin(theta(jj))  ! MOD = (delta/rho) x sin(theta-thetad)
+        cosines(ii,jj)=rd(ii)/rtc+dcos(theta(jj))  ! MOD = (delta/rho) x cos(theta-thetad)
      end do
   end do
 !$omp end do
@@ -696,13 +697,15 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
 
 end subroutine calc_fkij
 
+!--------------------------------------------------
+!-- calculate a_kp from f_kij
+!--------------------------------------------------
 
 subroutine calc_fkij2akp( fkij, akp, undeflag )
-!! Calculation of the coefficient matrix \(A \) in LSM from \(f_{k,i,j}\)
   implicit none
-  double precision, intent(in) :: fkij(:,:,:)  !! Coefficient matrix
-  double precision, intent(out) :: akp(size(fkij,1),size(fkij,1))  !! Coefficient matrix in LSM
-  logical, intent(in) :: undeflag(size(fkij,2),size(fkij,3))  !! Undefined flag at each sampling point
+  double precision, intent(in) :: fkij(:,:,:)
+  double precision, intent(out) :: akp(size(fkij,1),size(fkij,1))
+  logical, intent(in) :: undeflag(size(fkij,2),size(fkij,3))
   integer :: nnk, nni, nnj, ii, jj, kk, ll, cstat
   double precision, allocatable, dimension(:,:,:) :: fkl, fpl
 
@@ -749,16 +752,18 @@ subroutine calc_fkij2akp( fkij, akp, undeflag )
 
 end subroutine calc_fkij2akp
 
+!--------------------------------------------------
+!-- calculate b_k from f_kij and Vd
+!--------------------------------------------------
 
 subroutine calc_fkijVd2bk( vmax, fkij, Vdl, deltaij, bk, undeflag )
-!! Calculate the vector \(b_k \) from \(f_{k,i,j}\) and \(V_d)
   implicit none
-  double precision, intent(in) :: vmax  !! Scaling factor for velocity [m/s]
-  double precision, intent(in) :: fkij(:,:,:)  !! Coefficient matrix
-  double precision, intent(in) :: Vdl(size(fkij,2),size(fkij,3))  !! Doppler velocity [m/s]
-  double precision, intent(in) :: deltaij(size(fkij,2),size(fkij,3))  !! Geometric coefficient: (\(=\delta /\rho )\)
-  double precision, intent(out) :: bk(size(fkij,1))  !! Vector \(\textbf{b}\)
-  logical, intent(in) :: undeflag(size(fkij,2),size(fkij,3))  !! Undefined flag at each sampling point
+  double precision, intent(in) :: vmax
+  double precision, intent(in) :: fkij(:,:,:)
+  double precision, intent(in) :: Vdl(size(fkij,2),size(fkij,3))
+  double precision, intent(in) :: deltaij(size(fkij,2),size(fkij,3))
+  double precision, intent(out) :: bk(size(fkij,1))
+  logical, intent(in) :: undeflag(size(fkij,2),size(fkij,3))
   integer :: nnk, nni, nnj, ii, jj, kk, ll, cstat
   double precision, allocatable, dimension(:,:,:) :: fkl
   double precision :: dVdl(size(fkij,2),size(fkij,3))
@@ -812,25 +817,27 @@ subroutine calc_fkijVd2bk( vmax, fkij, Vdl, deltaij, bk, undeflag )
 
 end subroutine calc_fkijVd2bk
 
+!--------------------------------------------------
+!-- Set each unknown variable from x_k
+!--------------------------------------------------
 
 subroutine set_xk2variables( nrot, ndiv, nnrdiv, Usrn, Vsrn, vmax,  &
   &                          xk, VRT0, VDR0,  &
   &                          phis_n, phic_n, Ds_m, undef )
-!! Set each unknown variable from the solved \(x_k\)
   implicit none
-  integer, intent(in) :: nrot  !! Maximum wavenumber of stream function
-  integer, intent(in) :: ndiv  !! Maximum wavenumber of velocity potential
-  integer, intent(in) :: nnrdiv  !! Radial grid number for divergence
-  double precision, intent(in) :: Usrn(2)  !! Environmental wind (not use)
-  double precision, intent(in) :: Vsrn(2)  !! Environmental wind normal to radar [m/s]
-  double precision, intent(in) :: vmax  !! Scaling factor for velocity [m/s]
-  double precision, intent(in) :: xk(:)  !! Solved unknown variable vector
-  double precision, intent(out) :: VRT0(:)  !! Wavenumber-0 tangential wind [m/s]
-  double precision, intent(out) :: VDR0(size(VRT0))  !! Wavenumber-0 radial wind [m/s]
-  double precision, intent(out), optional :: phis_n(nrot,size(VRT0)+1)  !! Sine components of stream function [m^2/s]
-  double precision, intent(out), optional :: phic_n(nrot,size(VRT0)+1)  !! Cosine components of stream function [m^2/s]
-  double precision, intent(out), optional :: Ds_m(ndiv,nnrdiv)  !! Divergence [s-1]
-  double precision, intent(in), optional :: undef  !! Undefined value
+  integer, intent(in) :: nrot
+  integer, intent(in) :: ndiv
+  integer, intent(in) :: nnrdiv
+  double precision, intent(in) :: Usrn(2)
+  double precision, intent(in) :: Vsrn(2)
+  double precision, intent(in) :: vmax
+  double precision, intent(in) :: xk(:)  ! solved unknown variable vector
+  double precision, intent(out) :: VRT0(:)
+  double precision, intent(out) :: VDR0(size(VRT0))
+  double precision, intent(out), optional :: phis_n(nrot,size(VRT0)+1)
+  double precision, intent(out), optional :: phic_n(nrot,size(VRT0)+1)
+  double precision, intent(out), optional :: Ds_m(ndiv,nnrdiv)
+  double precision, intent(in), optional :: undef
 
   integer :: ii, kk, nnk, nnr, ncyc
   double precision :: Usrn_n(2), Vsrn_n(2)
@@ -888,26 +895,28 @@ subroutine set_xk2variables( nrot, ndiv, nnrdiv, Usrn, Vsrn, vmax,  &
 
 end subroutine set_xk2variables
 
+!--------------------------------------------------
+!-- Calculate Vr and Vt components of rotating wind
+!--------------------------------------------------
 
 subroutine calc_phi2Vrot( nrot, Usrn, Vsrn, vmax, rd, rdh, theta, VRT0_r,  &
   &                       VRT0_rt, VRT_nrt, VRR_nrt,  &
   &                       phis_nr, phic_nr, undef )
-!! Calculate radial and tangential components of rotating wind
   implicit none
-  integer, intent(in) :: nrot  !! Maximum wavenumber of stream function
-  double precision, intent(in) :: Usrn(2)  !! Environmental wind (not use)
-  double precision, intent(in) :: Vsrn(2)  !! Environmental wind normal to radar [m/s]
-  double precision, intent(in) :: vmax  !! Scaling factor for velocity [m/s]
-  double precision, intent(in) :: rd(:)  !! Normalized radius [1]
-  double precision, intent(in) :: rdh(size(rd)+1)  !! Normalized radius [1]
-  double precision, intent(in) :: theta(:)  !! Azimuthal angle [rad]
-  double precision, intent(in) :: VRT0_r(size(rd))  !! Wavenumber-0 tangential wind [m/s]
-  double precision, intent(out) :: VRT0_rt(size(rd),size(theta))  !! = VRT0_r
-  double precision, intent(out), optional :: VRT_nrt(nrot,size(rd),size(theta))  !! Tangential components of rotating wind for each wavenumber
-  double precision, intent(out), optional :: VRR_nrt(nrot,size(rd),size(theta))  !! Radial components of rotating wind for each wavenumber
-  double precision, intent(inout), optional :: phis_nr(nrot,size(rd)+1)  !! Sine components of stream function
-  double precision, intent(inout), optional :: phic_nr(nrot,size(rd)+1)  !! Cosine components of stream function
-  double precision, intent(in), optional :: undef  !! No use
+  integer, intent(in) :: nrot
+  double precision, intent(in) :: Usrn(2)
+  double precision, intent(in) :: Vsrn(2)
+  double precision, intent(in) :: vmax
+  double precision, intent(in) :: rd(:)  ! Normalized radius
+  double precision, intent(in) :: rdh(size(rd)+1)
+  double precision, intent(in) :: theta(:)
+  double precision, intent(in) :: VRT0_r(size(rd))
+  double precision, intent(out) :: VRT0_rt(size(rd),size(theta))
+  double precision, intent(out), optional :: VRT_nrt(nrot,size(rd),size(theta))
+  double precision, intent(out), optional :: VRR_nrt(nrot,size(rd),size(theta))
+  double precision, intent(inout), optional :: phis_nr(nrot,size(rd)+1)
+  double precision, intent(inout), optional :: phic_nr(nrot,size(rd)+1)
+  double precision, intent(in), optional :: undef  ! No use
 
   integer :: ii, jj, kk, nnr, nnt, cstat
   double precision :: Usrn_n(2), Vsrn_n(2)
@@ -999,23 +1008,25 @@ subroutine calc_phi2Vrot( nrot, Usrn, Vsrn, vmax, rd, rdh, theta, VRT0_r,  &
 
 end subroutine calc_phi2Vrot
 
+!--------------------------------------------------
+!-- Calculate Vr and Vt components of divergent wind
+!--------------------------------------------------
 
 subroutine calc_D2Vdiv( ndiv, vmax, rd, rdh, theta, rddiv, VDR0_r,  &
   &                     VDR0_rt, VDT_mrt, VDR_mrt, Ds_mr, undef )
-!! Calculate radial and tangential components of divergent wind
   implicit none
-  integer, intent(in) :: ndiv  !! Maximum wavenumber of velocity potential
-  double precision, intent(in) :: vmax  !! Scaling factor for velocity [m/s]
-  double precision, intent(in) :: rd(:)  !! Nomalized radius [1]
-  double precision, intent(in) :: rdh(size(rd)+1)  !! Normalized radius [1]
-  double precision, intent(in) :: theta(:)  !! Azimuthal angle [rad]
-  double precision, intent(in) :: rddiv(:)  !! Normalized radius for defined grid of divergence [1]
-  double precision, intent(in) :: VDR0_r(size(rd))  !! Wavenumber-0 radial wind [m/s]
-  double precision, intent(out) :: VDR0_rt(size(rd),size(theta))  !! = VDR0_r
-  double precision, intent(out), optional :: VDT_mrt(ndiv,size(rd),size(theta))  !! Tangential components of divergent wind for each wavenumber [m/s]
-  double precision, intent(out), optional :: VDR_mrt(ndiv,size(rd),size(theta))  !! Radial components of divergent wind for each wavenumber [m/s]
-  double precision, intent(in), optional :: Ds_mr(ndiv,size(rddiv))  !! Divergence [1/s]
-  double precision, intent(in), optional :: undef  !! Undefined value
+  integer, intent(in) :: ndiv
+  double precision, intent(in) :: vmax
+  double precision, intent(in) :: rd(:)
+  double precision, intent(in) :: rdh(size(rd)+1)
+  double precision, intent(in) :: theta(:)
+  double precision, intent(in) :: rddiv(:)
+  double precision, intent(in) :: VDR0_r(size(rd))
+  double precision, intent(out) :: VDR0_rt(size(rd),size(theta))
+  double precision, intent(out), optional :: VDT_mrt(ndiv,size(rd),size(theta))
+  double precision, intent(out), optional :: VDR_mrt(ndiv,size(rd),size(theta))
+  double precision, intent(in), optional :: Ds_mr(ndiv,size(rddiv))
+  double precision, intent(in), optional :: undef
 
   integer :: ii, jj, kk, nnr, nnt, nnrdiv, nnrdiv2, cstat, irad
 !  double precision :: rmax_inv
@@ -1163,17 +1174,19 @@ subroutine calc_D2Vdiv( ndiv, vmax, rd, rdh, theta, rddiv, VDR0_r,  &
 
 end subroutine calc_D2Vdiv
 
+!--------------------------------------------------
+!-- Calculate total wind from all wavenumbers
+!--------------------------------------------------
 
 subroutine calc_Vn2Vtot( nrot, ndiv, V0, Vn, Vm, Vtot, undef )
-!! Calculate (radial or tangential) total wind from all wavenumbers
   implicit none
-  integer, intent(in) :: nrot  !! Maximum wavenumber for stream function
-  integer, intent(in) :: ndiv  !! Maximum wavenumber for velocity potential
-  double precision, intent(in) :: V0(:,:)  !! Wavenumber-0 component [m/s]
-  double precision, intent(in) :: Vn(nrot,size(V0,1),size(V0,2))  !! rotating components [m/s]
-  double precision, intent(in) :: Vm(ndiv,size(V0,1),size(V0,2))  !! divergent components [m/s]
-  double precision, intent(inout) :: Vtot(size(V0,1),size(V0,2))  !! Total wind [m/s]
-  double precision, intent(in), optional :: undef  !! Undefined value
+  integer, intent(in) :: nrot
+  integer, intent(in) :: ndiv
+  double precision, intent(in) :: V0(:,:)
+  double precision, intent(in) :: Vn(nrot,size(V0,1),size(V0,2))
+  double precision, intent(in) :: Vm(ndiv,size(V0,1),size(V0,2))
+  double precision, intent(inout) :: Vtot(size(V0,1),size(V0,2))
+  double precision, intent(in), optional :: undef
   integer :: ii, jj, kk, nnr, nnt
 
   call stdout( "Enter procedure.", "calc_Vn2Vtot", 0 )
@@ -1214,12 +1227,14 @@ subroutine calc_Vn2Vtot( nrot, ndiv, V0, Vn, Vm, Vtot, undef )
 
 end subroutine calc_Vn2Vtot
 
+!--------------------------------------------------
+!-- calculate inner product of two vectors
+!--------------------------------------------------
 
 double precision function dot_prod( v1, v2 )
-!! Calculate inner product of two vectors
   implicit none
-  double precision, intent(in) :: v1(:)  !! Vector 1
-  double precision, intent(in) :: v2(size(v1))  ! Vector 2
+  double precision, intent(in) :: v1(:)
+  double precision, intent(in) :: v2(size(v1))
   integer :: ii, ni
   double precision :: res
 
@@ -1237,13 +1252,15 @@ double precision function dot_prod( v1, v2 )
 
 end function dot_prod
 
+!--------------------------------------------------
+!-- calculate product for a component in a matrix
+!--------------------------------------------------
 
 double precision function matrix_sum( aij, akj, undeflag )
-!! Calculate product for a component in a matrix
   implicit none
-  double precision, intent(in) :: aij(:,:)  !! Matrix A1
-  double precision, intent(in) :: akj(size(aij,1),size(aij,2))  !! Matrix A2
-  logical, intent(in), optional :: undeflag(size(aij,1),size(aij,2))  !! Undefined flag at each sampling point
+  double precision, intent(in) :: aij(:,:)
+  double precision, intent(in) :: akj(size(aij,1),size(aij,2))
+  logical, intent(in), optional :: undeflag(size(aij,1),size(aij,2))
   integer :: ii, jj, ni, nj
   double precision :: res
 
@@ -1274,11 +1291,12 @@ double precision function matrix_sum( aij, akj, undeflag )
 
 end function matrix_sum
 
+!--------------------------------------------------
+!--------------------------------------------------
 
 subroutine check_zero( a )
-!! Check zero components in the matrix "a"
   implicit none
-  double precision, intent(in) :: a(:,:)  !! Matrix a
+  double precision, intent(in) :: a(:,:)
   integer :: ii, jj, nni, nnj
   logical :: res
 
@@ -1300,13 +1318,14 @@ subroutine check_zero( a )
 
 end subroutine check_zero
 
+!--------------------------------------------------
+!--------------------------------------------------
 
 subroutine check_undef_grid( vval, undefv, undeflag )
-!! Check undefined grids
   implicit none
-  double precision, intent(in) :: vval(:,:)  !! Grid value
-  double precision, intent(in) :: undefv  !! Undefined value
-  logical, intent(out) :: undeflag(size(vval,1),size(vval,2))  ! Undefined flag
+  double precision, intent(in) :: vval(:,:)
+  double precision, intent(in) :: undefv
+  logical, intent(out) :: undeflag(size(vval,1),size(vval,2))
   integer :: ii, jj, nni, nnj
 
   nni=size(vval,1)
@@ -1323,13 +1342,14 @@ subroutine check_undef_grid( vval, undefv, undeflag )
 
 end subroutine check_undef_grid
 
+!--------------------------------------------------
+!--------------------------------------------------
 
 subroutine set_undef_value( undeflag, undefv, vval )
-!! Set undef value (="undefv") to val if undeflag == true.
   implicit none
-  logical, intent(in) :: undeflag(:,:)  !! Undefined flag at each sampling point
-  double precision, intent(in) :: undefv  !! Undefined value
-  double precision, intent(inout) :: vval(size(undeflag,1),size(undeflag,2))  !! Original value at each sampling point
+  logical, intent(in) :: undeflag(:,:)
+  double precision, intent(in) :: undefv
+  double precision, intent(inout) :: vval(size(undeflag,1),size(undeflag,2))
   integer :: ii, jj, nni, nnj
 
   nni=size(undeflag,1)
@@ -1345,19 +1365,21 @@ subroutine set_undef_value( undeflag, undefv, vval )
 
 end subroutine set_undef_value
 
+!--------------------------------------------------
+! Calculate streamfunction for each wavenumber
+!--------------------------------------------------
 
 subroutine calc_Phi2Phin( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr, phi_nr )
-!! Calculate streamfunction for each wavenumber
   implicit none
-  integer, intent(in) :: nrot  !!! Maximum wavenumber for stream function
-  double precision, intent(in) :: vmax  !! Scaling factor for velocity [m/s]
-  double precision, intent(in) :: rmax  !! Scaling factor for radius [m]
-  double precision, intent(in) :: rd(:)  !! Normalized radius [1]
-  double precision, intent(in) :: rdh(size(rd)+1)  !! Normalized radius [1]
-  double precision, intent(in) :: theta(:)  !! Azimuthal angle [rad]
-  double precision, intent(in) :: phis_nr(nrot,size(rd)+1)  !! Sine components of stream function [m2/s]
-  double precision, intent(in) :: phic_nr(nrot,size(rd)+1)  !! Cosine components of stream function [m2/s]
-  double precision, intent(out) :: phi_nr(nrot,size(rd),size(theta))  !! Stream function [m2/s]
+  integer, intent(in) :: nrot
+  double precision, intent(in) :: vmax
+  double precision, intent(in) :: rmax
+  double precision, intent(in) :: rd(:)  ! Normalized radius
+  double precision, intent(in) :: rdh(size(rd)+1)
+  double precision, intent(in) :: theta(:)
+  double precision, intent(in) :: phis_nr(nrot,size(rd)+1)
+  double precision, intent(in) :: phic_nr(nrot,size(rd)+1)
+  double precision, intent(out) :: phi_nr(nrot,size(rd),size(theta))
 
   integer :: ii, jj, kk, nnr, nnt, cstat
   double precision, dimension(size(rd)) :: alp
@@ -1406,19 +1428,21 @@ subroutine calc_Phi2Phin( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr, ph
 
 end subroutine calc_Phi2Phin
 
+!--------------------------------------------------
+! Calculate vorticity for each wavenumber
+!--------------------------------------------------
 
 subroutine calc_Phi2Zetan( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr, zeta_nr )
-!! Calculate vorticity for each wavenumber
   implicit none
-  integer, intent(in) :: nrot  !! Maximum wavenumber for stream function
-  double precision, intent(in) :: vmax  !! Scaling factor for velocity [m/s]
-  double precision, intent(in) :: rmax  !! Scaling factor for radius [m]
-  double precision, intent(in) :: rd(:)  !! Normalized radius [1]
-  double precision, intent(in) :: rdh(size(rd)+1)  !! Normalized radius [1]
-  double precision, intent(in) :: theta(:)  !! Azimuthal angle [rad]
-  double precision, intent(in) :: phis_nr(nrot,size(rd)+1)  !! Sine components of stream function [m2/s]
-  double precision, intent(in) :: phic_nr(nrot,size(rd)+1)  !! Cosine components of stream function [m2/s]
-  double precision, intent(out) :: zeta_nr(nrot,size(rd),size(theta))  !! Vorticity [1/s]
+  integer, intent(in) :: nrot
+  double precision, intent(in) :: vmax
+  double precision, intent(in) :: rmax
+  double precision, intent(in) :: rd(:)  ! Normalized radius
+  double precision, intent(in) :: rdh(size(rd)+1)
+  double precision, intent(in) :: theta(:)
+  double precision, intent(in) :: phis_nr(nrot,size(rd)+1)
+  double precision, intent(in) :: phic_nr(nrot,size(rd)+1)
+  double precision, intent(out) :: zeta_nr(nrot,size(rd),size(theta))
 
   integer :: ii, jj, kk, nnr, nnt, cstat
   double precision, dimension(size(rd)) :: alp
@@ -1537,22 +1561,24 @@ subroutine calc_Phi2Zetan( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr, z
 
 end subroutine calc_Phi2Zetan
 
+!--------------------------------------------------
+! Calculate pseudo retrieval of VT and VR for GVTD
+!--------------------------------------------------
 
 subroutine calc_pseudo_GVTD0( nrot, vmax, rtc, rd, rdh, VRT0_r, VDR0_r,  &
   &                           phis_nr, phic_nr, VRT0_GVTD_r, VDR0_GVTD_r )
-!! Calculate pseudo retrieval of VT and VR for GVTD
   implicit none
-  integer, intent(in) :: nrot  !! Maximum wavenumber for stream function
-  double precision, intent(in) :: vmax  !! Scaling factor for velocity [m/s]
-  double precision, intent(in) :: rtc  !! Normalized distance between the radar to vortex center [1]
-  double precision, intent(in) :: rd(:)  !! Normalized radius [1]
-  double precision, intent(in) :: rdh(size(rd)+1)  !! Normalized radius [1]
-  double precision, intent(in) :: VRT0_r(size(rd))  !! Wavenumber-0 tangential wind [m/s]
-  double precision, intent(in) :: VDR0_r(size(rd))  !! Wanumber-0 radial wind [m/s]
-  double precision, intent(in) :: phis_nr(nrot,size(rd)+1)  !! Sine components of stream function [m2/s]
-  double precision, intent(in) :: phic_nr(nrot,size(rd)+1)  !! Cosine components of stream function [m2/s]
-  double precision, intent(out) :: VRT0_GVTD_r(size(rd))  !! GVTD-reconstructed wavenumber-0 tangential wind [m/s]
-  double precision, intent(out) :: VDR0_GVTD_r(size(rd))  !! GVTD-reconstructed wavenumber-0 radial wind [m/s]
+  integer, intent(in) :: nrot
+  double precision, intent(in) :: vmax
+  double precision, intent(in) :: rtc  ! Normalized radius
+  double precision, intent(in) :: rd(:)  ! Normalized radius
+  double precision, intent(in) :: rdh(size(rd)+1)  ! Normalized radius
+  double precision, intent(in) :: VRT0_r(size(rd))
+  double precision, intent(in) :: VDR0_r(size(rd))
+  double precision, intent(in) :: phis_nr(nrot,size(rd)+1)
+  double precision, intent(in) :: phic_nr(nrot,size(rd)+1)
+  double precision, intent(out) :: VRT0_GVTD_r(size(rd))
+  double precision, intent(out) :: VDR0_GVTD_r(size(rd))
 
   integer :: ii, jj, kk, nnr, cstat
   double precision, dimension(size(rd)) :: dr, dr_inv, r_inv, alp
@@ -1624,21 +1650,23 @@ subroutine calc_pseudo_GVTD0( nrot, vmax, rtc, rd, rdh, VRT0_r, VDR0_r,  &
 
 end subroutine calc_pseudo_GVTD0
 
+!--------------------------------------------------
+! Calculate sine and cosine components of Vt and VR for rot
+!--------------------------------------------------
 
 subroutine calc_phi2sc( nrot, vmax, rd, rdh, phis_nr, phic_nr,  &
   &                     VRTns_r, VRTnc_r, VRRns_r, VRRnc_r )
-!! Calculate sine and cosine components of Vt and VR for rot
   implicit none
-  integer, intent(in) :: nrot  !! Maximum wavenumber for stream function
-  double precision, intent(in) :: vmax  !! Scaling factor for velocity [m/s]
-  double precision, intent(in) :: rd(:)  !! Normalized radius [1]
-  double precision, intent(in) :: rdh(size(rd)+1)  !! Normalized radius [1]
-  double precision, intent(in) :: phis_nr(nrot,size(rd)+1)  !! Sine components of stream function [m2/s]
-  double precision, intent(in) :: phic_nr(nrot,size(rd)+1)  !! Cosine components of stream function [m2/s]
-  double precision, intent(out) :: VRTns_r(nrot,size(rd))  !! Sine compoents of tangential wind [m/s]
-  double precision, intent(out) :: VRTnc_r(nrot,size(rd))  !! Cosine components of tangential wind [m/s]
-  double precision, intent(out) :: VRRns_r(nrot,size(rd))  !! Sine components of radial wind [m/s]
-  double precision, intent(out) :: VRRnc_r(nrot,size(rd))  !! Cosine components of radial wind [m/s]
+  integer, intent(in) :: nrot
+  double precision, intent(in) :: vmax
+  double precision, intent(in) :: rd(:)  ! Normalized radius
+  double precision, intent(in) :: rdh(size(rd)+1)  ! Normalized radius
+  double precision, intent(in) :: phis_nr(nrot,size(rd)+1)
+  double precision, intent(in) :: phic_nr(nrot,size(rd)+1)
+  double precision, intent(out) :: VRTns_r(nrot,size(rd))
+  double precision, intent(out) :: VRTnc_r(nrot,size(rd))
+  double precision, intent(out) :: VRRns_r(nrot,size(rd))
+  double precision, intent(out) :: VRRnc_r(nrot,size(rd))
 
   integer :: ii, jj, kk, nnr, cstat
   double precision, dimension(size(rd)) :: dr, dr_inv, r_inv, alp
@@ -1677,4 +1705,4 @@ subroutine calc_phi2sc( nrot, vmax, rd, rdh, phis_nr, phic_nr,  &
 
 end subroutine calc_phi2sc
 
-end module GVTDX_main
+end module GVTDX_main2
