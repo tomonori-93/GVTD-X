@@ -354,10 +354,10 @@ subroutine calc_AB2VT( nasym, vmax, rd, theta, rtc, A0, An, Bn,  &
   double precision, intent(in) :: A0  !! Wanvenumber-0 of Doppler velocity
   double precision, intent(in) :: An(nasym+1)  !! Cosine components of Doppler velocity
   double precision, intent(in) :: Bn(nasym+1)  !! Sine components of Doppler velocity
-  double precision, intent(out) :: VT0_rt(size(psid))  !! Wavenumber-0 tangential wind
-  double precision, intent(out) :: VR0_rt(size(psid))  !! Wavenumber-0 radial wind
-  double precision, intent(out) :: VTSn_rt(nasym,size(psid))  !! Sine components of tangential wind [m/s]
-  double precision, intent(out) :: VTCn_rt(nasym,size(psid))  !! Cosine components of tangential wind [m/s]
+  double precision, intent(out) :: VT0_rt(size(theta))  !! Wavenumber-0 tangential wind
+  double precision, intent(out) :: VR0_rt(size(theta))  !! Wavenumber-0 radial wind
+  double precision, intent(out) :: VTSn_rt(nasym,size(theta))  !! Sine components of tangential wind [m/s]
+  double precision, intent(out) :: VTCn_rt(nasym,size(theta))  !! Cosine components of tangential wind [m/s]
   double precision, intent(in), optional :: undef  !! No use
 
   integer :: jj, kk, nnt, cstat
