@@ -376,14 +376,14 @@ write(*,*) "val check", Vra1d
   &                   val_spec=(/-1000.0,1000.0/),  &
   &                   col_spec=(/55999/) )
 
-  call Dcl_2D_cont_shade( 'Vt for Analysis',  &
+  call Dcl_2D_cont_shade( 'True V',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vt(1:nxd,1:nyd),  &
   &       draw_Vt(1:nxd,1:nyd),  &
   &       (/0.0, 1.0/), (/0.0, 1.0/),  &
   &       (/'X (km)', 'Y (km)'/),  &
-  &       (/form_typec, form_types/), (/0.2, 0.8/),  &
-  &       (/0.2, 0.8/), c_num=(/contour_num, shade_num/),  &
+  &       (/form_typec, form_types/), viewx_int=(/0.2, 0.8/),  &
+  &       viewy_int=(/0.2, 0.8/), c_num=(/contour_num, shade_num/),  &
   &       no_tone=.true. )
 
 !  do j=1,lfnum
@@ -415,7 +415,7 @@ write(*,*) "val check", Vra1d
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Vt for Retrieval',  &
+  call Dcl_2D_cont_shade( 'Retrieved V',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vt_ret(1:nxd,1:nyd),  &
   &       draw_dVt(1:nxd,1:nyd),  &
@@ -450,7 +450,7 @@ write(*,*) "val check", Vra1d
   &                   val_spec=(/-100.0,100.0/),  &
   &                   col_spec=(/55999/) )
 
-  call Dcl_2D_cont_shade( 'Vr for Analysis',  &
+  call Dcl_2D_cont_shade( 'True U',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vr(1:nxd,1:nyd),  &
   &       draw_Vr(1:nxd,1:nyd),  &
@@ -489,7 +489,7 @@ write(*,*) "val check", Vra1d
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Vr for Retrieval',  &
+  call Dcl_2D_cont_shade( 'Retrieved U',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vr_ret(1:nxd,1:nyd),  &
   &       draw_dVr(1:nxd,1:nyd),  &
@@ -524,7 +524,7 @@ write(*,*) "val check", Vra1d
   &                   val_spec=(/-1000.0,1000.0/),  &
   &                   col_spec=(/55999/) )
 
-  call Dcl_2D_cont_shade( 'Velocity along beam for Analysis',  &
+  call Dcl_2D_cont_shade( 'True velocity along beam',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vra(1:nxd,1:nyd),  &
   &       draw_Vra(1:nxd,1:nyd),  &
@@ -563,7 +563,7 @@ write(*,*) "val check", Vra1d
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Velocity along beam for Retrieval',  &
+  call Dcl_2D_cont_shade( 'Retrieved Velocity along beam',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vra_ret(1:nxd,1:nyd),  &
   &       draw_dVra(1:nxd,1:nyd),  &
@@ -604,7 +604,7 @@ write(*,*) "val check", Vra1d
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Divergence of analytical wind',  &
+  call Dcl_2D_cont_shade( 'Divergence of true wind',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_div(1:nxd,1:nyd),  &
   &       draw_div(1:nxd,1:nyd),  &
@@ -616,7 +616,7 @@ write(*,*) "val check", Vra1d
 
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
-  call Dcl_2D_cont_shade( 'Rotation of analytical wind',  &
+  call Dcl_2D_cont_shade( 'Rotation of true wind',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_rot(1:nxd,1:nyd),  &
   &       draw_rot(1:nxd,1:nyd),  &
