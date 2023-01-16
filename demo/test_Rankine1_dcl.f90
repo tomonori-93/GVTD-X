@@ -209,7 +209,7 @@ program test_Rankine1
   call prod_vortex_structure( rh_t, t_ref_t, rvmax, vmax, c1u, c2u,  &
   &                           Vt_rht_t, Ut_rht_t, vp(1:nvp), up(1:nup),  &
   &                           vpa(1:nvp)*d2r, upa(1:nup)*d2r, ropt=ropt,  &
-  &                           Uxm=Usrn, Vym=Vsrn )
+  &                           Uxm=Usrn, Vym=Vsrn, flag_disp=.true. )
 
 !-- Environmental wind (Us, Vs) -> Vra(r_t,t_t), Vrn(r_t,t_t)
   us0=us
@@ -427,14 +427,14 @@ write(*,*) "val check", Vra1d
 
   call DclSetParm( "GRAPH:LCLIP", .false. )
   call DclDrawTextNormalized( 0.82, 0.75, 'Max Diff.', centering=-1 )
-  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvtmax))//'[m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvtmax))//'(m/s)', centering=-1 )
   call tone_bar( shade_num, (/0.0, 1.0/), (/0.825,0.85/),  &
   &              (/0.2,0.5/), trim(form_types),  &
 !  &              col_mem_num=tone_grid,  &
   &              col_spec=fix_val(1:shade_num+1),  &
   &              val_spec=fix_col(1:shade_num),  &
   &              dir='t', trigle='a' )
-  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV [m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV (m/s)', centering=-1 )
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
 !-- Draw Vr from TC center
@@ -501,14 +501,14 @@ write(*,*) "val check", Vra1d
 
   call DclSetParm( "GRAPH:LCLIP", .false. )
   call DclDrawTextNormalized( 0.82, 0.75, 'Max Diff.', centering=-1 )
-  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvrmax))//'[m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvrmax))//'(m/s)', centering=-1 )
   call tone_bar( shade_num, (/0.0, 1.0/), (/0.825,0.85/),  &
   &              (/0.2,0.5/), trim(form_types),  &
 !  &              col_mem_num=tone_grid,  &
   &              col_spec=fix_val(1:shade_num+1),  &
   &              val_spec=fix_col(1:shade_num),  &
   &              dir='t', trigle='a' )
-  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV [m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.825, 0.525, 'ΔU (m/s)', centering=-1 )
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
 !-- Draw Vt from radar
@@ -563,7 +563,7 @@ write(*,*) "val check", Vra1d
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Retrieved Velocity along beam',  &
+  call Dcl_2D_cont_shade( 'Retrieved velocity along beam',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vra_ret(1:nxd,1:nyd),  &
   &       draw_dVra(1:nxd,1:nyd),  &
@@ -575,14 +575,14 @@ write(*,*) "val check", Vra1d
 
   call DclSetParm( "GRAPH:LCLIP", .false. )
   call DclDrawTextNormalized( 0.82, 0.75, 'Max Diff.', centering=-1 )
-  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvamax))//'[m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvamax))//'(m/s)', centering=-1 )
   call tone_bar( shade_num, (/0.0, 1.0/), (/0.825,0.85/),  &
   &              (/0.2,0.5/), trim(form_types),  &
 !  &              col_mem_num=tone_grid,  &
   &              col_spec=fix_val(1:shade_num+1),  &
   &              val_spec=fix_col(1:shade_num),  &
   &              dir='t', trigle='a' )
-  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV [m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV\_{d} (m/s)', centering=-1 )
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
   contour_num3=1

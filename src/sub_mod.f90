@@ -12,7 +12,7 @@ contains
 
 subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   &                               Vt, Vr, Vt_pert, Vr_pert, Vt_pert_ang, Vr_pert_ang,  &
-  &                               ropt, dopt, Vt_0, Vr_0, Uxm, Vym )
+  &                               ropt, dopt, Vt_0, Vr_0, Uxm, Vym, flag_disp )
 !! Producing vortex structure with rmax, vmax, and umax
   implicit none
   double precision, intent(in) :: r(:)  !! radius [m]
@@ -33,12 +33,14 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   double precision, intent(out), optional :: Vr_0(size(r))  !! Radial profile of axisymmetric Vr [m s-1]
   double precision, intent(out), optional :: Uxm(2)  !! Azimuthal averaged X-wind of wavenumber-1 component [m s-1]
   double precision, intent(out), optional :: Vym(2)  !! Azimuthal averaged Y-wind of wavenumber-1 component [m s-1]
+  logical, intent(in), optional :: flag_disp  ! Flag for displaying each amplitude of asymmetric winds (default: .false.)
 
   integer :: nr, nt, i, j, k, nvtp, nvrp, nvpmax
   double precision :: tmp_vtp1, tmp_vrp1, tmp_vtp2n, tmp_vrp2n, rad_coef, radp_coef, lin_coef, dr
   double precision :: tmp_vtp1_div, tmp_vrp1_div
   double precision :: umean(2), vmean(2)
   double precision :: r_inv(size(r))
+  double precision :: Vtp_omax(size(Vt_pert)), Vrp_omax(size(Vr_pert))
   double precision, allocatable, dimension(:,:) :: zetap, divp
   double precision, allocatable, dimension(:,:,:) :: gkrr, dgkrr
   logical rad_opt
@@ -186,14 +188,6 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
      end do
   end do
 
-  if(present(ropt))then
-     if(nvpmax>0)then
-        deallocate(gkrr)
-        deallocate(dgkrr)
-        deallocate(zetap)
-     end if
-  end if
-
   if(present(Uxm))then
      umean(1)=0.0d0
      umean(2)=0.0d0
@@ -215,6 +209,47 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
      vmean(1)=vmean(1)/dble(nt)
      vmean(2)=vmean(2)/dble(nt)
      Vym(1:2)=vmean(1:2)
+  end if
+
+  if(present(flag_disp))then  ! Only displaying values
+     if((flag_disp.eqv..true.).and.(nvpmax>0))then
+        if(present(Vt_pert))then
+           if(rad_opt.eqv..true.)then
+              do k=1,nvtp
+                 Vtp_omax(k)=-line_integral( nr-1, r, dgkrr(k,1:nr,nr), zetap(k,1:nr) )*dr
+              end do
+           else
+              do k=1,nvtp
+                 Vtp_omax(k)=Vt_pert(k)
+              end do
+           end if
+           do k=1,nvtp
+              write(*,'(a4,i2,a8,1PE16.8,a6)') "Vtp(", k ,",r_m) = ", Vtp_omax(k), "[m/s]."
+           end do
+        end if
+        if(present(Vr_pert))then
+           if(rad_opt.eqv..true.)then
+              do k=1,nvrp
+                 Vrp_omax(k)=-dble(k)*line_integral( nr-1, r, gkrr(k,1:nr,nr), zetap(k,1:nr) )*dr*r_inv(nr)
+              end do
+           else
+              do k=1,nvrp
+                 Vrp_omax(k)=Vr_pert(k)
+              end do
+           end if
+           do k=1,nvrp
+              write(*,'(a4,i2,a8,1PE16.8,a6)') "Vrp(", k ,",r_m) = ", Vrp_omax(k), "[m/s]."
+           end do
+        end if
+     end if
+  end if
+
+  if(present(ropt))then
+     if(nvpmax>0)then
+        deallocate(gkrr)
+        deallocate(dgkrr)
+        deallocate(zetap)
+     end if
   end if
 
 end subroutine prod_vortex_structure
@@ -929,6 +964,55 @@ subroutine rearrange_2d_1d( val2d, val1d )
   end do
 
 end subroutine rearrange_2d_1d
+
+subroutine display_1val_max( val, undef, cout )
+!! Display the maximum of the array val
+  implicit none
+  real, intent(in) :: val(:,:)  !! Input 1
+  real, intent(in), optional :: undef  !! Undefined value
+  character(*), intent(out), optional :: cout  !! Maximum value by character
+  integer :: ii, jj, ni, nj, maxi, maxj
+  real :: maxv, dval
+
+  ni=size(val,1)
+  nj=size(val,2)
+  maxv=0.0
+  maxi=0
+  maxj=0
+
+  if(present(undef))then
+     do jj=1,nj
+        do ii=1,ni
+           if(val(ii,jj)/=undef)then
+              dval=abs(val(ii,jj))
+              if(maxv<dval)then
+                 maxv=dval
+                 maxi=ii
+                 maxj=jj
+              end if
+           end if
+        end do
+     end do
+  else
+     do jj=1,nj
+        do ii=1,ni
+           dval=abs(val(ii,jj))
+           if(maxv<dval)then
+              maxv=dval
+              maxi=ii
+              maxj=jj
+           end if
+        end do
+     end do
+  end if
+
+  write(*,'(a21,1PE16.8,a5,i4,a1,i4,a2)') "Maximum difference = ", maxv,  &
+  &                           " at (", maxi, ",", maxj, ")."
+  if(present(cout))then
+     write(cout,'(1PE8.1)') maxv
+  end if
+
+end subroutine display_1val_max
 
 subroutine display_2valdiff_max( val1, val2, undef, cout )
 !! Display the maximum of the difference between val1 and val2
