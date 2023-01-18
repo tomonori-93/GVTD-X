@@ -2,7 +2,7 @@
  nvp = 2
  nup = 2
  undef = -999.0
- rvmax = 20.0e3
+ rvmax = 30.0e3
  vmax = 50.0
  !vmax = 0.0
  c1u = 0.0
