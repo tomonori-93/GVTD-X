@@ -50,9 +50,10 @@ program test_Rankine
   double precision, allocatable, dimension(:,:) :: Utott_xyd, Vtott_xyd, Vra_rt_d, Vratot_rt_t
   double precision, allocatable, dimension(:,:) :: Vst_rt_d, Usr_rt_d
   double precision, allocatable, dimension(:,:) :: Vx_rt_d, Vy_rt_d
-  double precision, allocatable, dimension(:,:) :: Vx_xyd_t, Vy_xyd_t
-  double precision, allocatable, dimension(:,:) :: Vx_xyd_t_ret, Vy_xyd_t_ret
-  double precision, allocatable, dimension(:,:) :: dVx_xyd_t, dVy_xyd_t
+  double precision, allocatable, dimension(:,:) :: Vx_xyd, Vy_xyd
+  double precision, allocatable, dimension(:,:) :: Vtotx_xyd, Vtoty_xyd
+  double precision, allocatable, dimension(:,:) :: Vxtot_rt_t, Vytot_rt_t
+  double precision, allocatable, dimension(:,:) :: dVx_xyd, dVy_xyd
   double precision, allocatable, dimension(:,:) :: Ut_rt_d, Vt_rt_d, VraP_rt_t
   double precision, allocatable, dimension(:,:) :: VRT0_rt_t, VDR0_rt_t, VTtot_rt_t, VRtot_rt_t
   double precision, allocatable, dimension(:,:) :: us0, vs0, us0_rt_d, vs0_rt_d
@@ -65,7 +66,9 @@ program test_Rankine
   real, allocatable, dimension(:,:) :: draw_Vt, draw_Vr, draw_Vt_ret, draw_Vr_ret
   real, allocatable, dimension(:,:) :: draw_Vra, draw_Vra_ret, draw_rot, draw_div
   real, allocatable, dimension(:,:) :: draw_dVt, draw_dVr, draw_dVra, draw_phi1
-  character(20) :: cvtmax, cvrmax, cvamax
+  real, allocatable, dimension(:,:) :: draw_Vx, draw_Vy, draw_Vx_ret, draw_Vy_ret
+  real, allocatable, dimension(:,:) :: draw_dVx, draw_dVy
+  character(20) :: cvtmax, cvrmax, cvamax, cvxmax, cvymax
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
   &                us, vs, nrot, ndiv, ropt, nrdiv, rdiv, flag_GVTDX
@@ -101,6 +104,7 @@ program test_Rankine
   allocate(t_d(nt_d),stat=cstat)  ! Whole azimuthal angle on radar R-T coordinate
   allocate(t_t(nt_t),stat=cstat)  ! Azimuthal angle on TC R-T coordinate
   allocate(t_ref_t(nt_t),stat=cstat)  ! Reference angle on TC R-T coordinate
+  allocate(t_ref_d(nt_d),stat=cstat)  ! Reference angle on TC R-T coordinate
   allocate(tdr_t(nr_t,nt_t),stat=cstat)  ! Radar azimuthal angle on TC R-T coordinate
   allocate(tdr_d(nr_d,nt_d),stat=cstat)  ! Radar azimuthal angle on TC R-T coordinate
   allocate(rh_t(nr_t),stat=cstat)  ! (staggered) Radius on TC R-T coordinate
@@ -117,6 +121,8 @@ program test_Rankine
   allocate(Vra_rt_d(nr_d,nt_d),stat=cstat)  ! Velocity along beam on TC R-T coordinate
   allocate(VraP_rt_t(nr_t,nt_t),stat=cstat)  ! Velocity along beam on TC R-T coordinate
   allocate(Vratot_rt_t(nr_t,nt_t),stat=cstat)  ! Velocity along beam on TC R-T coordinate
+  allocate(Vxtot_rt_t(nr_t,nt_t),stat=cstat)  ! X component of wind on TC R-T coordinate
+  allocate(Vytot_rt_t(nr_t,nt_t),stat=cstat)  ! Y component of wind on TC R-T coordinate
   allocate(Ut_rt_d(nr_d,nt_d),stat=cstat)  ! Radial wind on TC R-T coordinate
   allocate(Vt_rt_d(nr_d,nt_d),stat=cstat)  ! Tangential wind on TC R-T coordinate
   allocate(Ut_xyd(nxd,nyd),stat=cstat)  ! Radial wind on X-Y coordinate
@@ -125,12 +131,12 @@ program test_Rankine
   allocate(Vtott_xyd(nxd,nyd),stat=cstat)  ! Total tangential wind on X-Y coordinate
   allocate(Vx_rt_d(nr_d,nt_d),stat=cstat)  ! X component of wind on TC R-T coordinate
   allocate(Vy_rt_d(nr_d,nt_d),stat=cstat)  ! Y component of wind on TC R-T coordinate
-  allocate(Vx_xyd_t(nxd,nyd),stat=cstat)  ! X component of wind on X-Y coordinate
-  allocate(Vy_xyd_t(nxd,nyd),stat=cstat)  ! Y component of wind on X-Y coordinate
-  allocate(Vx_xyd_t_ret(nxd,nyd),stat=cstat)  ! Retrieved X component of wind on X-Y coordinate
-  allocate(Vy_xyd_t_ret(nxd,nyd),stat=cstat)  ! Retrieved Y component of wind on X-Y coordinate
-  allocate(dVx_xyd_t(nxd,nyd),stat=cstat)  ! Vx_xyd_t - Vx_xyd_t_ret
-  allocate(dVy_xyd_t(nxd,nyd),stat=cstat)  ! Vy_xyd_t - Vy_xyd_t_ret
+  allocate(Vx_xyd(nxd,nyd),stat=cstat)  ! X component of wind on X-Y coordinate
+  allocate(Vy_xyd(nxd,nyd),stat=cstat)  ! Y component of wind on X-Y coordinate
+  allocate(Vtotx_xyd(nxd,nyd),stat=cstat)  ! Retrieved X component of wind on X-Y coordinate
+  allocate(Vtoty_xyd(nxd,nyd),stat=cstat)  ! Retrieved Y component of wind on X-Y coordinate
+  allocate(dVx_xyd(nxd,nyd),stat=cstat)  ! Vx_xyd - Vtotx_xyd
+  allocate(dVy_xyd(nxd,nyd),stat=cstat)  ! Vy_xyd - Vtoty_xyd
   allocate(Vra_xyd(nxd,nyd),stat=cstat)  ! Velocity along beam on X-Y coordinate
   allocate(Vsra_xyd(nxd,nyd),stat=cstat)  ! Environmental wind velocity along beam on X-Y coordinate
   allocate(Vratot_xyd(nxd,nyd),stat=cstat)  ! Retrieved velocity along beam on X-Y coordinate
@@ -150,6 +156,8 @@ program test_Rankine
   allocate(draw_yd(nyd),stat=cstat)
   allocate(draw_Vt(nxd,nyd),stat=cstat)
   allocate(draw_Vr(nxd,nyd),stat=cstat)
+  allocate(draw_Vx(nxd,nyd),stat=cstat)
+  allocate(draw_Vy(nxd,nyd),stat=cstat)
   allocate(draw_Vt_ret(nxd,nyd),stat=cstat)
   allocate(draw_Vr_ret(nxd,nyd),stat=cstat)
   allocate(draw_Vx_ret(nxd,nyd),stat=cstat)
@@ -249,15 +257,15 @@ program test_Rankine
   &                       undef=undef, undefg=undef, stdopt=.true. )
   call tangent_conv_scal( xd, yd, tc_xd, tc_yd, vs0, r_d, t_ref_d, vs0_rt_d,  &
   &                       undef=undef, undefg=undef, stdopt=.true. )
-  call conv_VxVy2VtVr( r_d, t_ref_d, us0_rt_d, vs0_rt_d, Vst_rt_d, Usr_rt_d, undef=undef )
+  call conv_VxVy2VtVr_rt( r_d, t_ref_d, us0_rt_d, vs0_rt_d, Vst_rt_d, Usr_rt_d, undef=undef )
 
 !-- converting (Vr,Vt)(r_t,t_ref_t) -> (Vx,Vy)(r_t,t_ref_t)
-  call conv_VtVr2VxVy( r_d, t_ref_d, Vt_rt_d, Ut_rt_d, Vx_rt_d, Vy_rt_d, undef=undef )
-  call cart_conv_scal( r_d, t_ref_d, Vx_rt_d, xd, yd, tc_xd, tc_yd, Vx_xyd_t, undef=undef,  &
+  call conv_VtVr2VxVy_rt( r_d, t_ref_d, Vt_rt_d, Ut_rt_d, Vx_rt_d, Vy_rt_d, undef=undef )
+  call cart_conv_scal( r_d, t_ref_d, Vx_rt_d, xd, yd, tc_xd, tc_yd, Vx_xyd, undef=undef,  &
   &                    undefg=undef, stdopt=.true. )
-  call cart_conv_scal( r_d, t_ref_d, Vy_rt_d, xd, yd, tc_xd, tc_yd, Vy_xyd_t, undef=undef,  &
+  call cart_conv_scal( r_d, t_ref_d, Vy_rt_d, xd, yd, tc_xd, tc_yd, Vy_xyd, undef=undef,  &
   &                    undefg=undef, stdopt=.true. )
-  call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, Vx_xyd_t, Vy_xyd_t, Vra_xyd, undef=undef )
+  call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, Vx_xyd, Vy_xyd, Vra_xyd, undef=undef )
   call subst_2d( Vra_xyd, Vsra_xyd, undef=undef )
 !  call proj_VxVy2Vra( xd, yd, ra_xd, ra_yd, Um_xyd, Vm_xyd, Vmra_xyd )
 !  Vra_xyd_t=Vra_xyd_t!+Vmra_xyd
@@ -313,13 +321,18 @@ write(*,*) "val check", Vra1d
   call interpo_search_1d( rh_t, rvmax, ivmax )
 !-- converting (r_t,t_ref_t) -> (xd,yd)
   call proj_VtVr2Vrart( rh_t, t_t, tdr_t, VTtot_rt_t, VRtot_rt_t, Vratot_rt_t, undef=undef )
-作成途中
-  call proj_VtVr2VxVy( rh_t, t_t, VTtot_rt_t, VRtot_rt_t, Vx_rt_t_ret, Vy_rt_t_ret, undef=undef )
   call cart_conv_scal( rh_t, t_ref_t, VTtot_rt_t, xd, yd, pseudo_tc_xd, pseudo_tc_yd, Vtott_xyd,  &
   &                    undef=undef, undefg=undef, stdopt=.true. )
   call cart_conv_scal( rh_t, t_ref_t, VRtot_rt_t, xd, yd, pseudo_tc_xd, pseudo_tc_yd, Utott_xyd,  &
   &                    undef=undef, undefg=undef, stdopt=.true. )
   call cart_conv_scal( rh_t, t_ref_t, Vratot_rt_t, xd, yd, pseudo_tc_xd, pseudo_tc_yd, Vratot_xyd,  &
+  &                    undef=undef, undefg=undef, stdopt=.true. )
+
+!-- converting (r_t,t_ref_t) -> (xd,yd)
+  call conv_VtVr2VxVy_rt( rh_t, t_ref_t, VTtot_rt_t, VRtot_rt_t, Vxtot_rt_t, Vytot_rt_t, undef=undef )
+  call cart_conv_scal( rh_t, t_ref_t, Vxtot_rt_t, xd, yd, pseudo_tc_xd, pseudo_tc_yd, Vtotx_xyd,  &
+  &                    undef=undef, undefg=undef, stdopt=.true. )
+  call cart_conv_scal( rh_t, t_ref_t, Vytot_rt_t, xd, yd, pseudo_tc_xd, pseudo_tc_yd, Vtoty_xyd,  &
   &                    undef=undef, undefg=undef, stdopt=.true. )
 
 !-- calculate divergence and rotation for the retrieved VR and VT
@@ -347,12 +360,14 @@ write(*,*) "val check", Vra1d
   call display_2valdiff_max( Vt_xyd, Vtott_xyd, undef=undef, cout=cvtmax )
   call display_2valdiff_max( Ut_xyd, Utott_xyd, undef=undef, cout=cvrmax )
   call display_2valdiff_max( Vra_xyd, Vratot_xyd, undef=undef, cout=cvamax )
+  call display_2valdiff_max( Vx_xyd, Vtotx_xyd, undef=undef, cout=cvxmax )
+  call display_2valdiff_max( Vy_xyd, Vtoty_xyd, undef=undef, cout=cvymax )
 
 !-- Check max value of VT0 and VR0
   call stand_devi( VTtot_rt_t(ivmax,1:nt_t), vmax, maxv, undef=undef )
 !  call stand_devi( VRtot_rt_t(ivmax,1:nt_t), 0.0d0, maxv, undef=undef )
   write(*,'(a22,1P3E16.8,a5)') "RMSE of VTmax at RMW: ", real(maxv),  &
-  &                            real(VRT0_rt_t(ivmax,1)), real(rh_t(ivmax)), "[m/s]"
+  &                            real(VRT0_rt_t(ivmax,1)), real(rh_t(ivmax)), "(m/s)"
 
 !-- DCL drawing
   call conv_d2r_1d( xd, draw_xd )
@@ -365,14 +380,22 @@ write(*,*) "val check", Vra1d
   call conv_d2r_2d( Utott_xyd, draw_Vr_ret )
   call conv_d2r_2d( Vra_xyd, draw_Vra )
   call conv_d2r_2d( Vratot_xyd, draw_Vra_ret )
+  call conv_d2r_2d( Vx_xyd, draw_Vx )
+  call conv_d2r_2d( Vy_xyd, draw_Vy )
+  call conv_d2r_2d( Vtotx_xyd, draw_Vx_ret )
+  call conv_d2r_2d( Vtoty_xyd, draw_Vy_ret )
   call conv_d2r_2d( div_xyd, draw_div )
   call conv_d2r_2d( rot_xyd, draw_rot )
   draw_dVt=draw_Vt_ret
   draw_dVr=draw_Vr_ret
   draw_dVra=draw_Vra_ret
+  draw_dVx=draw_Vx_ret
+  draw_dVy=draw_Vy_ret
   call subst_2d_r( draw_dVt, draw_Vt, undef=real(undef) )
   call subst_2d_r( draw_dVr, draw_Vr, undef=real(undef) )
   call subst_2d_r( draw_dVra, draw_Vra, undef=real(undef) )
+  call subst_2d_r( draw_dVx, draw_Vx, undef=real(undef) )
+  call subst_2d_r( draw_dVy, draw_Vy, undef=real(undef) )
   if(nrot>0)then
      call conv_d2r_2d( phin_xyd(1,1:nxd,1:nyd), draw_phi1 )
   else
@@ -411,7 +434,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &                   val_spec=(/-1000.0,1000.0/),  &
   &                   col_spec=(/55999/) )
 
-  call Dcl_2D_cont_shade( 'Vt for Analysis',  &
+  call Dcl_2D_cont_shade( 'True V',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vt(1:nxd,1:nyd),  &
   &       draw_Vt(1:nxd,1:nyd),  &
@@ -450,7 +473,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Vt for Retrieval',  &
+  call Dcl_2D_cont_shade( 'Retrieved V',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vt_ret(1:nxd,1:nyd),  &
   &       draw_dVt(1:nxd,1:nyd),  &
@@ -462,14 +485,14 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
 
   call DclSetParm( "GRAPH:LCLIP", .false. )
   call DclDrawTextNormalized( 0.82, 0.75, 'Max Diff.', centering=-1 )
-  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvtmax))//'[m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvtmax))//'(m/s)', centering=-1 )
   call tone_bar( shade_num, (/0.0, 1.0/), (/0.825,0.85/),  &
   &              (/0.2,0.5/), trim(form_types),  &
 !  &              col_mem_num=tone_grid,  &
   &              col_spec=fix_val(1:shade_num+1),  &
   &              val_spec=fix_col(1:shade_num),  &
   &              dir='t', trigle='a' )
-  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV [m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV (m/s)', centering=-1 )
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
 !-- Draw Vr from TC center
@@ -485,7 +508,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &                   val_spec=(/-100.0,100.0/),  &
   &                   col_spec=(/55999/) )
 
-  call Dcl_2D_cont_shade( 'Vr for Analysis',  &
+  call Dcl_2D_cont_shade( 'True U',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vr(1:nxd,1:nyd),  &
   &       draw_Vr(1:nxd,1:nyd),  &
@@ -524,7 +547,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Vr for Retrieval',  &
+  call Dcl_2D_cont_shade( 'Retrieved U',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vr_ret(1:nxd,1:nyd),  &
   &       draw_dVr(1:nxd,1:nyd),  &
@@ -536,14 +559,14 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
 
   call DclSetParm( "GRAPH:LCLIP", .false. )
   call DclDrawTextNormalized( 0.82, 0.75, 'Max Diff.', centering=-1 )
-  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvrmax))//'[m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvrmax))//'(m/s)', centering=-1 )
   call tone_bar( shade_num, (/0.0, 1.0/), (/0.825,0.85/),  &
   &              (/0.2,0.5/), trim(form_types),  &
 !  &              col_mem_num=tone_grid,  &
   &              col_spec=fix_val(1:shade_num+1),  &
   &              val_spec=fix_col(1:shade_num),  &
   &              dir='t', trigle='a' )
-  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV [m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV (m/s)', centering=-1 )
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
 !-- Draw Vt from radar
@@ -559,7 +582,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &                   val_spec=(/-1000.0,1000.0/),  &
   &                   col_spec=(/55999/) )
 
-  call Dcl_2D_cont_shade( 'Velocity along beam for Analysis',  &
+  call Dcl_2D_cont_shade( 'True velocity along beam',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vra(1:nxd,1:nyd),  &
   &       draw_Vra(1:nxd,1:nyd),  &
@@ -598,7 +621,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Velocity along beam for Retrieval',  &
+  call Dcl_2D_cont_shade( 'Retrieved velocity along beam',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vra_ret(1:nxd,1:nyd),  &
   &       draw_dVra(1:nxd,1:nyd),  &
@@ -610,14 +633,14 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
 
   call DclSetParm( "GRAPH:LCLIP", .false. )
   call DclDrawTextNormalized( 0.82, 0.75, 'Max Diff.', centering=-1 )
-  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvamax))//'[m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvamax))//'(m/s)', centering=-1 )
   call tone_bar( shade_num, (/0.0, 1.0/), (/0.825,0.85/),  &
   &              (/0.2,0.5/), trim(form_types),  &
 !  &              col_mem_num=tone_grid,  &
   &              col_spec=fix_val(1:shade_num+1),  &
   &              val_spec=fix_col(1:shade_num),  &
   &              dir='t', trigle='a' )
-  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV [m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV (m/s)', centering=-1 )
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
 !-- Draw Vx
@@ -633,7 +656,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Retrieved Vx and ΔVx',  &
+  call Dcl_2D_cont_shade( 'Retrieved u\_{x} and Δu\_{x}',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vx_ret(1:nxd,1:nyd),  &
   &       draw_dVx(1:nxd,1:nyd),  &
@@ -645,14 +668,14 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
 
   call DclSetParm( "GRAPH:LCLIP", .false. )
   call DclDrawTextNormalized( 0.82, 0.75, 'Max Diff.', centering=-1 )
-  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvamax))//'[m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvxmax))//'(m/s)', centering=-1 )
   call tone_bar( shade_num, (/0.0, 1.0/), (/0.825,0.85/),  &
   &              (/0.2,0.5/), trim(form_types),  &
 !  &              col_mem_num=tone_grid,  &
   &              col_spec=fix_val(1:shade_num+1),  &
   &              val_spec=fix_col(1:shade_num),  &
   &              dir='t', trigle='a' )
-  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV [m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV (m/s)', centering=-1 )
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
 !-- Draw Vy
@@ -668,7 +691,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Retrieved Vy and ΔVy',  &
+  call Dcl_2D_cont_shade( 'Retrieved v\_{y} and Δv\_{y}',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vy_ret(1:nxd,1:nyd),  &
   &       draw_dVy(1:nxd,1:nyd),  &
@@ -680,14 +703,14 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
 
   call DclSetParm( "GRAPH:LCLIP", .false. )
   call DclDrawTextNormalized( 0.82, 0.75, 'Max Diff.', centering=-1 )
-  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvamax))//'[m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.82, 0.7, trim(adjustl(cvymax))//'(m/s)', centering=-1 )
   call tone_bar( shade_num, (/0.0, 1.0/), (/0.825,0.85/),  &
   &              (/0.2,0.5/), trim(form_types),  &
 !  &              col_mem_num=tone_grid,  &
   &              col_spec=fix_val(1:shade_num+1),  &
   &              val_spec=fix_col(1:shade_num),  &
   &              dir='t', trigle='a' )
-  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV [m/s]', centering=-1 )
+  call DclDrawTextNormalized( 0.825, 0.525, 'ΔV (m/s)', centering=-1 )
   call DclSetParm( "GRAPH:LCLIP", .true. )
 
   contour_num3=1

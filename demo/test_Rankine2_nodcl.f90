@@ -199,7 +199,7 @@ program test_Rankine
      Vsrn=0.0d0
 
 !-- converting (Vr,Vt)(r_t,t_t) -> (Vx,Vy)(r_t,t_t)
-!  call conv_VtVr2VxVy( rh_t, t_t, Vt_rht_t, Ut_rht_t, Vx_rht_t, Vy_rht_t )
+!  call conv_VtVr2VxVy_rt( rh_t, t_t, Vt_rht_t, Ut_rht_t, Vx_rht_t, Vy_rht_t )
 !  call cart_conv_scal( rh_t, t_t, Vx_rht_t, xd, yd, tc_xd, tc_yd, Vx_xyd_t, undef=undef,  &
 !  &                    undefg=undef, stdopt=.true. )
 !  call cart_conv_scal( rh_t, t_t, Vy_rht_t, xd, yd, tc_xd, tc_yd, Vy_xyd_t, undef=undef,  &

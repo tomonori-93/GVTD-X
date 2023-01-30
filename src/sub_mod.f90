@@ -292,7 +292,7 @@ end subroutine prod_vortex_structure_L06
 !
 !end subroutine prod_radar_along_vel
 
-subroutine conv_VtVr2VxVy( r, t, Vt, Vr, Vx, Vy, undef )
+subroutine conv_VtVr2VxVy_rt( r, t, Vt, Vr, Vx, Vy, undef )
 !! Convert Vt and Vr to Vx and Vy on R-T coordinates
   implicit none
   double precision, intent(in) :: r(:)  !! R-coordinate [m]
@@ -327,9 +327,9 @@ subroutine conv_VtVr2VxVy( r, t, Vt, Vr, Vx, Vy, undef )
      end do
   end if
 
-end subroutine conv_VtVr2VxVy
+end subroutine conv_VtVr2VxVy_rt
 
-subroutine conv_VxVy2VtVr( r, t, Vx, Vy, Vt, Vr, undef )
+subroutine conv_VxVy2VtVr_rt( r, t, Vx, Vy, Vt, Vr, undef )
 !! Convert Vx and Vy to Vr and Vt on R-T coordinates
   implicit none
   double precision, intent(in) :: r(:)  !! R-coordinate [m]
@@ -364,7 +364,61 @@ subroutine conv_VxVy2VtVr( r, t, Vx, Vy, Vt, Vr, undef )
      end do
   end if
 
-end subroutine conv_VxVy2VtVr
+end subroutine conv_VxVy2VtVr_rt
+
+subroutine conv_VxVy2VtVr_xy( x, y, xc, yc, Vx, Vy, Vt, Vr, undef )
+!! Convert Vx and Vy to Vr and Vt on X-Y coordinates
+  implicit none
+  double precision, intent(in) :: x(:)  !! X-coordinate [m]
+  double precision, intent(in) :: y(:)  !! Y-coordinate [m]
+  double precision, intent(in) :: xc    !! X component of the center [m]
+  double precision, intent(in) :: yc    !! Y component of the center [m]
+  double precision, intent(in) :: Vx(size(x),size(y))  !! X-component of wind on X-Y coordinates
+  double precision, intent(in) :: Vy(size(x),size(y))  !! Y-component of wind on X-Y coordinates
+  double precision, intent(out) :: Vt(size(x),size(y))   !! tangential wind component on X-Y coordinates
+  double precision, intent(out) :: Vr(size(x),size(y))   !! radial wind component on X-Y coordinates
+  double precision, intent(in), optional :: undef  !! Undefined value
+  integer :: nx, ny, i, j
+  double precision :: radi, radi_i
+
+  nx=size(x)
+  ny=size(y)
+
+  if(present(undef))then
+     Vr=undef
+     Vt=undef
+     do j=1,ny
+        do i=1,nx
+           if(Vx(i,j)/=undef.and.Vy(i,j)/=undef)then
+              radi=dsqrt(dabs((x(i)-xc)**2+(y(j)-yc)**2))
+              if(radi/=0.0d0)then
+                 radi_i=1.0d0/radi
+                 Vr(i,j)=((x(i)-xc)*radi_i)*Vx(i,j)+((y(j)-yc)*radi_i)*Vy(i,j)
+                 Vt(i,j)=((x(i)-xc)*radi_i)*Vy(i,j)-((y(j)-yc)*radi_i)*Vx(i,j)
+              else
+                 Vr(i,j)=0.0d0
+                 Vt(i,j)=0.0d0
+              end if
+           end if
+        end do
+     end do
+  else
+     do j=1,ny
+        do i=1,nx
+           radi=dsqrt(dabs((x(i)-xc)**2+(y(j)-yc)**2))
+           if(radi/=0.0d0)then
+              radi_i=1.0d0/radi
+              Vr(i,j)=((x(i)-xc)*radi_i)*Vx(i,j)+((y(j)-yc)*radi_i)*Vy(i,j)
+              Vt(i,j)=((x(i)-xc)*radi_i)*Vy(i,j)-((y(j)-yc)*radi_i)*Vx(i,j)
+           else
+              Vr(i,j)=0.0d0
+              Vt(i,j)=0.0d0
+           end if
+        end do
+     end do
+  end if
+
+end subroutine conv_VxVy2VtVr_xy
 
 subroutine proj_VxVy2Vraxy( x, y, rax, ray, Vx, Vy, Vraxy, undef )
 !! Calculate Vx and Vy to Vd along with radar beams on X-Y coodinates
@@ -1478,6 +1532,54 @@ subroutine cart_conv_scal( r, theta, v, x, y, xc, yc, u,  &
   end do
 
 end subroutine cart_conv_scal
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine Mean_1d( x, ave, error, nc )
+!! Average x
+  implicit none
+  double precision, intent(in) :: x(:)    !! Input data
+  double precision, intent(inout) :: ave  !! Output mean value
+  double precision, intent(in), optional :: error  !! Missing value
+  integer, intent(inout), optional :: nc  !! Number of sampling data without error
+  integer :: i, nt
+  integer :: nx  ! sampling number of x
+  double precision :: summ
+
+  summ=0.0d0
+  nt=0
+  nx=size(x)
+
+  if(present(error))then
+     do i=1,nx
+        if(x(i)/=error)then
+           summ=summ+x(i)
+           nt=1+nt
+        end if
+     end do
+
+     if(nt/=0)then
+        ave=summ/dble(nt)
+     else
+        ave=error
+     end if
+
+     if(present(nc))then
+        nc=nt
+     end if
+
+  else
+
+     do i=1,nx
+        summ=summ+x(i)
+     end do
+
+     ave=summ/dble(nx)
+
+  end if
+
+end subroutine Mean_1d
 
 !--------------------------------------------------------------
 !--------------------------------------------------------------
