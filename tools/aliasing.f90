@@ -39,8 +39,8 @@ program aliasing_test
   end do
 
   !-- クラッターノイズ or 欠損
-  !Vdo(nx/5:nx/4)=0.0
-  Vdo(nx/5:nx/3)=undef
+  Vdo(nx/5:nx/3)=0.1*sin(100.0*theta(nx/5:nx/3))
+  !Vdo(nx/5:nx/3)=undef
 
   Vdm=Vdo
 
@@ -139,11 +139,11 @@ program aliasing_test
   &            mxitv=(/60.0, 30.0/), myitv=(/10.0, 5.0/),  &
   &            l_idx=lidx, l_typ=ltyp )
 
-  call DclDrawTextNormalized( 0.82, 0.8, 'V\^{o}\_{d}', height=0.02,  &
+  call DclDrawTextNormalized( 0.82, 0.8, 'V\_{d}\^{obs}', height=0.02,  &
           &                   centering=-1, index=44 )
-  call DclDrawTextNormalized( 0.82, 0.77, 'V\^{m}\_{d}', height=0.02,  &
+  call DclDrawTextNormalized( 0.82, 0.77, 'V\_{d}\^{corr}', height=0.02,  &
           &                   centering=-1, index=24 )
-  call DclDrawTextNormalized( 0.82, 0.74, 'V\^{t}\_{d}', height=0.02,  &
+  call DclDrawTextNormalized( 0.82, 0.74, 'V\_{d}\^{true}', height=0.02,  &
           &                   centering=-1, index=14 )
 
   call DclCloseGraphics
