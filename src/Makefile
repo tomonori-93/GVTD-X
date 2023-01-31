@@ -1,6 +1,8 @@
 # Makefile
 include ../Mkinclude
 
+include depend
+
 LIBNM	= GVTDX
 
 SRC	=  \

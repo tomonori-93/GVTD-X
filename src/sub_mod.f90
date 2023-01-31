@@ -216,7 +216,10 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
         if(present(Vt_pert))then
            if(rad_opt.eqv..true.)then
               do k=1,nvtp
-                 Vtp_omax(k)=-line_integral( nr-1, r, dgkrr(k,1:nr,nr), zetap(k,1:nr) )*dr
+                 do i=1,nr
+                    Vtp_omax(k)=-line_integral( nr-1, r, dgkrr(k,1:nr,i), zetap(k,1:nr) )*dr
+!                    write(*,'(a4,i2,a8,1PE16.8,a6)') "Vtp(", k ,",r_m) = ", Vtp_omax(k), "[m/s]."
+                 end do
               end do
            else
               do k=1,nvtp
@@ -230,7 +233,10 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
         if(present(Vr_pert))then
            if(rad_opt.eqv..true.)then
               do k=1,nvrp
-                 Vrp_omax(k)=-dble(k)*line_integral( nr-1, r, gkrr(k,1:nr,nr), zetap(k,1:nr) )*dr*r_inv(nr)
+                 do i=1,nr
+                    Vrp_omax(k)=-dble(k)*line_integral( nr-1, r, gkrr(k,1:nr,i), zetap(k,1:nr) )*dr*r_inv(i)
+!                    write(*,'(a4,i2,a8,1PE16.8,a6)') "Vrp(", k ,",r_i) = ", Vrp_omax(k), "[m/s]."
+                 end do
               end do
            else
               do k=1,nvrp
