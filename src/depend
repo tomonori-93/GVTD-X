@@ -1,9 +1,7 @@
 gvtdx_main_mod.o	: gvtdx_sub.mod
-gvtdx_main_mod2.o	: gvtdx_sub.mod
 gvtd_main_mod.o		: gvtdx_sub.mod
 gbvtd_main_mod.o	: gvtdx_sub.mod
 gvtdx_sub.mod		: sub_mod.o
 gvtdx_main.mod		: gvtdx_main_mod.o
-gvtdx_main2.mod		: gvtdx_main_mod2.o
 gvtd_main.mod		: gvtd_main_mod.o
 gbvtd_main.mod		: gbvtd_main_mod.o

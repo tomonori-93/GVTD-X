@@ -8,7 +8,6 @@ LIBNM	= GVTDX
 SRC	=  \
 	  sub_mod.f90 \
 	  gvtdx_main_mod.f90 \
-	  gvtdx_main_mod2.f90 \
 	  gbvtd_main_mod.f90 \
 	  gvtd_main_mod.f90
 
@@ -22,7 +21,6 @@ OBJ	=  \
 MOD	=  \
 	  GVTDX_sub.mod \
 	  GVTDX_main.mod \
-	  GVTDX_main2.mod \
 	  GBVTD_main.mod \
 	  GVTD_main.mod
 

@@ -1,5 +1,5 @@
 # Makefile
-include ../Mkinclude
+include ./Mkinclude
 
 DCLIB	= ${AF90LIB}
 DCDIR	= ${AF90LD}/lib
