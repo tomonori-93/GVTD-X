@@ -29,8 +29,8 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   double precision, intent(in), optional :: Vr_pert_ang(:)  !! angles of radial wind [rad]
   logical, intent(in), optional :: ropt  !! option for radial variation of perturbation Vt and Vr
   logical, intent(in), optional :: dopt  !! option for divergent components of perturbation Vt and Vr
-  double precision, intent(out), optional :: Vt_0(size(r))  !! Radial profile of axisymmetric Vt [m s-1]
-  double precision, intent(out), optional :: Vr_0(size(r))  !! Radial profile of axisymmetric Vr [m s-1]
+  double precision, intent(out), optional :: Vt_0(:)  !! Radial profile of axisymmetric Vt [m s-1]
+  double precision, intent(out), optional :: Vr_0(:)  !! Radial profile of axisymmetric Vr [m s-1]
   double precision, intent(out), optional :: Uxm(2)  !! Azimuthal averaged X-wind of wavenumber-1 component [m s-1]
   double precision, intent(out), optional :: Vym(2)  !! Azimuthal averaged Y-wind of wavenumber-1 component [m s-1]
   logical, intent(in), optional :: flag_disp  ! Flag for displaying each amplitude of asymmetric winds (default: .false.)
@@ -40,7 +40,7 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   double precision :: tmp_vtp1_div, tmp_vrp1_div
   double precision :: umean(2), vmean(2)
   double precision :: r_inv(size(r))
-  double precision :: Vtp_omax(size(Vt_pert)), Vrp_omax(size(Vr_pert))
+  double precision, allocatable, dimension(:) :: Vtp_omax, Vrp_omax
   double precision, allocatable, dimension(:,:) :: zetap, divp
   double precision, allocatable, dimension(:,:,:) :: gkrr, dgkrr
   logical rad_opt
@@ -212,6 +212,8 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   end if
 
   if(present(flag_disp))then  ! Only displaying values
+     allocate(Vtp_omax(nvtp))
+     allocate(Vrp_omax(nvrp))
      if((flag_disp.eqv..true.).and.(nvpmax>0))then
         if(present(Vt_pert))then
            if(rad_opt.eqv..true.)then
@@ -248,6 +250,8 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
            end do
         end if
      end if
+     deallocate(Vtp_omax)
+     deallocate(Vrp_omax)
   end if
 
   if(present(ropt))then
