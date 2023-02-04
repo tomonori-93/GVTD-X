@@ -18,7 +18,7 @@ module GVTD_main
 
 contains
 
-subroutine Retrieve_velocity_GVTD( nasym, r, t, td, Vd, Un, Vn, RadTC,  &
+subroutine Retrieve_velocity_GVTD( nasym, r, t, td, Vd, RadTC,  &
   &                                VT, VR, VT0, VR0, VTSn, VTCn, undef )
 !!  Solve unknown variables and return wind velocity on R-T coordinates
 !!  based on the GVTD technique. <br>
@@ -35,8 +35,6 @@ subroutine Retrieve_velocity_GVTD( nasym, r, t, td, Vd, Un, Vn, RadTC,  &
   double precision, intent(in) :: t(:)   !! azimuthal coordinate on which Vd is defined [rad]
   double precision, intent(in) :: td(size(r),size(t))  !! radar azimuthal angle defined at Vd(r,t) [rad]
   double precision, intent(inout) :: Vd(size(r),size(t))  !! Doppler velocity defined on r-t [m s-1]
-  double precision, intent(in) :: Un(2)                !! Parallel component to radar in environmental wind, defined on r-t [m s-1]
-  double precision, intent(in) :: Vn(2)                !! Normal component to radar in environmental wind, defined on r-t [m s-1]
   double precision, intent(in) :: RadTC                !! Distance from radar to TC center [m]
   double precision, intent(out) :: VT(size(r),size(t))  !! retrieved total tangential wind [m s-1]
   double precision, intent(out) :: VR(size(r),size(t))  !! retrieved total radial wind [m s-1]
@@ -354,10 +352,10 @@ subroutine calc_AB2VT( nasym, vmax, rd, theta, rtc, A0, An, Bn,  &
   double precision, intent(in) :: A0  !! Wanvenumber-0 of Doppler velocity
   double precision, intent(in) :: An(nasym+1)  !! Cosine components of Doppler velocity
   double precision, intent(in) :: Bn(nasym+1)  !! Sine components of Doppler velocity
-  double precision, intent(out) :: VT0_rt(size(psid))  !! Wavenumber-0 tangential wind
-  double precision, intent(out) :: VR0_rt(size(psid))  !! Wavenumber-0 radial wind
-  double precision, intent(out) :: VTSn_rt(nasym,size(psid))  !! Sine components of tangential wind [m/s]
-  double precision, intent(out) :: VTCn_rt(nasym,size(psid))  !! Cosine components of tangential wind [m/s]
+  double precision, intent(out) :: VT0_rt(size(theta))  !! Wavenumber-0 tangential wind
+  double precision, intent(out) :: VR0_rt(size(theta))  !! Wavenumber-0 radial wind
+  double precision, intent(out) :: VTSn_rt(nasym,size(theta))  !! Sine components of tangential wind [m/s]
+  double precision, intent(out) :: VTCn_rt(nasym,size(theta))  !! Cosine components of tangential wind [m/s]
   double precision, intent(in), optional :: undef  !! No use
 
   integer :: jj, kk, nnt, cstat

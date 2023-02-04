@@ -85,7 +85,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="31.2% of total for modules and submodules.">1308 statements</a>
+    title="45.6% of total for modules and submodules.">1882 statements</a>
      </li> 
     <li><i class="fa fa-code"></i><a href="../src/sub_mod.f90"> Source File</a></li>
   </ul>
@@ -114,8 +114,10 @@
   <div id="vars-0" class="panel-collapse collapse">
     <div class="list-group">
       <a class="list-group-item" href="../module/gvtdx_sub.html#variable-pi">pi</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#variable-radius">radius</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#variable-img">img</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#variable-pi_dp">pi_dp</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#variable-radius_dp">radius_dp</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#variable-img_cdp">img_cdp</a>
     </div>
   </div>
@@ -128,6 +130,9 @@
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-green_func">green_func</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-undef_checker_2d">undef_checker_2d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-undef_checker_1d">undef_checker_1d</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-ll2radi">ll2radi</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-line_number_counter">line_number_counter</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-c2r_convert">c2r_convert</a>
     </div>
   </div>
 </div>
@@ -137,8 +142,9 @@
     <div id="subs-0" class="panel-collapse collapse">
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-prod_vortex_structure">prod_vortex_structure</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-prod_vortex_structure_l06">prod_vortex_structure_L06</a>
-      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-conv_vtvr2vxvy">conv_VtVr2VxVy</a>
-      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-conv_vxvy2vtvr">conv_VxVy2VtVr</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-conv_vtvr2vxvy_rt">conv_VtVr2VxVy_rt</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-conv_vxvy2vtvr_rt">conv_VxVy2VtVr_rt</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-conv_vxvy2vtvr_xy">conv_VxVy2VtVr_xy</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-proj_vxvy2vraxy">proj_VxVy2Vraxy</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-proj_vtvr2vrart">proj_VtVr2Vrart</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-div_curl_2d">div_curl_2d</a>
@@ -150,20 +156,30 @@
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-subst_2d_r">subst_2d_r</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-rearrange_3d_2d">rearrange_3d_2d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-rearrange_2d_1d">rearrange_2d_1d</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-display_1val_max">display_1val_max</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-display_2valdiff_max">display_2valdiff_max</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-stdout">stdout</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-fp_gauss">fp_gauss</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-fp_invert_mat">fp_invert_mat</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-tangent_conv_scal">tangent_conv_scal</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-cart_conv_scal">cart_conv_scal</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-mean_1d">Mean_1d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-interpo_search_2d">interpo_search_2d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-interpo_search_1d">interpo_search_1d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-xy_2_rt">xy_2_rt</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-rt_2_xy">rt_2_xy</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-interpolation_2d">interpolation_2d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-interpolation_1d">interpolation_1d</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-auto_interpolation_2d">auto_interpolation_2d</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-auto_interpo_search_1d">auto_interpo_search_1d</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-auto_interpo_search_2d">auto_interpo_search_2d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-max_val_1d">max_val_1d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-stand_devi">stand_devi</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-ll2rt">ll2rt</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-rt2ll">rt2ll</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-read_file_text">read_file_text</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-read_file_3d">read_file_3d</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-write_file_3d">write_file_3d</a>
     </div>
   </div>
 </div>
@@ -187,76 +203,61 @@
 <!-- Generated by graphviz version 2.43.0 (0)
  -->
 <!-- Title: module~~gvtdx_sub~~UsedByGraph Pages: 1 -->
-<svg id="modulegvtdx_subUsedByGraph" width="209pt" height="158pt"
- viewBox="0.00 0.00 209.00 158.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<g id="module~~gvtdx_sub~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 154)">
+<svg id="modulegvtdx_subUsedByGraph" width="202pt" height="116pt"
+ viewBox="0.00 0.00 202.00 116.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="module~~gvtdx_sub~~UsedByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 112)">
 <title>module~~gvtdx_sub~~UsedByGraph</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-154 205,-154 205,4 -4,4"/>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-112 198,-112 198,4 -4,4"/>
 <!-- module~gvtdx_sub -->
 <g id="module~~gvtdx_sub~~UsedByGraph_node1" class="node">
 <title>module~gvtdx_sub</title>
-<polygon fill="none" stroke="black" points="75,-87 0,-87 0,-63 75,-63 75,-87"/>
-<text text-anchor="middle" x="37.5" y="-72.6" font-family="Helvetica,sans-Serif" font-size="10.50">GVTDX_sub</text>
+<polygon fill="none" stroke="black" points="75,-66 0,-66 0,-42 75,-42 75,-66"/>
+<text text-anchor="middle" x="37.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50">GVTDX_sub</text>
 </g>
 <!-- module~gvtd_main -->
 <g id="module~~gvtdx_sub~~UsedByGraph_node2" class="node">
 <title>module~gvtd_main</title>
 <g id="a_module~~gvtdx_sub~~UsedByGraph_node2"><a xlink:href=".././module/gvtd_main.html" xlink:title="GVTD_main">
-<polygon fill="#337ab7" stroke="#337ab7" points="194,-150 118,-150 118,-126 194,-126 194,-150"/>
-<text text-anchor="middle" x="156" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">GVTD_main</text>
+<polygon fill="#337ab7" stroke="#337ab7" points="190.5,-108 114.5,-108 114.5,-84 190.5,-84 190.5,-108"/>
+<text text-anchor="middle" x="152.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">GVTD_main</text>
 </a>
 </g>
 </g>
 <!-- module~gvtd_main&#45;&gt;module~gvtdx_sub -->
 <g id="module~~gvtdx_sub~~UsedByGraph_edge1" class="edge">
 <title>module~gvtd_main&#45;&gt;module~gvtdx_sub</title>
-<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M128.77,-125.9C122.88,-123.07 116.69,-120 111,-117 96.26,-109.23 80.19,-100 66.94,-92.18"/>
-<polygon fill="#000000" stroke="#000000" points="68.65,-89.12 58.26,-87.02 65.07,-95.14 68.65,-89.12"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M119.12,-83.96C107.06,-79.48 93.2,-74.33 80.41,-69.58"/>
+<polygon fill="#000000" stroke="#000000" points="81.48,-66.24 70.89,-66.04 79.04,-72.8 81.48,-66.24"/>
 </g>
 <!-- module~gbvtd_main -->
 <g id="module~~gvtdx_sub~~UsedByGraph_node3" class="node">
 <title>module~gbvtd_main</title>
 <g id="a_module~~gvtdx_sub~~UsedByGraph_node3"><a xlink:href=".././module/gbvtd_main.html" xlink:title="GBVTD_main">
-<polygon fill="#337ab7" stroke="#337ab7" points="197,-108 115,-108 115,-84 197,-84 197,-108"/>
-<text text-anchor="middle" x="156" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">GBVTD_main</text>
+<polygon fill="#337ab7" stroke="#337ab7" points="193.5,-66 111.5,-66 111.5,-42 193.5,-42 193.5,-66"/>
+<text text-anchor="middle" x="152.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">GBVTD_main</text>
 </a>
 </g>
 </g>
 <!-- module~gbvtd_main&#45;&gt;module~gvtdx_sub -->
-<g id="module~~gvtdx_sub~~UsedByGraph_edge4" class="edge">
+<g id="module~~gvtdx_sub~~UsedByGraph_edge2" class="edge">
 <title>module~gbvtd_main&#45;&gt;module~gvtdx_sub</title>
-<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M114.91,-88.77C105.33,-87.05 95.03,-85.19 85.19,-83.42"/>
-<polygon fill="#000000" stroke="#000000" points="85.61,-79.94 75.15,-81.61 84.37,-86.82 85.61,-79.94"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M111.34,-54C102.86,-54 93.84,-54 85.15,-54"/>
+<polygon fill="#000000" stroke="#000000" points="85.14,-50.5 75.14,-54 85.14,-57.5 85.14,-50.5"/>
 </g>
 <!-- module~gvtdx_main -->
 <g id="module~~gvtdx_sub~~UsedByGraph_node4" class="node">
 <title>module~gvtdx_main</title>
 <g id="a_module~~gvtdx_sub~~UsedByGraph_node4"><a xlink:href=".././module/gvtdx_main.html" xlink:title="GVTDX_main">
-<polygon fill="#337ab7" stroke="#337ab7" points="197.5,-66 114.5,-66 114.5,-42 197.5,-42 197.5,-66"/>
-<text text-anchor="middle" x="156" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">GVTDX_main</text>
+<polygon fill="#337ab7" stroke="#337ab7" points="194,-24 111,-24 111,0 194,0 194,-24"/>
+<text text-anchor="middle" x="152.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">GVTDX_main</text>
 </a>
 </g>
 </g>
 <!-- module~gvtdx_main&#45;&gt;module~gvtdx_sub -->
 <g id="module~~gvtdx_sub~~UsedByGraph_edge3" class="edge">
 <title>module~gvtdx_main&#45;&gt;module~gvtdx_sub</title>
-<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M114.25,-61.34C104.81,-63.05 94.68,-64.87 85.01,-66.62"/>
-<polygon fill="#000000" stroke="#000000" points="84.36,-63.18 75.14,-68.4 85.6,-70.07 84.36,-63.18"/>
-</g>
-<!-- module~gvtdx_main2 -->
-<g id="module~~gvtdx_sub~~UsedByGraph_node5" class="node">
-<title>module~gvtdx_main2</title>
-<g id="a_module~~gvtdx_sub~~UsedByGraph_node5"><a xlink:href=".././module/gvtdx_main2.html" xlink:title="GVTDX_main2">
-<polygon fill="#337ab7" stroke="#337ab7" points="201,-24 111,-24 111,0 201,0 201,-24"/>
-<text text-anchor="middle" x="156" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">GVTDX_main2</text>
-</a>
-</g>
-</g>
-<!-- module~gvtdx_main2&#45;&gt;module~gvtdx_sub -->
-<g id="module~~gvtdx_sub~~UsedByGraph_edge2" class="edge">
-<title>module~gvtdx_main2&#45;&gt;module~gvtdx_sub</title>
-<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M128.77,-24.1C122.88,-26.93 116.69,-30 111,-33 96.26,-40.77 80.19,-50 66.94,-57.82"/>
-<polygon fill="#000000" stroke="#000000" points="65.07,-54.86 58.26,-62.98 68.65,-60.88 65.07,-54.86"/>
+<path fill="none" stroke="#000000" stroke-dasharray="5,2" d="M119.12,-24.04C107.06,-28.52 93.2,-33.67 80.41,-38.42"/>
+<polygon fill="#000000" stroke="#000000" points="79.04,-35.2 70.89,-41.96 81.48,-41.76 79.04,-35.2"/>
 </g>
 </g>
 </svg>
@@ -332,8 +333,10 @@
   <div id="vars-1" class="panel-collapse collapse">
     <div class="list-group">
       <a class="list-group-item" href="../module/gvtdx_sub.html#variable-pi">pi</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#variable-radius">radius</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#variable-img">img</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#variable-pi_dp">pi_dp</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#variable-radius_dp">radius_dp</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#variable-img_cdp">img_cdp</a>
     </div>
   </div>
@@ -346,6 +349,9 @@
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-green_func">green_func</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-undef_checker_2d">undef_checker_2d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-undef_checker_1d">undef_checker_1d</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-ll2radi">ll2radi</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-line_number_counter">line_number_counter</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-c2r_convert">c2r_convert</a>
     </div>
   </div>
 </div>
@@ -355,8 +361,9 @@
     <div id="subs-1" class="panel-collapse collapse">
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-prod_vortex_structure">prod_vortex_structure</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-prod_vortex_structure_l06">prod_vortex_structure_L06</a>
-      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-conv_vtvr2vxvy">conv_VtVr2VxVy</a>
-      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-conv_vxvy2vtvr">conv_VxVy2VtVr</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-conv_vtvr2vxvy_rt">conv_VtVr2VxVy_rt</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-conv_vxvy2vtvr_rt">conv_VxVy2VtVr_rt</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-conv_vxvy2vtvr_xy">conv_VxVy2VtVr_xy</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-proj_vxvy2vraxy">proj_VxVy2Vraxy</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-proj_vtvr2vrart">proj_VtVr2Vrart</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-div_curl_2d">div_curl_2d</a>
@@ -368,20 +375,30 @@
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-subst_2d_r">subst_2d_r</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-rearrange_3d_2d">rearrange_3d_2d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-rearrange_2d_1d">rearrange_2d_1d</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-display_1val_max">display_1val_max</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-display_2valdiff_max">display_2valdiff_max</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-stdout">stdout</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-fp_gauss">fp_gauss</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-fp_invert_mat">fp_invert_mat</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-tangent_conv_scal">tangent_conv_scal</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-cart_conv_scal">cart_conv_scal</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-mean_1d">Mean_1d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-interpo_search_2d">interpo_search_2d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-interpo_search_1d">interpo_search_1d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-xy_2_rt">xy_2_rt</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-rt_2_xy">rt_2_xy</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-interpolation_2d">interpolation_2d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-interpolation_1d">interpolation_1d</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-auto_interpolation_2d">auto_interpolation_2d</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-auto_interpo_search_1d">auto_interpo_search_1d</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-auto_interpo_search_2d">auto_interpo_search_2d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-max_val_1d">max_val_1d</a>
       <a class="list-group-item" href="../module/gvtdx_sub.html#proc-stand_devi">stand_devi</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-ll2rt">ll2rt</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-rt2ll">rt2ll</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-read_file_text">read_file_text</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-read_file_3d">read_file_3d</a>
+      <a class="list-group-item" href="../module/gvtdx_sub.html#proc-write_file_3d">write_file_3d</a>
     </div>
   </div>
 </div>
@@ -401,6 +418,11 @@
   <td><strong>pi</strong></td><td> =</td><td>3.14159265e0</td><td><p>Pi for real</p></td>
 </tr>
 <tr>
+  <td><span class="anchor" id="variable-radius"></span>real,</td>
+<td>public,</td>  <td>parameter</td><td>::</td>
+  <td><strong>radius</strong></td><td> =</td><td>6.371e6</td><td><p>polar radius of the Earth (m)</p></td>
+</tr>
+<tr>
   <td><span class="anchor" id="variable-img"></span>complex,</td>
 <td>public,</td>  <td>parameter</td><td>::</td>
   <td><strong>img</strong></td><td> =</td><td>(0.0, 1.0)</td><td><p>Imaginary unit for real</p></td>
@@ -409,6 +431,11 @@
   <td><span class="anchor" id="variable-pi_dp"></span>double precision,</td>
 <td>public,</td>  <td>parameter</td><td>::</td>
   <td><strong>pi_dp</strong></td><td> =</td><td>3.14159265358979d0</td><td><p>Pi for double</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-radius_dp"></span>double precision,</td>
+<td>public,</td>  <td>parameter</td><td>::</td>
+  <td><strong>radius_dp</strong></td><td> =</td><td>6.371d6</td><td><p>polar radius of the Earth (m)</p></td>
 </tr>
 <tr>
   <td><span class="anchor" id="variable-img_cdp"></span>complex(kind=kind(0d0)),</td>
@@ -571,13 +598,113 @@
   </div>
   </div>
 
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-ll2radi"></span><h3>public function <a href='../proc/ll2radi.html'>ll2radi</a>(lon1, lat1, lon2, lat2, forcef)</h3></div>
+  <div class="panel-body">
+       
+<p>calculate arc distance between two points on the sphere</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>lon1</strong></td><td><p>longitude1 (rad)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>lat1</strong></td><td><p>latitude1 (rad)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>lon2</strong></td><td><p>longitude2 (rad)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>lat2</strong></td><td><p>latitude2 (rad)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>forcef</strong></td><td><p>truncating flag for numerical error, 
+default = .false. (no truncating)</p></td>
+</tr>
+</tbody>
+</table>
+
+<h4>Return Value <small>real</small></h4>  
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-line_number_counter"></span><h3>public function <a href='../proc/line_number_counter.html'>line_number_counter</a>(fname, funit)</h3></div>
+  <div class="panel-body">
+       
+<p>count the line in the fname</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>character,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>fname</strong></td><td><p>counting the file name</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>funit</strong></td><td><p>file unit (default: 11)</p></td>
+</tr>
+</tbody>
+</table>
+
+<h4>Return Value <small>integer</small></h4>  
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-c2r_convert"></span><h3>public function <a href='../proc/c2r_convert.html'>c2r_convert</a>(cval)</h3></div>
+  <div class="panel-body">
+       
+<p>convert char to float</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>character,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>cval</strong></td><td><p>char</p></td>
+</tr>
+</tbody>
+</table>
+
+<h4>Return Value <small>real</small></h4>  
+
+  </div>
+  </div>
+
     </section>
     <br>
 
     <section>
     <h2>Subroutines</h2>
       <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-prod_vortex_structure"></span><h3>public subroutine <a href='../proc/prod_vortex_structure.html'>prod_vortex_structure</a>(r, t, rmax, vmax, c1u, c2u, Vt, Vr, Vt_pert, Vr_pert, Vt_pert_ang, Vr_pert_ang, ropt, dopt, Vt_0, Vr_0, Uxm, Vym)</h3></div>
+  <div class="panel-heading codesum"><span class="anchor" id="proc-prod_vortex_structure"></span><h3>public subroutine <a href='../proc/prod_vortex_structure.html'>prod_vortex_structure</a>(r, t, rmax, vmax, c1u, c2u, Vt, Vr, Vt_pert, Vr_pert, Vt_pert_ang, Vr_pert_ang, ropt, dopt, Vt_0, Vr_0, Uxm, Vym, flag_disp)</h3></div>
   <div class="panel-body">
        
 <p>Producing vortex structure with rmax, vmax, and umax</p>
@@ -673,13 +800,13 @@
   <td><span class="anchor" ></span>double precision,</td>
 <td>intent(out),</td>
   <td>optional</td>  <td></td><td>::</td>
-  <td><strong>Vt_0</strong>(size(r))</td><td><p>Radial profile of axisymmetric Vt [m s-1]</p></td>
+  <td><strong>Vt_0</strong>(:)</td><td><p>Radial profile of axisymmetric Vt [m s-1]</p></td>
 </tr>
 <tr>
   <td><span class="anchor" ></span>double precision,</td>
 <td>intent(out),</td>
   <td>optional</td>  <td></td><td>::</td>
-  <td><strong>Vr_0</strong>(size(r))</td><td><p>Radial profile of axisymmetric Vr [m s-1]</p></td>
+  <td><strong>Vr_0</strong>(:)</td><td><p>Radial profile of axisymmetric Vr [m s-1]</p></td>
 </tr>
 <tr>
   <td><span class="anchor" ></span>double precision,</td>
@@ -692,6 +819,12 @@
 <td>intent(out),</td>
   <td>optional</td>  <td></td><td>::</td>
   <td><strong>Vym</strong>(2)</td><td><p>Azimuthal averaged Y-wind of wavenumber-1 component [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>flag_disp</strong></td><td></td>
 </tr>
 </tbody>
 </table>
@@ -765,7 +898,7 @@
   </div>
 
       <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-conv_vtvr2vxvy"></span><h3>public subroutine <a href='../proc/conv_vtvr2vxvy.html'>conv_VtVr2VxVy</a>(r, t, Vt, Vr, Vx, Vy, undef)</h3></div>
+  <div class="panel-heading codesum"><span class="anchor" id="proc-conv_vtvr2vxvy_rt"></span><h3>public subroutine <a href='../proc/conv_vtvr2vxvy_rt.html'>conv_VtVr2VxVy_rt</a>(r, t, Vt, Vr, Vx, Vy, undef)</h3></div>
   <div class="panel-body">
        
 <p>Convert Vt and Vr to Vx and Vy on R-T coordinates</p>
@@ -823,7 +956,7 @@
   </div>
 
       <div class="panel panel-default">
-  <div class="panel-heading codesum"><span class="anchor" id="proc-conv_vxvy2vtvr"></span><h3>public subroutine <a href='../proc/conv_vxvy2vtvr.html'>conv_VxVy2VtVr</a>(r, t, Vx, Vy, Vt, Vr, undef)</h3></div>
+  <div class="panel-heading codesum"><span class="anchor" id="proc-conv_vxvy2vtvr_rt"></span><h3>public subroutine <a href='../proc/conv_vxvy2vtvr_rt.html'>conv_VxVy2VtVr_rt</a>(r, t, Vx, Vy, Vt, Vr, undef)</h3></div>
   <div class="panel-body">
        
 <p>Convert Vx and Vy to Vr and Vt on R-T coordinates</p>
@@ -866,6 +999,76 @@
 <td>intent(out)</td>
   <td></td>  <td></td><td>::</td>
   <td><strong>Vr</strong>(size(r),size(t))</td><td><p>radial wind component on R-T coordinates</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>undef</strong></td><td><p>Undefined value</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-conv_vxvy2vtvr_xy"></span><h3>public subroutine <a href='../proc/conv_vxvy2vtvr_xy.html'>conv_VxVy2VtVr_xy</a>(x, y, xc, yc, Vx, Vy, Vt, Vr, undef)</h3></div>
+  <div class="panel-body">
+       
+<p>Convert Vx and Vy to Vr and Vt on X-Y coordinates</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>x</strong>(:)</td><td><p>X-coordinate [m]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>y</strong>(:)</td><td><p>Y-coordinate [m]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>xc</strong></td><td><p>X component of the center [m]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>yc</strong></td><td><p>Y component of the center [m]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>Vx</strong>(size(x),size(y))</td><td><p>X-component of wind on X-Y coordinates</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>Vy</strong>(size(x),size(y))</td><td><p>Y-component of wind on X-Y coordinates</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>Vt</strong>(size(x),size(y))</td><td><p>tangential wind component on X-Y coordinates</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>Vr</strong>(size(x),size(y))</td><td><p>radial wind component on X-Y coordinates</p></td>
 </tr>
 <tr>
   <td><span class="anchor" ></span>double precision,</td>
@@ -1312,6 +1515,40 @@ curl = <script type="math/tex">\dfrac{\partial rv_t}{r\partial r} - \dfrac{\part
   </div>
 
       <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-display_1val_max"></span><h3>public subroutine <a href='../proc/display_1val_max.html'>display_1val_max</a>(val, undef, cout)</h3></div>
+  <div class="panel-body">
+       
+<p>Display the maximum of the array val</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>real,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>val</strong>(:,:)</td><td><p>Input 1</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>real,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>undef</strong></td><td><p>Undefined value</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character,</td>
+<td>intent(out),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>cout</strong></td><td><p>Maximum value by character</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-display_2valdiff_max"></span><h3>public subroutine <a href='../proc/display_2valdiff_max.html'>display_2valdiff_max</a>(val1, val2, undef, cout)</h3></div>
   <div class="panel-body">
        
@@ -1627,6 +1864,46 @@ The procedure:
   </div>
 
       <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-mean_1d"></span><h3>public subroutine <a href='../proc/mean_1d.html'>Mean_1d</a>(x, ave, error, nc)</h3></div>
+  <div class="panel-body">
+       
+<p>Average x</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>x</strong>(:)</td><td><p>Input data</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ave</strong></td><td><p>Output mean value</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>error</strong></td><td><p>Missing value</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(inout),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>nc</strong></td><td><p>Number of sampling data without error</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-interpo_search_2d"></span><h3>public subroutine <a href='../proc/interpo_search_2d.html'>interpo_search_2d</a>(x, y, pointx, pointy, i, j, undeff, stdopt)</h3></div>
   <div class="panel-body">
        
@@ -1925,6 +2202,184 @@ y(2) at x(2)</p></td>
   </div>
 
       <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-auto_interpolation_2d"></span><h3>public subroutine <a href='../proc/auto_interpolation_2d.html'>auto_interpolation_2d</a>(x, y, r, q, u, v, undef, stdopt)</h3></div>
+  <div class="panel-body">
+       
+<p>Automatic interpolation for 2d data (continuous running of interpolation_2d)</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>x</strong>(:)</td><td><p>reference grid 1</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>y</strong>(:)</td><td><p>reference grid 2</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>r</strong>(:)</td><td><p>target grid 1</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>q</strong>(:)</td><td><p>target grid 2</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>u</strong>(size(x),size(y))</td><td><p>reference data</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>v</strong>(size(r),size(q))</td><td><p>interpolated data</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>undef</strong></td><td><p>undefined value</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>stdopt</strong></td><td><p>Display debug messages.
+(default: .false. == No display)</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-auto_interpo_search_1d"></span><h3>public subroutine <a href='../proc/auto_interpo_search_1d.html'>auto_interpo_search_1d</a>(x, point, i, undeff, stdopt)</h3></div>
+  <div class="panel-body">
+       
+<p>continuous running of interpo_search_1d</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>x</strong>(:)</td><td><p>gradual increasing array</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>point</strong>(:)</td><td><p>searching points</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(inout)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>i</strong>(size(point))</td><td><p>floor for each "point"</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>undeff</strong></td><td><p>In case of (x(1)&gt;pointx), the value returned to i
+(default = 0)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>stdopt</strong></td><td><p>Display debug messages.
+(default: .false. == No display)</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-auto_interpo_search_2d"></span><h3>public subroutine <a href='../proc/auto_interpo_search_2d.html'>auto_interpo_search_2d</a>(x, y, pointx, pointy, i, j, undeff, stdopt)</h3></div>
+  <div class="panel-body">
+       
+<p>continuous running of auto_interpo_search_1d</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>x</strong>(:)</td><td><p>gradual increasing array 1</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>y</strong>(:)</td><td><p>gradual increasing array 2</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>pointx</strong>(:)</td><td><p>searching points for x</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>pointy</strong>(:)</td><td><p>searching points for y</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(inout)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>i</strong>(size(pointx))</td><td><p>floor for pointx</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(inout)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>j</strong>(size(pointy))</td><td><p>floor for pointy</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>undeff</strong></td><td><p>In case of (x(1)&gt;pointx or y(1)&gt;pointy), the value returned to i and j
+(default = 0)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>stdopt</strong></td><td><p>探索範囲が見つからない旨の標準出力を表示させないようにする.</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
   <div class="panel-heading codesum"><span class="anchor" id="proc-max_val_1d"></span><h3>public subroutine <a href='../proc/max_val_1d.html'>max_val_1d</a>(var, mamv, undef)</h3></div>
   <div class="panel-body">
        
@@ -2001,6 +2456,298 @@ Definition: RMSE <script type="math/tex">= \sqrt{\sum^{N}_{i=1}{(1/N)(x(i)-x_t)^
   </div>
   </div>
 
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-ll2rt"></span><h3>public subroutine <a href='../proc/ll2rt.html'>ll2rt</a>(lon0, lat0, lon1, lat1, r, theta)</h3></div>
+  <div class="panel-body">
+       
+<p>calculate radial and azimuthal location at (lon1,lat1) on the 
+polar coordinate with the center of (lon0,lat0)</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>lon0</strong></td><td><p>the center longitude (rad)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>lat0</strong></td><td><p>the center latitude (rad)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>lon1</strong></td><td><p>target longitude (rad)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>lat1</strong></td><td><p>target latitude (rad)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>r</strong></td><td><p>radial distance (m)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>theta</strong></td><td><p>azimuthal angle (rad)</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-rt2ll"></span><h3>public subroutine <a href='../proc/rt2ll.html'>rt2ll</a>(r, theta, lon0, lat0, lon, lat)</h3></div>
+  <div class="panel-body">
+       
+<p>calculate (lon,lat) from radial and azimuthal grid (r,theta) 
+on the polar coordinate with the origin of (lon0,lat0)</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>r</strong></td><td><p>radial distance from (lon0,lat0) (m)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>theta</strong></td><td><p>azimuthal angle from (lon0,lat0) (rad)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>lon0</strong></td><td><p>longitude of the center on the polar coordinate (rad)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>lat0</strong></td><td><p>latitude of the center on the polar coordinate (rad)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>lon</strong></td><td><p>target longitude (rad)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>lat</strong></td><td><p>target latitude (rad)</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-read_file_text"></span><h3>public subroutine <a href='../proc/read_file_text.html'>read_file_text</a>(fname, nx, ny, val, skip, forma, funit)</h3></div>
+  <div class="panel-body">
+       
+<p>read ASCII file</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>character,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>fname</strong></td><td><p>file name in reading</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nx</strong></td><td><p>column number for fname</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ny</strong></td><td><p>line number for fname</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character,</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>val</strong>(nx,ny)</td><td><p>read data</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>skip</strong></td><td><p>line number for skipping from the head</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>forma</strong></td><td><p>Fortran format in reading</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>funit</strong></td><td><p>file unit</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-read_file_3d"></span><h3>public subroutine <a href='../proc/read_file_3d.html'>read_file_3d</a>(file_name, nx, ny, nz, rec_num, var, offset, funit)</h3></div>
+  <div class="panel-body">
+       
+<p>read float data from 4-byte unformatted binary</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>character,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>file_name</strong></td><td><p>file name</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nx</strong></td><td><p>data number in x</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ny</strong></td><td><p>data number in y</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nz</strong></td><td><p>data number in z</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>rec_num</strong></td><td><p>record number for reading data</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>real,</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>var</strong>(nx,ny,nz)</td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>offset</strong></td><td><p>offset in reading</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>funit</strong></td><td><p>file unit</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-write_file_3d"></span><h3>public subroutine <a href='../proc/write_file_3d.html'>write_file_3d</a>(file_name, nx, ny, nz, rec_num, var, mode, funit)</h3></div>
+  <div class="panel-body">
+       
+<p>write float data from 4-byte unformatted binary</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>character,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>file_name</strong></td><td><p>file name</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nx</strong></td><td><p>data number in x</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ny</strong></td><td><p>data number in y</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nz</strong></td><td><p>data number in z</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>rec_num</strong></td><td><p>record number for reading data</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>real,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>var</strong>(nx,ny,nz)</td><td><p>output data</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>mode</strong></td><td><p>option for output</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>funit</strong></td><td><p>file unit</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
     </section>    
     <br>
     
@@ -2012,7 +2759,7 @@ Definition: RMSE <script type="math/tex">= \sqrt{\sum^{N}_{i=1}{(1/N)(x(i)-x_t)^
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>GVTD-HeCs was developed by Satoki Tsujino<br>&copy; 2022 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-6"><p>GVTD-HeCs was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
 </p>
         </div>
         <div class="col-xs-6 col-md-6">

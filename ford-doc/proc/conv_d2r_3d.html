@@ -8,7 +8,7 @@
     <meta name="author" content="Satoki Tsujino" >
     <link rel="icon" href="../favicon.png">
 
-    <title>dot_prod &ndash; GVTD-HeCs</title>
+    <title>conv_d2r_3d &ndash; GVTD-HeCs</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -74,8 +74,8 @@
 
     <div class="container">
   <div class="row">
-    <h1>dot_prod
-      <small>Function</small>
+    <h1>conv_d2r_3d
+      <small>Subroutine</small>
     </h1>
     <div class="row">
   <div class="col-lg-12">
@@ -85,14 +85,14 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 0.7% of total for procedures.">14 statements</a>
+    title=" 0.7% of total for procedures.">20 statements</a>
      </li> 
-    <li><i class="fa fa-code"></i><a href="../src/gvtdx_main_mod2.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/tools_sub.f90"> Source File</a></li>
   </ul>
   <ol class="breadcrumb in-well text-right">
-     <li><a href='../sourcefile/gvtdx_main_mod2.f90.html'>gvtdx_main_mod2.f90</a></li>
-     <li><a href='../module/gvtdx_main2.html'>GVTDX_main2</a></li>
-     <li class="active">dot_prod</li>
+     <li><a href='../sourcefile/tools_sub.f90.html'>tools_sub.f90</a></li>
+     <li><a href='../module/tools_sub.html'>tools_sub</a></li>
+     <li class="active">conv_d2r_3d</li>
   </ol>
 </div>
 </div>
@@ -117,31 +117,30 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public function dot_prod(v1, v2)</h2>
+    <h2>public subroutine conv_d2r_3d(ival, oval)</h2>
     
 
+    <p>convert double to real</p>
 
     <h3>Arguments</h3>
       <table class="table table-striped varlist">
 <thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
 <tbody>
 <tr>
-  <td><span class="anchor" id="variable-v1"></span>double precision,</td>
+  <td><span class="anchor" id="variable-ival~6"></span>double precision,</td>
 <td>intent(in)</td>
   <td></td>  <td></td><td>::</td>
-  <td><strong>v1</strong>(:)</td><td></td>
+  <td><strong>ival</strong>(:,:,:)</td><td><p>input array</p></td>
 </tr>
 <tr>
-  <td><span class="anchor" id="variable-v2"></span>double precision,</td>
-<td>intent(in)</td>
+  <td><span class="anchor" id="variable-oval~3"></span>real,</td>
+<td>intent(out)</td>
   <td></td>  <td></td><td>::</td>
-  <td><strong>v2</strong>(size(v1))</td><td></td>
+  <td><strong>oval</strong>(size(ival,1),size(ival,2),size(ival,3))</td><td><p>output array</p></td>
 </tr>
 </tbody>
 </table>
 
-   <h3>Return Value <small><span class="anchor" id="variable-dot_prod"></span>doubleprecision</small></h3>
-    
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
@@ -170,7 +169,7 @@
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>GVTD-HeCs was developed by Satoki Tsujino<br>&copy; 2022 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-6"><p>GVTD-HeCs was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
 </p>
         </div>
         <div class="col-xs-6 col-md-6">

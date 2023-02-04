@@ -8,7 +8,7 @@
     <meta name="author" content="Satoki Tsujino" >
     <link rel="icon" href="../favicon.png">
 
-    <title>Retrieve_velocity2_GVTDX &ndash; GVTD-HeCs</title>
+    <title>rt2ll &ndash; GVTD-HeCs</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -74,7 +74,7 @@
 
     <div class="container">
   <div class="row">
-    <h1>Retrieve_velocity2_GVTDX
+    <h1>rt2ll
       <small>Subroutine</small>
     </h1>
     <div class="row">
@@ -85,14 +85,14 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title="10.5% of total for procedures.">224 statements</a>
+    title=" 1.4% of total for procedures.">39 statements</a>
      </li> 
-    <li><i class="fa fa-code"></i><a href="../src/gvtdx_main_mod2.f90"> Source File</a></li>
+    <li><i class="fa fa-code"></i><a href="../src/sub_mod.f90"> Source File</a></li>
   </ul>
   <ol class="breadcrumb in-well text-right">
-     <li><a href='../sourcefile/gvtdx_main_mod2.f90.html'>gvtdx_main_mod2.f90</a></li>
-     <li><a href='../module/gvtdx_main2.html'>GVTDX_main2</a></li>
-     <li class="active">Retrieve_velocity2_GVTDX</li>
+     <li><a href='../sourcefile/sub_mod.f90.html'>sub_mod.f90</a></li>
+     <li><a href='../module/gvtdx_sub.html'>GVTDX_sub</a></li>
+     <li class="active">rt2ll</li>
   </ol>
 </div>
 </div>
@@ -117,181 +117,51 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public subroutine Retrieve_velocity2_GVTDX(nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC, VT, VR, VRT0, VDR0, VRTn, VRRn, VDTm, VDRm, undef, phin, zetan, VRT0_GVTD, VDR0_GVTD, VRTns, VRTnc, VRRns, VRRnc)</h2>
+    <h2>public subroutine rt2ll(r, theta, lon0, lat0, lon, lat)</h2>
     
 
+    <p>calculate (lon,lat) from radial and azimuthal grid (r,theta) 
+on the polar coordinate with the origin of (lon0,lat0)</p>
 
     <h3>Arguments</h3>
       <table class="table table-striped varlist">
 <thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
 <tbody>
 <tr>
-  <td><span class="anchor" id="variable-nrot"></span>integer,</td>
-<td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>nrot</strong></td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-ndiv"></span>integer,</td>
-<td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>ndiv</strong></td><td></td>
-</tr>
-<tr>
   <td><span class="anchor" id="variable-r~15"></span>double precision,</td>
 <td>intent(in)</td>
   <td></td>  <td></td><td>::</td>
-  <td><strong>r</strong>(:)</td><td></td>
+  <td><strong>r</strong></td><td><p>radial distance from (lon0,lat0) (m)</p></td>
 </tr>
 <tr>
-  <td><span class="anchor" id="variable-t~11"></span>double precision,</td>
+  <td><span class="anchor" id="variable-theta~4"></span>double precision,</td>
 <td>intent(in)</td>
   <td></td>  <td></td><td>::</td>
-  <td><strong>t</strong>(:)</td><td></td>
+  <td><strong>theta</strong></td><td><p>azimuthal angle from (lon0,lat0) (rad)</p></td>
 </tr>
 <tr>
-  <td><span class="anchor" id="variable-rh"></span>double precision,</td>
+  <td><span class="anchor" id="variable-lon0~2"></span>double precision,</td>
 <td>intent(in)</td>
   <td></td>  <td></td><td>::</td>
-  <td><strong>rh</strong>(size(r)+1)</td><td></td>
+  <td><strong>lon0</strong></td><td><p>longitude of the center on the polar coordinate (rad)</p></td>
 </tr>
 <tr>
-  <td><span class="anchor" id="variable-td~4"></span>double precision,</td>
+  <td><span class="anchor" id="variable-lat0~2"></span>double precision,</td>
 <td>intent(in)</td>
   <td></td>  <td></td><td>::</td>
-  <td><strong>td</strong>(size(r),size(t))</td><td></td>
+  <td><strong>lat0</strong></td><td><p>latitude of the center on the polar coordinate (rad)</p></td>
 </tr>
 <tr>
-  <td><span class="anchor" id="variable-rdiv"></span>double precision,</td>
-<td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>rdiv</strong>(:)</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vd~3"></span>double precision,</td>
+  <td><span class="anchor" id="variable-lon"></span>double precision,</td>
 <td>intent(inout)</td>
   <td></td>  <td></td><td>::</td>
-  <td><strong>Vd</strong>(size(r),size(t))</td><td></td>
+  <td><strong>lon</strong></td><td><p>target longitude (rad)</p></td>
 </tr>
 <tr>
-  <td><span class="anchor" id="variable-un~3"></span>double precision,</td>
-<td>intent(in)</td>
+  <td><span class="anchor" id="variable-lat"></span>double precision,</td>
+<td>intent(inout)</td>
   <td></td>  <td></td><td>::</td>
-  <td><strong>Un</strong>(2)</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vn~3"></span>double precision,</td>
-<td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>Vn</strong>(2)</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-radtc~3"></span>double precision,</td>
-<td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>RadTC</strong></td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vt~3"></span>double precision,</td>
-<td>intent(out)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>VT</strong>(size(r),size(t))</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vr~3"></span>double precision,</td>
-<td>intent(out)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>VR</strong>(size(r),size(t))</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vrt0"></span>double precision,</td>
-<td>intent(out)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>VRT0</strong>(size(r),size(t))</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vdr0"></span>double precision,</td>
-<td>intent(out)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>VDR0</strong>(size(r),size(t))</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vrtn"></span>double precision,</td>
-<td>intent(out)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>VRTn</strong>(nrot,size(r),size(t))</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vrrn"></span>double precision,</td>
-<td>intent(out)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>VRRn</strong>(nrot,size(r),size(t))</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vdtm"></span>double precision,</td>
-<td>intent(out)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>VDTm</strong>(ndiv,size(r),size(t))</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vdrm"></span>double precision,</td>
-<td>intent(out)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>VDRm</strong>(ndiv,size(r),size(t))</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-undef~20"></span>double precision,</td>
-<td>intent(in),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>undef</strong></td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-phin"></span>double precision,</td>
-<td>intent(out),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>phin</strong>(nrot,size(r),size(t))</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-zetan"></span>double precision,</td>
-<td>intent(out),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>zetan</strong>(nrot,size(r),size(t))</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vrt0_gvtd"></span>double precision,</td>
-<td>intent(out),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>VRT0_GVTD</strong>(size(r),size(t))</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vdr0_gvtd"></span>double precision,</td>
-<td>intent(out),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>VDR0_GVTD</strong>(size(r),size(t))</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vrtns"></span>double precision,</td>
-<td>intent(out),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>VRTns</strong>(nrot,size(r),size(t))</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vrtnc"></span>double precision,</td>
-<td>intent(out),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>VRTnc</strong>(nrot,size(r),size(t))</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vrrns"></span>double precision,</td>
-<td>intent(out),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>VRRns</strong>(nrot,size(r),size(t))</td><td></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vrrnc"></span>double precision,</td>
-<td>intent(out),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>VRRnc</strong>(nrot,size(r),size(t))</td><td></td>
+  <td><strong>lat</strong></td><td><p>target latitude (rad)</p></td>
 </tr>
 </tbody>
 </table>
@@ -307,74 +177,53 @@
  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
 <!-- Generated by graphviz version 2.43.0 (0)
  -->
-<!-- Title: proc~~retrieve_velocity2_gvtdx~~CallsGraph Pages: 1 -->
-<svg id="procretrieve_velocity2_gvtdxCallsGraph" width="308pt" height="158pt"
- viewBox="0.00 0.00 308.00 158.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<g id="proc~~retrieve_velocity2_gvtdx~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 154)">
-<title>proc~~retrieve_velocity2_gvtdx~~CallsGraph</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-154 304,-154 304,4 -4,4"/>
-<!-- proc~retrieve_velocity2_gvtdx -->
-<g id="proc~~retrieve_velocity2_gvtdx~~CallsGraph_node1" class="node">
-<title>proc~retrieve_velocity2_gvtdx</title>
-<polygon fill="none" stroke="black" points="154,-87 0,-87 0,-63 154,-63 154,-87"/>
-<text text-anchor="middle" x="77" y="-72.6" font-family="Helvetica,sans-Serif" font-size="10.50">Retrieve_velocity2_GVTDX</text>
-</g>
-<!-- proc~stdout -->
-<g id="proc~~retrieve_velocity2_gvtdx~~CallsGraph_node2" class="node">
-<title>proc~stdout</title>
-<g id="a_proc~~retrieve_velocity2_gvtdx~~CallsGraph_node2"><a xlink:href=".././proc/stdout.html" xlink:title="stdout">
-<polygon fill="#d9534f" stroke="#d9534f" points="272,-150 218,-150 218,-126 272,-126 272,-150"/>
-<text text-anchor="middle" x="245" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">stdout</text>
-</a>
-</g>
-</g>
-<!-- proc~retrieve_velocity2_gvtdx&#45;&gt;proc~stdout -->
-<g id="proc~~retrieve_velocity2_gvtdx~~CallsGraph_edge1" class="edge">
-<title>proc~retrieve_velocity2_gvtdx&#45;&gt;proc~stdout</title>
-<path fill="none" stroke="#000000" d="M110.01,-87.15C138.19,-97.84 179.19,-113.4 208.4,-124.49"/>
-<polygon fill="#000000" stroke="#000000" points="207.23,-127.79 217.82,-128.07 209.72,-121.24 207.23,-127.79"/>
+<!-- Title: proc~~rt2ll~~CallsGraph Pages: 1 -->
+<svg id="procrt2llCallsGraph" width="152pt" height="116pt"
+ viewBox="0.00 0.00 152.00 116.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~rt2ll~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 112)">
+<title>proc~~rt2ll~~CallsGraph</title>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-112 148,-112 148,4 -4,4"/>
+<!-- proc~rt2ll -->
+<g id="proc~~rt2ll~~CallsGraph_node1" class="node">
+<title>proc~rt2ll</title>
+<polygon fill="none" stroke="black" points="54,-66 0,-66 0,-42 54,-42 54,-66"/>
+<text text-anchor="middle" x="27" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50">rt2ll</text>
 </g>
 <!-- dcos -->
-<g id="proc~~retrieve_velocity2_gvtdx~~CallsGraph_node3" class="node">
+<g id="proc~~rt2ll~~CallsGraph_node2" class="node">
 <title>dcos</title>
-<polygon fill="#777777" stroke="#777777" points="272,-108 218,-108 218,-84 272,-84 272,-108"/>
-<text text-anchor="middle" x="245" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dcos</text>
+<polygon fill="#777777" stroke="#777777" points="144,-108 90,-108 90,-84 144,-84 144,-108"/>
+<text text-anchor="middle" x="117" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dcos</text>
 </g>
-<!-- proc~retrieve_velocity2_gvtdx&#45;&gt;dcos -->
-<g id="proc~~retrieve_velocity2_gvtdx~~CallsGraph_edge2" class="edge">
-<title>proc~retrieve_velocity2_gvtdx&#45;&gt;dcos</title>
-<path fill="none" stroke="#000000" d="M154.2,-84.64C172.76,-86.99 191.77,-89.39 207.5,-91.38"/>
-<polygon fill="#000000" stroke="#000000" points="207.46,-94.9 217.82,-92.69 208.34,-87.96 207.46,-94.9"/>
+<!-- proc~rt2ll&#45;&gt;dcos -->
+<g id="proc~~rt2ll~~CallsGraph_edge1" class="edge">
+<title>proc~rt2ll&#45;&gt;dcos</title>
+<path fill="none" stroke="#000000" d="M53.45,-66.15C62.21,-70.33 72.17,-75.08 81.52,-79.54"/>
+<polygon fill="#000000" stroke="#000000" points="80.07,-82.73 90.6,-83.88 83.09,-76.41 80.07,-82.73"/>
 </g>
-<!-- proc~interpo_search_1d -->
-<g id="proc~~retrieve_velocity2_gvtdx~~CallsGraph_node4" class="node">
-<title>proc~interpo_search_1d</title>
-<g id="a_proc~~retrieve_velocity2_gvtdx~~CallsGraph_node4"><a xlink:href=".././proc/interpo_search_1d.html" xlink:title="interpo_search_1d">
-<polygon fill="#d9534f" stroke="#d9534f" points="300,-66 190,-66 190,-42 300,-42 300,-66"/>
-<text text-anchor="middle" x="245" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">interpo_search_1d</text>
-</a>
+<!-- dasin -->
+<g id="proc~~rt2ll~~CallsGraph_node3" class="node">
+<title>dasin</title>
+<polygon fill="#777777" stroke="#777777" points="144,-66 90,-66 90,-42 144,-42 144,-66"/>
+<text text-anchor="middle" x="117" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dasin</text>
 </g>
+<!-- proc~rt2ll&#45;&gt;dasin -->
+<g id="proc~~rt2ll~~CallsGraph_edge2" class="edge">
+<title>proc~rt2ll&#45;&gt;dasin</title>
+<path fill="none" stroke="#000000" d="M54.4,-54C62.39,-54 71.31,-54 79.82,-54"/>
+<polygon fill="#000000" stroke="#000000" points="79.92,-57.5 89.92,-54 79.92,-50.5 79.92,-57.5"/>
 </g>
-<!-- proc~retrieve_velocity2_gvtdx&#45;&gt;proc~interpo_search_1d -->
-<g id="proc~~retrieve_velocity2_gvtdx~~CallsGraph_edge3" class="edge">
-<title>proc~retrieve_velocity2_gvtdx&#45;&gt;proc~interpo_search_1d</title>
-<path fill="none" stroke="#000000" d="M154.2,-65.36C162.68,-64.29 171.26,-63.2 179.58,-62.15"/>
-<polygon fill="#000000" stroke="#000000" points="180.08,-65.61 189.57,-60.89 179.21,-58.67 180.08,-65.61"/>
+<!-- dsin -->
+<g id="proc~~rt2ll~~CallsGraph_node4" class="node">
+<title>dsin</title>
+<polygon fill="#777777" stroke="#777777" points="144,-24 90,-24 90,0 144,0 144,-24"/>
+<text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dsin</text>
 </g>
-<!-- proc~fp_gauss -->
-<g id="proc~~retrieve_velocity2_gvtdx~~CallsGraph_node5" class="node">
-<title>proc~fp_gauss</title>
-<g id="a_proc~~retrieve_velocity2_gvtdx~~CallsGraph_node5"><a xlink:href=".././proc/fp_gauss.html" xlink:title="fp_gauss">
-<polygon fill="#d9534f" stroke="#d9534f" points="274.5,-24 215.5,-24 215.5,0 274.5,0 274.5,-24"/>
-<text text-anchor="middle" x="245" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fp_gauss</text>
-</a>
-</g>
-</g>
-<!-- proc~retrieve_velocity2_gvtdx&#45;&gt;proc~fp_gauss -->
-<g id="proc~~retrieve_velocity2_gvtdx~~CallsGraph_edge4" class="edge">
-<title>proc~retrieve_velocity2_gvtdx&#45;&gt;proc~fp_gauss</title>
-<path fill="none" stroke="#000000" d="M110.01,-62.85C137.43,-52.44 176.98,-37.43 206.01,-26.42"/>
-<polygon fill="#000000" stroke="#000000" points="207.31,-29.67 215.42,-22.85 204.83,-23.12 207.31,-29.67"/>
+<!-- proc~rt2ll&#45;&gt;dsin -->
+<g id="proc~~rt2ll~~CallsGraph_edge3" class="edge">
+<title>proc~rt2ll&#45;&gt;dsin</title>
+<path fill="none" stroke="#000000" d="M53.45,-41.85C62.21,-37.67 72.17,-32.92 81.52,-28.46"/>
+<polygon fill="#000000" stroke="#000000" points="83.09,-31.59 90.6,-24.12 80.07,-25.27 83.09,-31.59"/>
 </g>
 </g>
 </svg>
@@ -467,7 +316,7 @@
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>GVTD-HeCs was developed by Satoki Tsujino<br>&copy; 2022 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-6"><p>GVTD-HeCs was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
 </p>
         </div>
         <div class="col-xs-6 col-md-6">
