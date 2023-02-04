@@ -4,6 +4,10 @@ This program was used to make the figures in [paper](https://doi.org)
 
 # Bulid
 1. You edit `Mkinclude`, depending on your environment. 
+```
+FC = Fortran compiler
+FCFLAGS = endian and openmp options  ! you need to check endian setting, depending on the input data
+```
 2. Run `make`
 
 
