@@ -2,8 +2,10 @@ module GVTDX_sub
 !! Sub module for GVTDX procedures.
   implicit none
   real, parameter :: pi=3.14159265e0   !! Pi for real
+  real, parameter :: radius=6.371e6 !! polar radius of the Earth (m)
   complex, parameter :: img=(0.0,1.0)  !! Imaginary unit for real
   double precision, parameter :: pi_dp=3.14159265358979d0  !! Pi for double
+  double precision, parameter :: radius_dp=6.371d6   !! polar radius of the Earth (m)
   complex(kind(0d0)), parameter :: img_cdp=(0.0d0,1.0d0)   !! Imaginary unit for double
 
 contains
@@ -1861,6 +1863,199 @@ end subroutine interpolation_1d
 !--------------------------------------------------------------
 !--------------------------------------------------------------
 
+subroutine auto_interpolation_2d( x, y, r, q, u, v, undef, stdopt )
+  !! Automatic interpolation for 2d data (continuous running of interpolation_2d)
+  implicit none
+  double precision, intent(in) :: x(:)  !! reference grid 1
+  double precision, intent(in) :: y(:)  !! reference grid 2
+  double precision, intent(in) :: r(:)  !! target grid 1
+  double precision, intent(in) :: q(:)  !! target grid 2
+  double precision, intent(in) :: u(size(x),size(y))  !! reference data
+  double precision, intent(inout) :: v(size(r),size(q))  !! interpolated data
+  double precision, intent(in), optional :: undef  !! undefined value
+  logical, intent(in), optional :: stdopt  !! Display debug messages.
+                                           !! (default: .false. == No display)
+  integer :: ir(size(r)), iq(size(q))
+  integer :: i, j, nx, ny, nr, nq
+  double precision :: defun
+  logical :: stderr
+
+  nx=size(x)
+  ny=size(y)
+  nr=size(r)
+  nq=size(q)
+
+  if(present(undef))then
+     defun=undef
+  else
+     defun=-999.0d0
+  end if
+
+  if(present(stdopt))then
+     stderr=stdopt
+  else
+     stderr=.false.
+  end if
+
+  call auto_interpo_search_2d( x, y, r, q, ir, iq, undeff=0, stdopt=stderr )
+
+  do j=1, nq
+     do i=1, nr
+        if(ir(i)/=0.and.iq(j)/=0)then
+           if(u(ir(i),iq(j))/=defun)then
+              if(ir(i)<nx.and.iq(j)<ny)then
+                 if(u(ir(i),iq(j)+1)/=defun.and.  &
+  &                 u(ir(i)+1,iq(j))/=defun.and.  &
+  &                 u(ir(i)+1,iq(j)+1)/=defun)then
+                    call interpolation_2d( x(ir(i):ir(i)+1),  &
+  &                                        y(iq(j):iq(j)+1),  &
+  &                                        u(ir(i):ir(i)+1,iq(j):iq(j)+1),  &
+  &                                        (/r(i), q(j)/), v(i,j) )
+                 else
+                    v(i,j)=defun
+                 end if
+
+              else if(x(nx)==r(i).and.y(ny)==q(j))then
+                 v(i,j)=u(nx,ny)
+
+              else if(x(nx)==r(i).and.iq(j)<ny)then
+                 if(u(nx,iq(j)+1)/=defun)then
+                    call interpolation_1d( y(iq(j):iq(j)+1),  &
+  &                                        u(nx,iq(j):iq(j)+1),  &
+  &                                        q(j), v(i,j) )
+                 else
+                    v(i,j)=defun
+                 end if
+
+              else if(y(ny)==q(j).and.ir(i)<nx)then
+                 if(u(ir(i)+1,ny)/=defun)then
+                    call interpolation_1d( x(ir(i):ir(i)+1),  &
+  &                                        u(ir(i):ir(i)+1,ny),  &
+  &                                        r(i), v(i,j) )
+                 else
+                    v(i,j)=defun
+                 end if
+              else
+                 v(i,j)=defun
+              end if
+           else
+              v(i,j)=defun
+           end if
+        else
+           v(i,j)=defun
+        end if
+     end do
+  end do
+
+end subroutine auto_interpolation_2d
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine auto_interpo_search_1d( x, point, i, undeff, stdopt )
+  !! continuous running of interpo_search_1d
+  implicit none
+  double precision, intent(in) :: x(:)  !! gradual increasing array
+  double precision, intent(in) :: point(:)  !! searching points
+  integer, intent(inout) :: i(size(point)) !! floor for each "point"
+  integer, intent(in), optional :: undeff  !! In case of (x(1)>pointx), the value returned to i
+                                           !! (default = 0)
+  logical, intent(in), optional :: stdopt  !! Display debug messages.
+                                           !! (default: .false. == No display)
+  integer :: nx, ni, j, icount, jcount
+  integer :: just
+  logical :: stderr
+
+  nx=size(x)
+  ni=size(point)
+
+  if(present(undeff))then
+     just=undeff
+  else
+     just=0
+  end if
+
+  if(present(stdopt))then
+     stderr=stdopt
+  else
+     stderr=.false.
+  end if
+
+  jcount=1
+
+  do j=1,ni
+     if(x(1)>point(j))then
+        if(stderr.eqv..false.)then
+           write(*,*) "****** WARNING ******"
+           write(*,*) "searching point was not found :", x(1), point(j)
+           write(*,*) "Abort. Exit.!!!"
+        end if
+        i(j)=just
+     else
+        jcount=j
+        exit
+     end if
+  end do
+
+  icount=1
+
+  do j=jcount,ni
+     if(x(icount)<=point(j))then
+        do while(x(icount)<=point(j))
+           i(j)=icount
+           icount=icount+1
+
+           if(icount>nx)then
+              i(j:ni)=nx
+              exit
+           end if
+        end do
+        icount=icount-1
+     else
+        icount=icount+1
+     end if
+  end do
+
+end subroutine auto_interpo_search_1d
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine auto_interpo_search_2d( x, y, pointx, pointy, i, j, undeff, stdopt )
+  !! continuous running of auto_interpo_search_1d
+  implicit none
+  double precision, intent(in) :: x(:)  !! gradual increasing array 1
+  double precision, intent(in) :: y(:)  !! gradual increasing array 2
+  double precision, intent(in) :: pointx(:)  !! searching points for x
+  double precision, intent(in) :: pointy(:)  !! searching points for y
+  integer, intent(inout) :: i(size(pointx))  !! floor for pointx
+  integer, intent(inout) :: j(size(pointy))  !! floor for pointy
+  integer, intent(in), optional :: undeff  !! In case of (x(1)>pointx or y(1)>pointy), the value returned to i and j
+                                           !! (default = 0)
+  logical, intent(in), optional :: stdopt  !! 探索範囲が見つからない旨の標準出力を表示させないようにする.
+  integer :: just
+  logical :: stderr
+
+  if(present(stdopt))then
+     stderr=stdopt
+  else
+     stderr=.false.
+  end if
+
+  if(present(undeff))then
+     just=undeff
+     call auto_interpo_search_1d( x, pointx, i, just, stdopt=stderr )
+     call auto_interpo_search_1d( y, pointy, j, just, stdopt=stderr )
+  else
+     call auto_interpo_search_1d( x, pointx, i, stdopt=stderr )
+     call auto_interpo_search_1d( y, pointy, j, stdopt=stderr )
+  end if
+
+end subroutine auto_interpo_search_2d
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
 subroutine max_val_1d(var, mamv, undef)
   !! Get the max value (from STPK)
   implicit none
@@ -1951,5 +2146,345 @@ end subroutine stand_devi
 !--------------------------------------------------------------
 !--------------------------------------------------------------
 
+subroutine ll2rt( lon0, lat0, lon1, lat1, r, theta )
+  !! calculate radial and azimuthal location at (lon1,lat1) on the 
+  !! polar coordinate with the center of (lon0,lat0)
+  implicit none
+  double precision, intent(in) :: lon0      !! the center longitude (rad)
+  double precision, intent(in) :: lat0      !! the center latitude (rad)
+  double precision, intent(in) :: lon1      !! target longitude (rad)
+  double precision, intent(in) :: lat1      !! target latitude (rad)
+  double precision, intent(inout) :: r      !! radial distance (m)
+  double precision, intent(inout) :: theta  !! azimuthal angle (rad)
+  double precision :: tmpcos, tmpsin, tmptan
+
+  r=ll2radi( lon0, lat0, lon1, lat1 )
+
+  if(r>0.0d0)then
+     tmpcos=dcos(lat1)*dsin(lon1-lon0)
+     tmpsin=dsin(lat1)*dcos(lat0)-dcos(lat1)*dsin(lat0)*dcos(lon1-lon0)
+     if(tmpcos==0.0d0.and.tmpsin==0.0d0)then
+        theta=0.0d0
+     else if(tmpcos==0.0d0.and.tmpsin>0.0d0)then
+        theta=0.5d0*pi_dp
+     else if(tmpcos==0.0d0.and.tmpsin<0.0d0)then
+        theta=1.5d0*pi_dp
+     else if(tmpcos>0.0d0.and.tmpsin==0.0d0)then
+        theta=0.0d0
+     else if(tmpcos<0.0d0.and.tmpsin==0.0d0)then
+        theta=pi_dp
+     else
+        if(tmpcos>0.0d0.and.tmpsin>0.0d0)then
+           tmptan=tmpsin/tmpcos
+           theta=datan(tmptan)
+        else if(tmpcos<0.0d0.and.tmpsin>0.0d0)then
+           tmptan=tmpsin/dabs(tmpcos)
+           theta=pi_dp-datan(tmptan)
+        else if(tmpcos>0.0d0.and.tmpsin<0.0d0)then
+           tmptan=dabs(tmpsin)/tmpcos
+           theta=2.0d0*pi_dp-datan(tmptan)
+        else if(tmpcos<0.0d0.and.tmpsin<0.0d0)then
+           tmptan=tmpsin/tmpcos
+           theta=pi_dp+datan(tmptan)
+        end if
+     end if
+  else
+     theta=0.0d0
+  end if
+
+end subroutine ll2rt
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine rt2ll( r, theta, lon0, lat0, lon, lat )
+  !! calculate (lon,lat) from radial and azimuthal grid (r,theta) 
+  !! on the polar coordinate with the origin of (lon0,lat0)
+  implicit none
+  double precision, intent(in) :: r       !! radial distance from (lon0,lat0) (m)
+  double precision, intent(in) :: theta   !! azimuthal angle from (lon0,lat0) (rad)
+  double precision, intent(in) :: lon0    !! longitude of the center on the polar coordinate (rad)
+  double precision, intent(in) :: lat0    !! latitude of the center on the polar coordinate (rad)
+  double precision, intent(inout) :: lon  !! target longitude (rad)
+  double precision, intent(inout) :: lat  !! target latitude (rad)
+  double precision :: thetad, lond, latd, tmplon, tmplat, rratio
+
+  thetad=180.0d0*theta/pi_dp
+  lond=180.0d0*lon0/pi_dp
+  latd=180.0d0*lat0/pi_dp
+  rratio=r/radius_dp
+
+  do while(thetad>360.0d0)
+     thetad=thetad-360.0d0
+  end do
+
+  if(thetad==-90.0d0.or.thetad==270.0d0)then
+     lon=lon0
+     lat=lat0-rratio
+  else if(thetad==90.0d0)then
+     lon=lon0
+     lat=lat0+rratio
+  else if((-90.0d0<thetad.and.90.0d0>thetad).or.  &
+  &  (270.0d0<thetad.and.360.0d0>=thetad))then
+     tmplat=dcos(lat0)*dsin(rratio)*dsin(theta)+dsin(lat0)*dcos(rratio)
+     lat=dasin(tmplat)
+     tmplon=dsin(rratio)*dcos(theta)/dcos(dasin(tmplat))
+     lon=lon0+dasin(tmplon)
+  else if((90.0d0<thetad.and.270.0d0>thetad).or.  &
+  &       (-180.0d0<=thetad.and.-90.0d0>thetad))then
+     tmplat=dcos(lat0)*dsin(rratio)*dsin(theta)+dsin(lat0)*dcos(rratio)
+     lat=dasin(tmplat)
+     tmplon=-dsin(rratio)*dcos(theta)/dcos(dasin(tmplat))
+     lon=lon0-dasin(tmplon)
+  else
+     write(*,*) "### ERROR : (rt2ll:Map_Function)"
+     write(*,*) "argument 'theta' is not valid : ", theta
+     write(*,*) "STOP."
+     stop
+  end if
+
+end subroutine rt2ll
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+real function ll2radi( lon1, lat1, lon2, lat2, forcef )
+  !! calculate arc distance between two points on the sphere
+  implicit none
+  double precision, intent(in) :: lon1    !! longitude1 (rad)
+  double precision, intent(in) :: lat1    !! latitude1 (rad)
+  double precision, intent(in) :: lon2    !! longitude2 (rad)
+  double precision, intent(in) :: lat2    !! latitude2 (rad)
+  logical, intent(in), optional :: forcef !! truncating flag for numerical error, 
+                                          !! default = .false. (no truncating)
+  double precision :: lond1, lond2, latd1, latd2, tmp
+  logical :: fflag
+
+  lond1=lon1
+  lond2=lon2
+  latd1=lat1
+  latd2=lat2
+
+  if(present(forcef))then
+     fflag=forcef
+  else
+     fflag=.false.
+  end if
+
+  if(lond1==lond2.and.latd1==latd2)then
+     ll2radi=0.0d0
+  else
+     tmp=dsin(latd1)*dsin(latd2)+dcos(latd1)*dcos(latd2)*dcos(lond2-lond1)
+     if(tmp<-1.0d0.or.tmp>1.0d0)then
+        if(fflag.eqv..true.)then
+           write(*,*) "*** WARGNING (ll2radi) *** : Detect over 1",  &
+  &                   tmp, latd1, latd2, lond1, lond2
+           write(*,*) "tmp value is forced to 1. "
+           if(tmp<-1.0d0)then
+              tmp=-1.0d0
+           else
+              tmp=1.0d0
+           end if
+        else
+           write(*,*) "*** ERROR (ll2radi) *** : Detect error",  &
+  &                   tmp, latd1, latd2, lond1, lond2
+           stop
+        end if
+     end if
+     ll2radi=dacos(tmp)*radius_dp
+  end if
+
+  return
+end function ll2radi
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+integer function line_number_counter( fname, funit )
+  !! count the line in the fname
+  implicit none
+  character(*), intent(in) :: fname  !! counting the file name
+  integer, intent(in), optional :: funit   !! file unit (default: 11)
+!  integer, intent(inout) :: res
+  integer :: i, err, unitn
+  character(1) :: dummy
+
+  if(present(funit))then
+     unitn=funit
+  else
+     unitn=11
+  end if
+
+  i=0
+  open(unit=unitn,file=trim(fname),iostat=err,status='old')
+  do while(err==0)
+     read(unitn,*,iostat=err) dummy
+     i=i+1
+  end do
+  close(unit=unitn)
+
+  line_number_counter=i-1
+  return
+
+end function line_number_counter
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine read_file_text( fname, nx, ny, val, skip, forma, funit )
+  !! read ASCII file
+  implicit none
+  character(*), intent(in) :: fname  !! file name in reading
+  integer, intent(in) :: nx  !! column number for fname
+  integer, intent(in) :: ny  !! line number for fname
+  character(*), intent(out) :: val(nx,ny)  !! read data
+  integer, intent(in), optional :: skip  !! line number for skipping from the head
+  character(*), intent(in), optional :: forma  !! Fortran format in reading
+  integer, intent(in), optional :: funit   !! file unit
+  integer :: i, j, unitn
+  character(1) :: dummy
+
+  if(present(funit))then
+     unitn=funit
+  else
+     unitn=11
+  end if
+
+  open(unit=unitn, file=trim(adjustl(fname)), status='old')
+  if(present(skip))then
+     do i=1,skip
+        read(unitn,*) dummy
+     end do
+  end if
+
+  if(present(forma))then
+     do j=1,ny
+        read(unitn,forma) (val(i,j),i=1,nx)
+     end do
+  else
+     do j=1,ny
+        read(unitn,*) (val(i,j),i=1,nx)
+     end do
+  end if
+  close(unit=unitn)
+
+end subroutine
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine read_file_3d( file_name, nx, ny, nz, rec_num, var, offset, funit )
+  !! read float data from 4-byte unformatted binary
+  implicit none
+  integer, intent(in) :: nx  !! data number in x
+  integer, intent(in) :: ny  !! data number in y
+  integer, intent(in) :: nz  !! data number in z
+  integer, intent(in) :: rec_num  !! record number for reading data
+  character(*), intent(in) :: file_name  !! file name
+  real, intent(out) :: var(nx,ny,nz)  ! output data
+  integer, intent(in), optional :: offset  !! offset in reading
+  integer, intent(in), optional :: funit   !! file unit
+  integer :: i, j, k, l, err, unitn  ! working variables
+  integer, parameter :: bnum=4
+
+  if(present(funit))then
+     unitn=funit
+  else
+     unitn=11
+  end if
+
+  err=0
+  if(present(offset))then
+     open(unit=unitn, file=trim(adjustl(file_name)), access='direct',  &
+  &       recl=bnum, status='old', iostat=err)
+        if(err/=0)then
+           call stdout( "File Not Found : "//trim(adjustl(file_name)), "read_file", 1 )
+        end if
+        l=offset
+        do k=1,nz
+           do j=1,ny
+              do i=1,nx
+                 l=l+1
+                 read(unitn,rec=l,iostat=err) var(i,j,k)
+                 if(err/=0)then
+                    call stdout( "Can not read : "//trim(adjustl(file_name)), "read_file", 1 )
+                 end if
+              end do
+           end do
+        end do
+     close(unit=unitn)
+  else
+     open(unit=unitn, file=trim(adjustl(file_name)), access='direct',  &
+  &       recl=bnum*nx*ny, status='old', iostat=err)
+        if(err/=0)then
+           call stdout( "File Not Found : "//trim(adjustl(file_name)), "read_file", 1 )
+        end if
+        do k=1,nz
+           read(unitn,rec=rec_num+k-1,iostat=err) ((var(i,j,k),i=1,nx),j=1,ny)
+           if(err/=0)then
+              call stdout( "Can not read : "//trim(adjustl(file_name)), "read_file", 1 )
+           end if
+        end do
+     close(unit=unitn)
+  end if
+
+end subroutine read_file_3d
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine write_file_3d( file_name, nx, ny, nz, rec_num, var, mode, funit )
+  !! write float data from 4-byte unformatted binary
+  implicit none
+  integer, intent(in) :: nx  !! data number in x
+  integer, intent(in) :: ny  !! data number in y
+  integer, intent(in) :: nz  !! data number in z
+  integer, intent(in) :: rec_num  !! record number for reading data
+  character(*), intent(in) :: file_name  !! file name
+  real, intent(in) :: var(nx,ny,nz)  !! output data
+  character(*), optional, intent(in) :: mode  !! option for output
+  integer, intent(in), optional :: funit   !! file unit
+  integer :: i, j, k, unitn
+  character(10) :: cmode
+  integer, parameter :: bnum=4
+
+  cmode=''
+
+  if(present(funit))then
+     unitn=funit
+  else
+     unitn=11
+  end if
+
+  if(present(mode))then
+     cmode=mode
+  else
+     cmode='unknown'
+  end if
+
+  open(unit=unitn, file=trim(adjustl(file_name)), access='direct',  &
+  &    recl=bnum*nx*ny, status=trim(cmode))
+     do k=1,nz
+        write(unitn,rec=rec_num+k-1) ((var(i,j,k),i=1,nx),j=1,ny)
+     end do
+  close(unit=unitn)
+
+end subroutine write_file_3d
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+real function c2r_convert( cval )
+  !! convert char to float
+  implicit none
+  character(*), intent(in) :: cval  !! char
+
+  read(cval,*) c2r_convert
+
+  return
+end function
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
 
 end module GVTDX_sub

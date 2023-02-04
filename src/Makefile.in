@@ -131,7 +131,8 @@ am__v_AR_1 =
 libGVTDX_a_AR = $(AR) $(ARFLAGS)
 libGVTDX_a_LIBADD =
 am_libGVTDX_a_OBJECTS = sub_mod.$(OBJEXT) gvtdx_main_mod.$(OBJEXT) \
-	gbvtd_main_mod.$(OBJEXT) gvtd_main_mod.$(OBJEXT)
+	gbvtd_main_mod.$(OBJEXT) gvtd_main_mod.$(OBJEXT) \
+	tools_sub.$(OBJEXT)
 libGVTDX_a_OBJECTS = $(am_libGVTDX_a_OBJECTS)
 AM_V_P = $(am__v_P_@AM_V@)
 am__v_P_ = $(am__v_P_@AM_DEFAULT_V@)
@@ -284,19 +285,22 @@ libGVTDX_a_SOURCES = \
 			  sub_mod.f90 \
 			  gvtdx_main_mod.f90 \
 			  gbvtd_main_mod.f90 \
-			  gvtd_main_mod.f90
+			  gvtd_main_mod.f90 \
+			  tools_sub.f90
 
 nobase_include_HEADERS = \
 			  gvtdx_sub.mod \
 			  gvtdx_main.mod \
 			  gbvtd_main.mod \
-			  gvtd_main.mod
+			  gvtd_main.mod \
+			  tools_sub.mod
 
 CLEANFILES = \
 			  gvtdx_sub.mod \
 			  gvtdx_main.mod \
 			  gbvtd_main.mod \
-			  gvtd_main.mod
+			  gvtd_main.mod \
+			  tools_sub.mod
 
 all: all-am
 

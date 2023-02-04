@@ -24,7 +24,7 @@ module GVTDX_main
 
 contains
 
-subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, RadTC,  &
+subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadTC,  &
   &                                 VT, VR, VRT0, VDR0, VRTn, VRRn, VDTm, VDRm,  &
   &                                 undef, phin, zetan, VRT0_GVTD, VDR0_GVTD,  &
   &                                 VRTns, VRTnc, VRRns, VRRnc, Vn_0 )
@@ -47,8 +47,7 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, 
   double precision, intent(in) :: td(size(r),size(t))  !! radar azimuthal angle defined at Vd(r,t) [rad]
   double precision, intent(in) :: rdiv(:)  !! radial coordinate on which Dc (staggered for Vd) is defined [m]
   double precision, intent(inout) :: Vd(size(r),size(t))  !! Doppler velocity defined on r-t [m s-1]
-  double precision, intent(in) :: Un(2)                !! Parallel component to radar in Un(1) storm motion and Un(2) mean wind, defined on r-t [m s-1] (no USE)
-  double precision, intent(in) :: Vn(2)                !! Normal component to radar in Vn(1) storm-motion and Vn(2) mean wind, defined on r-t [m s-1]
+  double precision, intent(in) :: Vn                   !! y component of storm-relative mean wind on Cartesian coordinate (x,y) which is defined in the direction of the radar to TC ccenter [m s-1]
   double precision, intent(in) :: RadTC                !! Distance from radar to TC center [m]
   double precision, intent(out) :: VT(size(r),size(t))  !! retrieved total tangential wind [m s-1]
   double precision, intent(out) :: VR(size(r),size(t))  !! retrieved total radial wind [m s-1]
@@ -238,7 +237,7 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, 
 
 !-- Calculate f_kij
 !-- ** normalized radius is used in r_n **
-  call calc_fkij( nrot, ndiv, nk, Un, Vn, rtc_n, r_n, t, rh_n, td, rdiv_n, f_kij, Vd, undeflag )
+  call calc_fkij( nrot, ndiv, nk, Vn, rtc_n, r_n, t, rh_n, td, rdiv_n, f_kij, Vd, undeflag )
 
 !-- Calculate b_k
   call calc_fkijVd2bk( vmax, f_kij, Vd, delta, b_k(1:nk), undeflag )
@@ -254,19 +253,19 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, 
         a_kp(nk+k,nk-nbound+k)=1.0d0
         a_kp(nk-nbound+k,nk+k)=1.0d0
      end do
-     b_k(nk+1)=-rh_n(nr)*(Vn(2)-Vn(1))/vmax
+     b_k(nk+1)=-rh_n(nr)*Vn/vmax
   end if
 
 !-- Solve x_k
   call fp_gauss( a_kp, b_k, x_k )
 
 !-- Set each unknown variable from x_k
-  call set_xk2variables( nrot, ndiv, nrdiv, Un, Vn, vmax,  &
+  call set_xk2variables( nrot, ndiv, nrdiv, Vn, vmax,  &
   &                      x_k(1:nk), Vrott_r, Vdivr_r,  &
   &                      phis_nr, phic_nr, divc_mr, undef=dundef )
 
 !-- Calculate Vr and Vt components of rotating wind
-  call calc_phi2Vrot( nrot, Un, Vn, vmax, r_n, rh_n, t,  &
+  call calc_phi2Vrot( nrot, Vn, vmax, r_n, rh_n, t,  &
   &                   Vrott_r, VRT0, VRTn, VRRn, phis_nr, phic_nr,  &
   &                   undef=dundef )
 
@@ -329,7 +328,7 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, 
   if(present(Vn_0))then
      do i=1,nr
         if(VRT0(i,1)/=dundef)then
-           Vn_0(i,1:nt)=(r(i)/RadTC)*(Vn(2)-Vn(1))
+           Vn_0(i,1:nt)=(r(i)/RadTC)*Vn
         end if
      end do
   end if
@@ -339,15 +338,14 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Un, Vn, 
 end subroutine Retrieve_velocity_GVTDX
 
 
-subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, rddiv,  &
+subroutine calc_fkij( nrot, ndiv, nnk, Vsrn, rtc, rd, theta, rdh, thetad, rddiv,  &
   &                   fkij, Vdij, undeflag )
 !! Calculate the coefficient matrix \(f_{kij}\)
   implicit none
   integer, intent(in) :: nrot  !! Maximum wavenumber for stream function
   integer, intent(in) :: ndiv  !! Maximum wavenumber for velocity potential
   integer, intent(in) :: nnk  !! Matrix dimension for fkij
-  double precision, intent(in) :: Usrn(2)  !! Environmental wind (not use)
-  double precision, intent(in) :: Vsrn(2)  !! Environmental wind normal to radar [m/s]
+  double precision, intent(in) :: Vsrn  !! y-component of storm-relative mean wind [m/s]
   double precision, intent(in) :: rtc  !! Distance between the radar to vortex center [m]
   double precision, intent(in) :: rd(:)  !! Normalized radius [1]
   double precision, intent(in) :: theta(:)  !! Azimuthal angle [rad]
@@ -576,8 +574,8 @@ subroutine calc_fkij( nrot, ndiv, nnk, Usrn, Vsrn, rtc, rd, theta, rdh, thetad, 
         if(undeflag(nnr,jj).eqv..false.)then  ! Remove WN-1 Vm at the outermost radius
            Vdij(nnr,jj)  &
   &       =Vdij(nnr,jj)  &
-  &       -(Vsrn(2)-Vsrn(1))*(-cosinen(1,jj)*sines(nnr,jj)  &
-  &                           +sinen(1,jj)*cosines(nnr,jj))
+  &       -Vsrn*(-cosinen(1,jj)*sines(nnr,jj)  &
+  &              +sinen(1,jj)*cosines(nnr,jj))
         end if
 
      end do
@@ -822,7 +820,7 @@ subroutine calc_fkijVd2bk( vmax, fkij, Vdl, deltaij, bk, undeflag )
 end subroutine calc_fkijVd2bk
 
 
-subroutine set_xk2variables( nrot, ndiv, nnrdiv, Usrn, Vsrn, vmax,  &
+subroutine set_xk2variables( nrot, ndiv, nnrdiv, Vsrn, vmax,  &
   &                          xk, VRT0, VDR0,  &
   &                          phis_n, phic_n, Ds_m, undef )
 !! Set each unknown variable from the solved \(x_k\)
@@ -830,8 +828,7 @@ subroutine set_xk2variables( nrot, ndiv, nnrdiv, Usrn, Vsrn, vmax,  &
   integer, intent(in) :: nrot  !! Maximum wavenumber of stream function
   integer, intent(in) :: ndiv  !! Maximum wavenumber of velocity potential
   integer, intent(in) :: nnrdiv  !! Radial grid number for divergence
-  double precision, intent(in) :: Usrn(2)  !! Environmental wind (not use)
-  double precision, intent(in) :: Vsrn(2)  !! Environmental wind normal to radar [m/s]
+  double precision, intent(in) :: Vsrn  !! y-component of storm-relative mean wind [m/s]
   double precision, intent(in) :: vmax  !! Scaling factor for velocity [m/s]
   double precision, intent(in) :: xk(:)  !! Solved unknown variable vector
   double precision, intent(out) :: VRT0(:)  !! Wavenumber-0 tangential wind [m/s]
@@ -842,15 +839,14 @@ subroutine set_xk2variables( nrot, ndiv, nnrdiv, Usrn, Vsrn, vmax,  &
   double precision, intent(in), optional :: undef  !! Undefined value
 
   integer :: ii, kk, nnk, nnr, ncyc
-  double precision :: Usrn_n(2), Vsrn_n(2)
+  double precision :: Vsrn_n
 
   call stdout( "Enter procedure.", "set_xk2variables", 0 )
 
   nnk=size(xk)
   nnr=size(VRT0)
   ncyc=2+2*nrot
-  Usrn_n(1:2)=Usrn(1:2)/vmax
-  Vsrn_n(1:2)=Vsrn(1:2)/vmax
+  Vsrn_n=Vsrn/vmax
 
 !-- Set VRT0 and VDR0
   do ii=1,nnr-1
@@ -898,14 +894,13 @@ subroutine set_xk2variables( nrot, ndiv, nnrdiv, Usrn, Vsrn, vmax,  &
 end subroutine set_xk2variables
 
 
-subroutine calc_phi2Vrot( nrot, Usrn, Vsrn, vmax, rd, rdh, theta, VRT0_r,  &
+subroutine calc_phi2Vrot( nrot, Vsrn, vmax, rd, rdh, theta, VRT0_r,  &
   &                       VRT0_rt, VRT_nrt, VRR_nrt,  &
   &                       phis_nr, phic_nr, undef )
 !! Calculate radial and tangential components of rotating wind
   implicit none
   integer, intent(in) :: nrot  !! Maximum wavenumber of stream function
-  double precision, intent(in) :: Usrn(2)  !! Environmental wind (not use)
-  double precision, intent(in) :: Vsrn(2)  !! Environmental wind normal to radar [m/s]
+  double precision, intent(in) :: Vsrn  !! y-component of storm-relative mean wind [m/s]
   double precision, intent(in) :: vmax  !! Scaling factor for velocity [m/s]
   double precision, intent(in) :: rd(:)  !! Normalized radius [1]
   double precision, intent(in) :: rdh(size(rd)+1)  !! Normalized radius [1]
@@ -919,7 +914,7 @@ subroutine calc_phi2Vrot( nrot, Usrn, Vsrn, vmax, rd, rdh, theta, VRT0_r,  &
   double precision, intent(in), optional :: undef  !! No use
 
   integer :: ii, jj, kk, nnr, nnt, cstat
-  double precision :: Usrn_n(2), Vsrn_n(2)
+  double precision :: Vsrn_n
   double precision, dimension(size(rd)) :: dr, dr_inv, r_inv, alp
   double precision, allocatable, dimension(:,:) :: cosinen, sinen
 
@@ -953,8 +948,7 @@ subroutine calc_phi2Vrot( nrot, Usrn, Vsrn, vmax, rd, rdh, theta, VRT0_r,  &
      alp(ii)=(rd(ii)-rdh(ii))/(rdh(ii+1)-rdh(ii))
   end do
   r_inv(1:nnr)=1.0d0/rd(1:nnr)
-  Usrn_n(1:2)=Usrn(1:2)/vmax
-  Vsrn_n(1:2)=Vsrn(1:2)/vmax
+  Vsrn_n=Vsrn/vmax
 
   do ii=1,nnr
      VRT0_rt(ii,1:nnt)=VRT0_r(ii)*vmax
@@ -966,8 +960,8 @@ subroutine calc_phi2Vrot( nrot, Usrn, Vsrn, vmax, rd, rdh, theta, VRT0_r,  &
      VRR_nrt=0.0d0
 
      !-- set the outermost boundary for wavenumber 1
-     phic_nr(1,nnr+1)=-rdh(nnr+1)*(Vsrn_n(2)-Vsrn_n(1))
-     phic_nr(1,nnr)=-rdh(nnr)*(Vsrn_n(2)-Vsrn_n(1))
+     phic_nr(1,nnr+1)=-rdh(nnr+1)*Vsrn_n
+     phic_nr(1,nnr)=-rdh(nnr)*Vsrn_n
 
      !-- set the outermost boundary for wavenumber 2
      if(nrot>1)then

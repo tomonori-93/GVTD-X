@@ -19,7 +19,7 @@ module GBVTD_main
 
 contains
 
-subroutine Retrieve_velocity_GBVTD( nasym, r, t, td, Vd, Un, Vn, RadTC,  &
+subroutine Retrieve_velocity_GBVTD( nasym, r, t, td, Vd, RadTC,  &
   &                                 VT, VR, VT0, VR0, VTSn, VTCn, undef )
 !!  Solve unknown variables and return wind velocity on R-T coordinates
 !!  based on the GBVTD technique. <br>
@@ -36,8 +36,6 @@ subroutine Retrieve_velocity_GBVTD( nasym, r, t, td, Vd, Un, Vn, RadTC,  &
   double precision, intent(in) :: t(:)   !! azimuthal coordinate on which Vd is defined [rad]
   double precision, intent(in) :: td(size(r),size(t))  !! radar azimuthal angle defined at Vd(r,t) [rad]
   double precision, intent(inout) :: Vd(size(r),size(t))  !! Doppler velocity defined on r-t [m s-1]
-  double precision, intent(in) :: Un(2)                !! Parallel component to radar in environmental wind, defined on r-t [m s-1]
-  double precision, intent(in) :: Vn(2)                !! Normal component to radar in environmental wind, defined on r-t [m s-1]
   double precision, intent(in) :: RadTC                !! Distance from radar to TC center [m]
   double precision, intent(out) :: VT(size(r),size(t))  !! retrieved total tangential wind [m s-1]
   double precision, intent(out) :: VR(size(r),size(t))  !! retrieved total radial wind [m s-1]
@@ -178,7 +176,7 @@ subroutine Retrieve_velocity_GBVTD( nasym, r, t, td, Vd, Un, Vn, RadTC,  &
   &                         undef=dundef )
 
 !-- Calculate Vr and Vt components of rotating wind
-     call calc_AB2VT( nasym, vmax, r_n(i), td_max(omppe), Vn(1), psid(1:nt,omppe), rtc_n,  &
+     call calc_AB2VT( nasym, vmax, r_n(i), td_max(omppe), psid(1:nt,omppe), rtc_n,  &
   &                   Vd_A0(omppe), Vd_AC(1:nasym+1,omppe), Vd_BS(1:nasym+1,omppe),  &
   &                   VT0(i,1:nt), VR0(i,1:nt), VTSn(1:nasym,i,1:nt), VTCn(1:nasym,i,1:nt),  &
   &                   undef=dundef )
@@ -341,7 +339,7 @@ subroutine set_xk2variables( nasym, nnk, xk, A0, ACn, BSn, undef )
 end subroutine set_xk2variables
 
 
-subroutine calc_AB2VT( nasym, vmax, rd, thetad_max, Vn, psid, rtc, A0, An, Bn,  &
+subroutine calc_AB2VT( nasym, vmax, rd, thetad_max, psid, rtc, A0, An, Bn,  &
   &                    VT0_rt, VR0_rt, VTSn_rt, VTCn_rt, undef )
 !! Calculate tangential components of retrieved wind
   implicit none
@@ -349,7 +347,6 @@ subroutine calc_AB2VT( nasym, vmax, rd, thetad_max, Vn, psid, rtc, A0, An, Bn,  
   double precision, intent(in) :: vmax  !! Scaling factor for velocity [m/s]
   double precision, intent(in) :: rd  !! Normalized radius [1]
   double precision, intent(in) :: thetad_max  !! Normalized radius
-  double precision, intent(in) :: Vn  !! Normal component of environmental [ms-1]
   double precision, intent(in) :: psid(:)  !! Nonlinear angle \(\psi _d\)
   double precision, intent(in) :: rtc !! Normalized distance between the radar to vortex center [1]
   double precision, intent(in) :: A0  !! Wanvenumber-0 of Doppler velocity
@@ -376,7 +373,7 @@ subroutine calc_AB2VT( nasym, vmax, rd, thetad_max, Vn, psid, rtc, A0, An, Bn,  
      end do
   end do
 
-  VT0_rt(1:nnt)=-(Bn(1)+Bn(3))*vmax-Vn*dsin(thetad_max)
+  VT0_rt(1:nnt)=-(Bn(1)+Bn(3))*vmax
   VR0_rt(1:nnt)=(An(1)+An(3))*vmax
 
   VTSn_r(1)=An(2)-A0+An(4)+(A0+An(2)+An(4))*dcos(thetad_max)

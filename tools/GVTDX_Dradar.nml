@@ -1,0 +1,31 @@
+&iocheck
+listname = 'list_GVTDX.dat'
+nr_org = 400
+nt_org = 512
+nz = 10
+rmin = 500.0
+dr = 500.0
+tmin = 0.0
+dt = 0.703125  ! 360/512
+zmin = 2000.0
+dz = 1000.0
+/
+
+&ret_opt
+nrot = 3
+ndiv = 0
+nrdiv = 1
+rdiv_t = 80.0d3
+undefobs = -1000.0
+nthres_undef = 64, 64
+smooth_r = 100  ! nx -> smooth_r
+smooth_t = 128  ! ny -> smooth_t
+nnz = 2,2
+skip_min_t = 64
+flag_GVTDX = 1  ! 1: GVTDX, 2: GVTD, 3: GBVTD
+/
+
+&rad_opt
+dpoint_x = 129.5520  ! Naze
+dpoint_y = 28.3942   ! Naze
+/
