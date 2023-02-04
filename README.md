@@ -12,11 +12,36 @@ GVTD-HeCs is pronounced as "GVTD-X".
 # Methods
 [Paper](https://doi.org/)
 
-[Document](https://tomonori-93.github.io/GVTD-HeCs/ford-doc/index.html)
+[Method descriptions](https://tomonori-93.github.io/GVTD-HeCs/ford-doc/index.html)
 
-[Jaoanese document](doc/formulation.pdf)
+[Formulation and derivation (Japanese document)](doc/formulation.pdf)
 
 # Images
 ![Test Image 1](image/image1.png)
 
+
+# Installation
+You can use the `configure` script with libtool: 
+```
+export FC=gfortran
+export FCFLAGS="-ffree-line-length-none"
+./configure --prefix=XXX --includedir=XXX/include  # XXX is the destination of the install
+make
+make install
+```
+
+### Tips
+* You can use options for OpenMP in `FCFLAGS` to perform multi-threaded parallel processing (e.g., gfortran: `-fopenmp`, ifort: `-qopenmp`). 
+
+
+# USAGE
+You can use the subroutines and functions by linking the build library (`libGVTDX.a`) to your Fortran main programs (ex., `main.f90`) as follows: 
+```
+gfortran -IXXX/include main.f90 -LXXX -lGVTDX -o main  # -> The executable file of `main` will be built
+```
+* You can find [an example program](tools/GVTDX_Dradar.md) (`GVTDX_Dradar.f90`) in `tools/`
+
+
+# Demo
+If DCL ([Debian](http://www.gfd-dennou.org/arch/cc-env/debian-dennou/index.htm.en)/[Ubuntu](http://www.gfd-dennou.org/arch/cc-env/ubuntu-dennou/index.htm.en)/[Source](https://www.gfd-dennou.org/arch/dcl/)) is installed in your machine, you can use [sample programs](demo/sample.md), which were used to make the figures in the [paper](https://doi.org/), in `demo/`.
 
