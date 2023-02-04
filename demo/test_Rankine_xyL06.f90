@@ -7,8 +7,8 @@ program test_Rankine
   use Dcl_Automatic
   use Math_Const
   use typhoon_analy
-  use ToRMHOWe_sub
-  use ToRMHOWe_main
+  use GVTDX_sub
+  use GVTDX_main
 
   implicit none
 
@@ -232,10 +232,10 @@ program test_Rankine
   call tangent_conv_scal( xd, yd, tc_xd, tc_yd, vs0, rh_t, t_ref_t, vs0_rht_t,  &
   &                       undef=undef, undefg=undef, undefgc='inc',  &
   &                       stdopt=.true., axis='xy' )
-  call conv_VxVy2VtVr( rh_t, t_ref_t, us0_rht_t, vs0_rht_t, Vst_rht_t, Usr_rht_t )
+  call conv_VxVy2VtVr_rt( rh_t, t_ref_t, us0_rht_t, vs0_rht_t, Vst_rht_t, Usr_rht_t )
 
 !-- converting (Vr,Vt)(r_t,t_ref_t) -> (Vx,Vy)(r_t,t_ref_t)
-  call conv_VtVr2VxVy( rh_t, t_ref_t, Vt_rht_t, Ut_rht_t, Vx_rht_t, Vy_rht_t )
+  call conv_VtVr2VxVy_rt( rh_t, t_ref_t, Vt_rht_t, Ut_rht_t, Vx_rht_t, Vy_rht_t )
   call Cart_conv_scal( rh_t, t_ref_t, Vx_rht_t, xd, yd, tc_xd, tc_yd, Vx_xyd_t, undef=undef,  &
   &                    undefg=undef, undefgc='inc', stdopt=.true., axis='xy' )
   call Cart_conv_scal( rh_t, t_ref_t, Vy_rht_t, xd, yd, tc_xd, tc_yd, Vy_xyd_t, undef=undef,  &
@@ -262,7 +262,7 @@ program test_Rankine
   call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )  ! Vd - proj(Vs)
   call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
 write(*,*) "val check", Vra1d
-  call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t, (/Vsrn,0.0d0/), (/0.0d0,0.0d0/),  &
+  call Retrieve_velocity_GVTDX( nrot, ndiv, rh_t, t_t, r_t, tdr_t, Vra_rt_t, (/Vsrn,0.0d0/), (/0.0d0,0.0d0/),  &
   &                       VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t,  &
   &                       VDTm_rt_t, VDRm_rt_t, undef, phi1=phi1_rt_t )
   call stdout( "Retrieved velocity.", "main", 0 )

@@ -1,0 +1,95 @@
+&input
+ nvp = 3
+ nup = 3
+ undef = -999.0
+ rvmax = 30.0e3
+ vmax = 50.0
+ !vmax = 0.0
+ c1u = 0.0
+ !c1u = 0.1
+ !c2u = 3.0
+ c2u = 0.0
+ vp = 0.0, 0.0, 0.0
+! vp = 0.0, 10.0, 0.0
+ up = 0.0, 0.0, 0.0
+! up = -5.0, 0.0, 0.0
+ vpa = 0.0, 0.0, 0.0
+! vpa = 0.0, 0.0, 0.0
+ upa = 0.0, 0.0, 0.0
+! upa = 180.0, 0.0, 0.0
+ us = 10.0
+ vs = 0.0
+ nrot = 3
+ ndiv = 0
+ ropt = .false.
+ nrdiv = 1
+ rdiv = 80.0e3
+ flag_GVTDX = 1
+/
+&domain
+ nxd = 400
+ nyd = 400
+ nr_d = 71
+ !nr_t = 2  ! For test.bin
+ nr_t = 36
+ nt_d = 100
+ !nt_t = 25  ! For test.bin
+ nt_t = 100
+ xdmin = -100.0e3
+ xdmax = 100.0e3
+ ydmin = 0.0
+ ydmax = 200.0e3
+ r_dmin = 0.0e3
+ r_dmax = 140.0e3
+ t_dmin = 0.0
+ t_dmax = 360.0
+ !r_tmin = 0.0 
+ r_tmin = 5.0e3
+ !r_tmin = 15.0e3  ! For test.bin
+ !r_tmax = 5.0e3
+ !r_tmax = 20.0e3  ! For test.bin
+ r_tmax = 75.0e3
+ t_tmin = 0.0
+ t_tmax = 360.0
+/
+&pos_info
+ tc_xd = 0.0
+ tc_yd = 100.0e3
+ ra_xd = 0.0
+ ra_yd = 0.0
+ nxm = 21
+ nym = 21
+ dVm_min = -5.0e0
+ dVm_max = 5.0e0
+ dTm_min = -30.0e0
+ dTm_max = 30.0e0
+/
+&draw_info
+ IWS = 2
+ tone_grid = 10
+ cmap = 4
+ col_rev = .false.
+ contour_num = 10
+ fixc_val = 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0
+ fixc_idx = 15, 15, 15, 15, 15, 15, 15, 15, 15, 15
+ fixc_typ = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+ form_typec = '(f3.0)'
+ contour_num2 = 15
+ fixc_val2 = -20.0, -15.0, -10.0, -6.0, -4.0, -2.0, -1.0, 0.0, 1.0, 2.0, 4.0, 6.0, 10.0, 15.0, 20.0
+ fixc_idx2 = 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15
+ fixc_typ2 = 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1
+ form_typec2 = '(f4.0)'
+ contour_num3 = 20
+ fixc_val3 = -50.0, -45.0, -40.0, -35.0, -30.0, -25.0, -20.0, -15.0, -10.0, -5.0, 0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0
+ fixc_idx3 = 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15
+ fixc_typ3 = 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+ form_typec3 = '(f4.0)'
+ shade_num = 6
+ min_tab = 55999
+ max_tab = 99999
+ fix_val = 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0
+ fix_col = 60999, 70999, 75999, 82999, 89999, 94999
+ form_types = '(f4.0)'
+ xax_fact = 1.0e-3
+ yax_fact = 1.0e-3
+/

@@ -3,20 +3,21 @@ program test_Rankine
 
   use dcl
   use Dcl_Automatic
-  use ToRMHOWe_sub
-  use ToRMHOWe_main
+  use GVTDX_sub
+  use GVTDX_main
   use GVTD_main
   use GBVTD_main
-!  use ToRMHOWe_main2
+!  use GVTDX_main2
 
   implicit none
 
   integer, parameter :: nvp_max=100
+  integer, parameter :: nrdiv_max=100
 
 !-- namelist
-  integer :: flag_ToRMHOWe
+  integer :: flag_GVTDX
   integer :: nvp, nup, nxd, nyd, nxm, nym, nr_d, nr_t, nt_d, nt_t
-  integer :: nrot, ndiv
+  integer :: nrot, ndiv, nrdiv
   integer :: IWS, tone_grid, cmap
   integer :: contour_num, contour_num2, contour_num3
   integer :: shade_num, min_tab, max_tab
@@ -33,6 +34,7 @@ program test_Rankine
   double precision :: dVm_min, dVm_max, dTm_min, dTm_max
   double precision :: rvmax, vmax, c1u, c2u
   double precision :: vp(nvp_max), up(nvp_max), vpa(nvp_max), upa(nvp_max)
+  double precision, dimension(nrdiv_max) :: rdiv
   character(20) :: form_typec, form_typec2, form_typec3, form_types
   logical :: col_rev, ropt
 
@@ -63,7 +65,7 @@ program test_Rankine
   character(20) :: cvtmax, cvrmax, cvamax
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
-  &                us, vs, nrot, ndiv, ropt, flag_ToRMHOWe
+  &                us, vs, nrot, ndiv, ropt, nrdiv, rdiv, flag_GVTDX
   namelist /domain /nxd, nyd, nr_d, nr_t, nt_d, nt_t,  &
   &                 xdmin, xdmax, ydmin, ydmax,  &
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
@@ -85,7 +87,7 @@ program test_Rankine
   d2r=pi/180.0d0
   r2d=180.0d0/pi
 
-  if(flag_ToRMHOWe/=1)then
+  if(flag_GVTDX/=1)then
      nrot=3
   end if
 
@@ -236,10 +238,10 @@ program test_Rankine
 !  &                       undef=undef, undefg=undef, stdopt=.true. )
 !  call tangent_conv_scal( xd, yd, tc_xd, tc_yd, vs0, r_d, t_ref_d, vs0_rt_d,  &
 !  &                       undef=undef, undefg=undef, stdopt=.true. )
-!  call conv_VxVy2VtVr( r_d, t_ref_d, us0_rt_d, vs0_rt_d, Vst_rt_d, Usr_rt_d, undef=undef )
+!  call conv_VxVy2VtVr_rt( r_d, t_ref_d, us0_rt_d, vs0_rt_d, Vst_rt_d, Usr_rt_d, undef=undef )
 
 !-- converting (Vr,Vt)(r_t,t_ref_t) -> (Vx,Vy)(r_t,t_ref_t)
-  call conv_VtVr2VxVy( r_d, t_ref_d, Vt_rt_d, Ut_rt_d, Vx_rt_d, Vy_rt_d, undef=undef )
+  call conv_VtVr2VxVy_rt( r_d, t_ref_d, Vt_rt_d, Ut_rt_d, Vx_rt_d, Vy_rt_d, undef=undef )
   call cart_conv_scal( r_d, t_ref_d, Vx_rt_d, xd, yd, tc_xd, tc_yd, Vx_xyd_t, undef=undef,  &
   &                    undefg=undef, stdopt=.true. )
   call cart_conv_scal( r_d, t_ref_d, Vy_rt_d, xd, yd, tc_xd, tc_yd, Vy_xyd_t, undef=undef,  &
@@ -283,7 +285,7 @@ program test_Rankine
         call proj_VxVy2Vraxy( xd, yd, ra_xd, ra_yd, us0, vs0, Vsra_xyd, undef=undef )
         call add_2d( Vra_xyd, Vsra_xyd, undef=undef )
 
-        if(flag_ToRMHOWe/=3)then  ! For ToRMHOWe and GVTD
+        if(flag_GVTDX/=3)then  ! For GVTDX and GVTD
         !-- Remove the estimated Vm and θm (specified by us and vs)
            us0=us
            vs0=vs
@@ -295,21 +297,22 @@ program test_Rankine
   &                             rh_t, t_ref_t, VraP_rt_t,  &
   &                             undef=undef, undefg=undef, stdopt=.true. )
 
-        select case (flag_ToRMHOWe)
-        case (1)  ! ToRMHOWe
-           call Retrieve_velocity( nrot, ndiv, rh_t, t_t, r_t, tdr_t, VraP_rt_t,  &
-  &                                Usrn, Vsrn, rad_tc,  &
+        select case (flag_GVTDX)
+        case (1)  ! GVTDX
+           call Retrieve_velocity_GVTDX( nrot, ndiv, rh_t, t_t, r_t, tdr_t,  &
+  &                                rdiv(1:nrdiv), VraP_rt_t,  &
+  &                                Vsrn(2), rad_tc,  &
   &                                VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                                VRTn_rt_t, VRRn_rt_t,  &
   &                                VDTm_rt_t, VDRm_rt_t, undef )
         case (2)  ! GVTD
            call Retrieve_velocity_GVTD( nrot, rh_t, t_t, tdr_t, VraP_rt_T,  &
-  &                                     Usrn, Vsrn, rad_tc,  &
+  &                                     rad_tc,  &
   &                                     VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                                     VRTn_rt_t, VRRn_rt_t, undef )
         case (3)  ! GBVTD
            call Retrieve_velocity_GBVTD( nrot, rh_t, t_t, tdr_t, VraP_rt_T,  &
-  &                                      Usrn, Vsrn, rad_tc,  &
+  &                                      rad_tc,  &
   &                                      VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                                      VRTn_rt_t, VRRn_rt_t, undef )
         end select
@@ -320,8 +323,8 @@ program test_Rankine
 !        call stand_devi( VTtot_rt_t(ivmax,1:nt_t), vmax, maxv, undef=undef )
         draw_dVt_max(i,j)=abs(real(VRT0_rt_t(ivmax,1)-vmax))
 !        draw_dVt_max(i,j)=real(maxv)
-        draw_dVt_max(i,j)=real(maxv-vmax)
-        call max_val_1d( VDR0_rt_t(1:nr_t,1), maxv, undef )
+!        draw_dVt_max(i,j)=real(maxv-vmax)
+!        call max_val_1d( VDR0_rt_t(1:nr_t,1), maxv, undef )
 !        call stand_devi( VRtot_rt_t(ivmax,1:nt_t), 0.0d0, maxv, undef=undef )
         draw_dVr_max(i,j)=abs(real(VDR0_rt_t(ivmax,1)))
 !        draw_dVr_max(i,j)=real(maxv)
@@ -513,7 +516,7 @@ write(*,*) "Difference", draw_dVt_max(i,j), draw_dVr_max(i,j), rh_t(ivmax)
   &       draw_dVt_max(1:nxm,1:nym),  &
   &       draw_dVt_max(1:nxm,1:nym),  &
   &       (/0.0, 1.0/), (/0.0, 1.0/),  &
-  &       (/'Δθ\_{M} (degrees)', 'ΔV\_{M} (m/s)    '/),  &
+  &       (/'Δθ\_{M} (degrees)', 'ΔV\_{M} (m/s)     '/),  &
   &       (/form_typec3, form_types/), (/0.2, 0.8/),  &
   &       (/0.2, 0.8/), c_num=(/contour_num3, shade_num/),  &
   &       no_tone=.true., tonbf='c' )
@@ -548,7 +551,7 @@ write(*,*) "Difference", draw_dVt_max(i,j), draw_dVr_max(i,j), rh_t(ivmax)
   &       draw_dVr_max(1:nxm,1:nym),  &
   &       draw_dVr_max(1:nxm,1:nym),  &
   &       (/0.0, 1.0/), (/0.0, 1.0/),  &
-  &       (/'Δθ\_{M} (degrees)', 'ΔV\_{M} (m/s)    '/),  &
+  &       (/'Δθ\_{M} (degrees)', 'ΔV\_{M} (m/s)     '/),  &
   &       (/form_typec3, form_types/), (/0.2, 0.8/),  &
   &       (/0.2, 0.8/), c_num=(/contour_num3, shade_num/),  &
   &       no_tone=.true., tonbf='c' )

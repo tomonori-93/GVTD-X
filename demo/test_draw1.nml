@@ -1,0 +1,64 @@
+&input
+ nx = 200
+ ny = 200
+ dx = 500.0
+ dy = 500.0
+ xmin = -50.0e3
+ ymin = 0.0e3
+ nr = 200
+ nt = 200
+ dr = 500.0
+ dt = 1.0
+ rmin = 0.0
+ tmin = 0.0
+ tcx = 0.0
+ tcy = 50.0e3
+/
+&draw_info
+ IWS = 2
+ tone_grid = 10
+ cmap = 4
+ col_rev = .false.
+ contour_num = 9
+ fixc_val = -10.0e0, -6.0e0, -4.0e0, -2.0e0, 0.0, 2.0e0, 4.0e0, 6.0e0, 10.0e0
+ fixc_idx = 15, 15, 15, 15, 15, 15, 15, 15, 15
+ fixc_typ = 2, 2, 2, 2, 1, 1, 1, 1, 1
+ form_typec = '(f4.0)'
+ contour_num2 = 9
+ fixc_val2 = -10.0e0, -6.0e0, -4.0e0, -2.0e0, 0.0, 2.0e0, 4.0e0, 6.0e0, 10.0e0
+ fixc_idx2 = 15, 15, 15, 15, 15, 15, 15, 15, 15
+ fixc_typ2 = 2, 2, 2, 2, 1, 1, 1, 1, 1,
+ form_typec2 = '(f4.0)'
+ contour_num3 = 9
+ fixc_val3 = -10.0e0, -6.0e0, -4.0e0, -2.0e0, 0.0, 2.0e0, 4.0e0, 6.0e0, 10.0e0
+ fixc_idx3 = 15, 15, 15, 15, 15, 15, 15, 15, 15
+ fixc_typ3 = 2, 2, 2, 2, 1, 1, 1, 1, 1,
+ form_typec3 = '(f4.0)'
+ contour_num4 = 9
+ fixc_val4 = -10.0e0, -6.0e0, -4.0e0, -2.0e0, 0.0, 2.0e0, 4.0e0, 6.0e0, 10.0e0
+ fixc_idx4 = 15, 15, 15, 15, 15, 15, 15, 15, 15
+ fixc_typ4 = 2, 2, 2, 2, 1, 1, 1, 1, 1,
+ form_typec4 = '(f4.0)'
+ shade_num = 1
+ min_tab = 25999
+ max_tab = 85999
+ fix_val = -1.0e12, 1.0e12
+ fix_col = 55999
+ form_types = '(f3.0)'
+ xax_fact = 1.0e-3
+ yax_fact = 1.0e-3
+ vfact = 1.0e-5
+/
+&vortex
+ us = 0.0
+ vs = 10.0
+ vmax = 50.0
+ rmwv = 20.0e3
+ phi0 = 0.0
+ xphi0 = 0.0
+ yphi0 = 0.0
+ phi1s = 0.0
+ phi1c = 0.0
+ phi_opt = 1  ! 1: ~r, 2: ~r^2/logr
+ undef = -1.0e35
+/

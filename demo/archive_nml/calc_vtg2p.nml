@@ -1,0 +1,11 @@
+&input  ! 20200905230000 での情報
+tclon = 130.6319
+tclat = 27.3764
+obslon = 129.495  ! 名瀬
+obslat = 28.3783  ! 名瀬
+obsp = 977.3  ! 名瀬アメダス 06 08JST
+undef = -999.0
+fname = 'log.prof-t13.txt'
+outfname = 'VTP-t13.txt'
+int_opt = 'r'
+/
