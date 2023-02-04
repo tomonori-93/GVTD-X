@@ -18,7 +18,7 @@ LFLAGS	=
 # DCL (if available)
 DCLFC	= /home/z48035a/usr/local/CL_intel/dcl-7.4.9-GF/bin/dclfrt
 
-# gtool5 (if available) for NetCDF
+# gtool5 (if available) for NetCDF, will be supported in the future
 GTHOME	= /home/z48035a/usr/gtool5
 GTLIB	= gtool5
 GTFC	= gt5frt
