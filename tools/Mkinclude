@@ -1,0 +1,15 @@
+# Mkinclude
+# Intel Fortran Compiler (Ver.ifort)
+FC	= ifort
+#FFLAGS	= -assume byterecl -convert big_endian -qopenmp
+FFLAGS	= -assume byterecl -convert big_endian -qopenmp # -g -auto -ftrapuv -check all -warn all -std -fpe0 -CB -check uninit -traceback -gen_interfaces -heap-array  # エンディアン関係のコンパイルオプション
+#FFLAGS	= -assume byterecl -convert big_endian -qopenmp  # エンディアン関係のコンパイルオプション
+
+# Fujitsu Fortran Compiler (Ver.frt)
+#FC	= frt
+#FFLAGS	= 
+
+# G-Fortran (Ver.gfortran)
+#FC	= gfortran
+#FFLAGS	= -ffree-line-length-none -fopenmp -fconvert=big-endian
+

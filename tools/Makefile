@@ -1,17 +1,5 @@
 # Makefile
-include ../Mkinclude
-
-DCLIB	= ${AF90LIB}
-DCDIR	= ${AF90LD}/lib
-DCINC	= ${AF90LD}/include
-
-GTDIR	= ${GTHOME}/lib
-GTINC	= ${GTHOME}/include
-
-NCDIR	= ${NCHOME}/lib
-NCFDIR	= ${NCHOME}/lib
-NCINC	= ${NCHOME}/include
-NCFINC	= ${NCHOME}/include
+include ./Mkinclude
 
 TMWDIR	= ../src
 TMWINC	= ${TMWDIR}
