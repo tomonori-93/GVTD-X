@@ -301,18 +301,18 @@ program test_Rankine
         case (1)  ! GVTDX
            call Retrieve_velocity_GVTDX( nrot, ndiv, rh_t, t_t, r_t, tdr_t,  &
   &                                rdiv(1:nrdiv), VraP_rt_t,  &
-  &                                Usrn, Vsrn, rad_tc,  &
+  &                                Vsrn(2), rad_tc,  &
   &                                VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                                VRTn_rt_t, VRRn_rt_t,  &
   &                                VDTm_rt_t, VDRm_rt_t, undef )
         case (2)  ! GVTD
            call Retrieve_velocity_GVTD( nrot, rh_t, t_t, tdr_t, VraP_rt_T,  &
-  &                                     Usrn, Vsrn, rad_tc,  &
+  &                                     rad_tc,  &
   &                                     VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                                     VRTn_rt_t, VRRn_rt_t, undef )
         case (3)  ! GBVTD
            call Retrieve_velocity_GBVTD( nrot, rh_t, t_t, tdr_t, VraP_rt_T,  &
-  &                                      Usrn, Vsrn, rad_tc,  &
+  &                                      rad_tc,  &
   &                                      VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                                      VRTn_rt_t, VRRn_rt_t, undef )
         end select
@@ -516,7 +516,7 @@ write(*,*) "Difference", draw_dVt_max(i,j), draw_dVr_max(i,j), rh_t(ivmax)
   &       draw_dVt_max(1:nxm,1:nym),  &
   &       draw_dVt_max(1:nxm,1:nym),  &
   &       (/0.0, 1.0/), (/0.0, 1.0/),  &
-  &       (/'Δθ\_{M} (degrees)', 'ΔV\_{M} (m/s)    '/),  &
+  &       (/'Δθ\_{M} (degrees)', 'ΔV\_{M} (m/s)     '/),  &
   &       (/form_typec3, form_types/), (/0.2, 0.8/),  &
   &       (/0.2, 0.8/), c_num=(/contour_num3, shade_num/),  &
   &       no_tone=.true., tonbf='c' )
@@ -551,7 +551,7 @@ write(*,*) "Difference", draw_dVt_max(i,j), draw_dVr_max(i,j), rh_t(ivmax)
   &       draw_dVr_max(1:nxm,1:nym),  &
   &       draw_dVr_max(1:nxm,1:nym),  &
   &       (/0.0, 1.0/), (/0.0, 1.0/),  &
-  &       (/'Δθ\_{M} (degrees)', 'ΔV\_{M} (m/s)    '/),  &
+  &       (/'Δθ\_{M} (degrees)', 'ΔV\_{M} (m/s)     '/),  &
   &       (/form_typec3, form_types/), (/0.2, 0.8/),  &
   &       (/0.2, 0.8/), c_num=(/contour_num3, shade_num/),  &
   &       no_tone=.true., tonbf='c' )

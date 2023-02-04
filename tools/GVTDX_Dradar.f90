@@ -8,27 +8,6 @@ program GVTDX_Dradar
 !! You can resample the input data from the original grid in GVTD-X retrieval. <br>
 !! <br>
 !! [USAGE]: ./GVTDX_Dradar < GVTDX_Dradar.nml
-! 
-!  [計算時の覚書]
-!   ここでは台風中心を原点とした r-t 座標を 2 種類考える.
-!   1 つは x-y 座標の x 軸上を台風中心から x > 0 の方向に方位角 0 度 (ref 座標)
-!   1 つは, レーダ・台風中心を結ぶ線上で, レーダと逆側に方位角 0 度 (rel 座標)
-!  [追加の namelist 変数]
-!  &ret_opt  リトリーバル関連の設定
-!   nrot = 流線関数について展開する接線波数の最大値
-!   ndiv = 速度ポテンシャルについて展開する接線波数の最大値
-!          (ただし, 手法の制約から, ndiv > 1 に指定しても, ndiv = 1 に強制)
-!   undefobs = 観測データの未定義値
-!   nthres_undef = 解析の最内外半径を決める際, 方位角にデータがある最小格子数
-!                  この格子数以上のデータ点がある半径を解析の最内外半径とする.
-!                  この格子点は, smooth_{r,t} で内挿された後の格子点数を基準に.
-!   smooth_{r,t} = r, theta 方向の格子点数をオリジナルデータから内挿により
-!                  smooth_{r,t} に変更する.
-!   skip_min_t = 方位角方向に欠損ではないデータがこの個数未満の場合, 
-!                その半径の解析を行わず, 未知変数を求めない.
-!                -1 を指定すれば, 欠損の格子数に関わらず解析を行う.
-!  &rad_opt
-!   dpoint_x, dpoint_y = ドップラーレーダの設置場所の経度と緯度 (deg)
 
   use GVTDX_sub
   use GVTDX_main, only : Retrieve_velocity_GVTDX
@@ -153,9 +132,9 @@ program GVTDX_Dradar
   allocate(r_t(nr))
   allocate(rh_t(nr+1))
   allocate(theta_ref_t_org(nt_org))
-  allocate(theta_ref_t(nt))  ! ref 座標の角度
-  allocate(theta_t(nt))  ! rel 座標の角度
-  allocate(thetad_t(nr,nt))  ! レーダ・台風中心の線上をゼロ度とした角度
+  allocate(theta_ref_t(nt))
+  allocate(theta_t(nt))
+  allocate(thetad_t(nr,nt))
   allocate(lonr(nr,nt))
   allocate(latr(nr,nt))
   allocate(projVs(nr,nt))

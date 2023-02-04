@@ -1,9 +1,8 @@
 # Makefile
 include ../Mkinclude
 
-DCLIB	= ${AF90LIB}
-DCDIR	= ${AF90LD}/lib
-DCINC	= ${AF90LD}/include
+DCDIR	= dclaf90
+DCLIB	= dclaf90
 
 GTDIR	= ${GTHOME}/lib
 GTINC	= ${GTHOME}/include
@@ -56,7 +55,10 @@ TARGET7	=  \
 all: $(TARGETD) $(TARGETN) $(TARGET7) $(TARGET)
 use_dcl: $(TARGETD)
 $(TARGETD): %:%.f90
-	$(DCLFC) $(FFLAGS) -I${DCINC} -I${TMWINC} $< -o $@ -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB}
+	@cd $(DCDIR) ; \
+	$(MAKE) ; \
+	cd ../ ; \
+	$(DCLFC) $(FFLAGS) -I${DCDIR} -I${TMWINC} $< -o $@ -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB}
 
 use_nc: $(TARGETN)
 $(TARGETN): %:%.f90
@@ -66,4 +68,7 @@ $(TARGETN): %:%.f90
 #	$(DCLFC) $(FFLAGS) -c -I${STINC} -I${DCINC} $< -o $@ -L${STDIR} -l${STLIB} -L${DCDIR} -l${DCLIB}
 
 clean:
+	@cd $(DCDIR) ; \
+	$(MAKE) clean ; \
+	cd ../ ; \
 	rm -rf $(TARGET) $(TARGETD) $(TARGETN) $(TARGET7)

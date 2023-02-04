@@ -1,5 +1,5 @@
 # Makefile
-include ./Mkinclude
+include ../Mkinclude
 
 TMWDIR	= ../src
 TMWINC	= ${TMWDIR}

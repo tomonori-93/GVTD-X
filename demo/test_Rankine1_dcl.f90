@@ -260,18 +260,18 @@ write(*,*) "val check", Vra1d
   select case (flag_GVTDX)
   case (1)  ! GVTDX
      call Retrieve_velocity_GVTDX( nrot, ndiv, rh_t, t_t, r_t, tdr_t, rdiv(1:nrdiv),  &
-  &                                Vra_rt_t, Usrn, Vsrn, rad_tc,  &
+  &                                Vra_rt_t, Vsrn(2), rad_tc,  &
   &                                VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                                VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t,  &
   &                                undef, phin=phin_rt_t, zetan=zetan_rt_t )
   case (2)  ! GVTD
      call Retrieve_velocity_GVTD( nrot, rh_t, t_t, tdr_t, Vra_rt_t,  &
-  &                               Usrn, Vsrn, rad_tc,  &
+  &                               rad_tc,  &
   &                               VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                               VRTn_rt_t, VRRn_rt_t, undef )
   case (3)  ! GBVTD
      call Retrieve_velocity_GBVTD( nrot, rh_t, t_t, tdr_t, Vra_rt_t,  &
-  &                                Usrn, Vsrn, rad_tc,  &
+  &                                rad_tc,  &
   &                                VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                                VRTn_rt_t, VRRn_rt_t, undef )
   end select

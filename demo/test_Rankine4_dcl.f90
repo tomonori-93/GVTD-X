@@ -294,18 +294,18 @@ program test_Rankine
         select case (flag_GVTDX)
         case (1)  ! GVTDX
            call Retrieve_velocity_GVTDX( nrot, ndiv, rh_t, t_t, r_t, tdr_t, rdiv(1:nrdiv),  &
-  &                                VraP_rt_t, Usrn, Vsrn, pseudo_rad_tc,  &
+  &                                VraP_rt_t, Vsrn(2), pseudo_rad_tc,  &
   &                                VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                                VRTn_rt_t, VRRn_rt_t,  &
   &                                VDTm_rt_t, VDRm_rt_t, undef )
         case (2)  ! GVTD
            call Retrieve_velocity_GVTD( nrot, rh_t, t_t, tdr_t, VraP_rt_T,  &
-  &                                     Usrn, Vsrn, pseudo_rad_tc,  &
+  &                                     pseudo_rad_tc,  &
   &                                     VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                                     VRTn_rt_t, VRRn_rt_t, undef )
         case (3)  ! GBVTD
            call Retrieve_velocity_GBVTD( nrot, rh_t, t_t, tdr_t, VraP_rt_T,  &
-  &                                      Usrn, Vsrn, pseudo_rad_tc,  &
+  &                                      pseudo_rad_tc,  &
   &                                      VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                                      VRTn_rt_t, VRRn_rt_t, undef )
         end select
