@@ -38,5 +38,17 @@ gfortran -IXXX/include main.f90 -LXXX -lGVTDX -o main  # -> The executable file 
 
 
 # Demo
-If DCL ([Debian](http://www.gfd-dennou.org/arch/cc-env/debian-dennou/index.htm.en)/[Ubuntu](http://www.gfd-dennou.org/arch/cc-env/ubuntu-dennou/index.htm.en)/[Source](https://www.gfd-dennou.org/arch/dcl/)) is installed in your machine, you can use [sample programs](demo/sample.md), which were used to make the figures in the [paper](https://doi.org/), in `demo/`.
+You can perform a test program `test_Rankine_ax.f90` to check the retrieval accuracy three techniques (i.e., GVTD-X/GVTD/GBVTD) for an analytical Rankine vortex. 
+```
+cd demo/
+make  # -> build "test_Rankine_ax"
+./test_Rankine_ax < test_Rankine_ax.nml
+... (running) ...
+*** MESSAGE(main) *** : Pass the test  # -> If this message is displayed, the libGVTDX.a passed the test
+```
 
+If DCL ([Debian](http://www.gfd-dennou.org/arch/cc-env/debian-dennou/index.htm.en)/[Ubuntu](http://www.gfd-dennou.org/arch/cc-env/ubuntu-dennou/index.htm.en)/[Source](https://www.gfd-dennou.org/arch/dcl/)) is installed in your machine, you can use [sample programs](demo/sample.md), which were used to make the figures in the [paper](https://doi.org/), in `demo/`.
+```
+make -f Makefile.dcl  # -> build test_Rankine[1-6]_dcl
+./test_Rankine[1-6]_dcl < test_Rankine[1-6]_dcl.nml
+```
