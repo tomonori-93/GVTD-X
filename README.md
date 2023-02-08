@@ -1,13 +1,11 @@
-# GVTD-HeCs
-GVTD-HeCs (Generalized Velocity Track Display with the Helmholtz-decomposition-based Closure assumption) is a Fortran library to retrieve tangential and radial wind components in atmospheric vortices from single-Doppler radar observations. 
-
-GVTD-HeCs is pronounced as "GVTD-X". 
+# GVTD-X
+GVTD-X is a Fortran library to retrieve tangential and radial wind components in atmospheric vortices from single-Doppler radar observations, which is named from pronounciation of a abbreviation "GVTD-HeCs" (Generalized Velocity Track Display with the Helmholtz-decomposition-based Closure assumption)
 
 
 # Methods
 [Paper](https://doi.org/)
 
-[Method descriptions](https://tomonori-93.github.io/GVTD-HeCs/ford-doc/index.html)
+[Method descriptions](https://tomonori-93.github.io/GVTD-X/ford-doc/index.html)
 
 [Formulation and derivation (Japanese document)](doc/formulation.pdf)
 
