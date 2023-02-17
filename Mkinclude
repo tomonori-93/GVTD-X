@@ -1,36 +1,24 @@
 # Mkinclude
-BIN	= /home/satoki/usr/local/bin
-DCLFC	= dclfrt
+# ***You need to change below, depending on your environment
 
-AF90LIB	= dclaf90
-AF90LD	= /home/satoki/usr/local
-
-LDFLAGS = /opt/intel/Compiler/11.1/069/lib/intel64
-LFLAGS	= iomp5
-
-#GTHOME	= /home/satoki/usr/gtool5
-#GTLIB	= gtool5
-#GTFC	= gt5frt
-
-#HDHOME	= /home/satoki/usr/local/hdf5-1.8.16_ifort
-#HDLIB	= hdf5_fortran
-#HDFC	= /home/satoki/usr/local/hdf5-1.8.16_ifort/bin/h5fc
-
-#NCHOME	= /home/satoki/usr/local/netcdf-4.1.3_ifort
-#NCLIB	= netcdf
-#NCFLIB	= netcdff
-
-# Intel Fortran Compiler (Ver.ifort)
-FC	= ifort
+# Intel Fortran Compiler
+#FC	= ifort
 #FFLAGS	= -assume byterecl -convert big_endian -qopenmp
-FFLAGS	= -assume byterecl -convert big_endian -qopenmp # -g -auto -ftrapuv -check all -warn all -std -fpe0 -CB -check uninit -traceback -gen_interfaces -heap-array  # エンディアン関係のコンパイルオプション
-#FFLAGS	= -assume byterecl -convert big_endian -qopenmp  # エンディアン関係のコンパイルオプション
+#FFLAGS	= -assume byterecl -convert big_endian -qopenmp -g -auto -ftrapuv -warn all -std -fpe0 -CB -check uninit -traceback -gen_interfaces -heap-array
+#FFLAGS	= -assume byterecl -convert big_endian -qopenmp
 
-# Fujitsu Fortran Compiler (Ver.frt)
-#FC	= frt
-#FFLAGS	= 
+# gfortran
+FC	= gfortran
+FFLAGS	= -fconvert=big-endian -fopenmp -ffree-line-length-none
+#FFLAGS	= -fconvert=big-endian -Wall -fbounds-check -O -Wuninitialized -ffpe-trap=invalid,zero,overflow -fbacktrace -g -ffree-line-length-none
 
-# G-Fortran (Ver.gfortran)
-#FC	= gfortran
-#FFLAGS	= -fconvert=big-endian
+LDFLAGS = 
+LFLAGS	= 
 
+# DCL (if available)
+DCLFC	= /home/z48035a/usr/local/CL_intel/dcl-7.4.9-GF/bin/dclfrt
+
+# gtool5 (if available) for NetCDF, will be supported in the future
+GTHOME	= /home/z48035a/usr/gtool5
+GTLIB	= gtool5
+GTFC	= gt5frt

@@ -1,0 +1,90 @@
+&input
+ nvp = 3  ! the maximum wavenumber superposed in the analytical vortex for tangential wind
+ nup = 3  ! the maximum wavenumber superposed in the analytical vortex for radial wind
+ undef = -999.0  ! undefined value
+ rvmax = 20.0e3  ! RMW
+ vmax = 50.0     ! Vmax
+ c1u = 0.0       ! inflow parameter 1 in Lee et al. (1999)
+ !c1u = 0.1      ! inflow parameter 1 in Lee et al. (1999)
+ !c2u = 3.0      ! inflow parameter 2 in Lee et al. (1999)
+ c2u = 0.0       ! inflow parameter 2 in Lee et al. (1999)
+ vp = 0.0, 0.0, 0.0  ! amplitude of tangential wind asymmetries (m/s)
+! vp = 0.0, 10.0, 0.0  ! amplitude of tangential wind asymmetries (m/s)
+ up = 0.0, 0.0, 0.0  ! amplitude of radial wind asymmetries (m/s)
+! up = -5.0, 0.0, 0.0  ! amplitude of radial wind asymmetries (m/s)
+! vpa = 0.0, 90.0, 0.0  ! azimuthal phase for tangential wind asymmetries (deg)
+ vpa = 0.0, 0.0, 0.0  ! azimuthal phase for tangential wind asymmetries (deg)
+ upa = 0.0, 0.0, 0.0  ! azimuthal phase for radial wind asymmetries (deg)
+! upa = 180.0, 0.0, 0.0  ! azimuthal phase for radial wind asymmetries (deg)
+ us = 0.0  ! x-component of storm motion (m/s)
+ vs = 0.0  ! y-component of storm motion (m/s)
+ nrot = 3  ! the maximum wavenumber for rotating winds
+ ndiv = 0  ! the maximum wavenumber for divergent winds (0 or 1)
+ ropt = .true.  ! For GVTDX
+! ropt = .false.  ! For GVTD/GBVTD
+ nrdiv = 1  ! radial grid points for divergence
+ rdiv = 80.0e3  ! radii for divergence
+ flag_GVTDX = 1  ! GVTDX
+! flag_GVTDX = 2  ! GVTD
+/
+&domain
+ nxd = 400   ! grid number in x-direction for drawing
+ nyd = 400   ! grid number in y-direction for drawing
+ nr_d = 400  ! grid number in radius for drawing
+ !nr_t = 2   ! For test.bin
+ nr_t = 35   ! grid number in radius from the storm center
+ nt_d = 400  ! grid number in azimuth from the storm center
+ !nt_t = 25  ! For test.bin
+ nt_t = 100  ! grid number in azimuth for drawing
+ xdmin = -80.0e3  ! x minimum for drawing
+ xdmax = 80.0e3   ! x maximum for drawing
+ ydmin = 0.0      ! y minimum for drawing
+ ydmax = 160.0e3  ! y maximum for drawing
+ r_dmin = 0.0     ! radius minimum for drawing
+ r_dmax = 100.0e3 ! radius maximum for drawing
+ t_dmin = 0.0     ! azimuth maximum for drawing
+ t_dmax = 360.0   ! azimuth maximum for drawing
+ !r_tmin = 0.0    ! radius minimum for retrieval
+ r_tmin = 5.0e3   ! radius minimum for retrieval
+ !r_tmin = 15.0e3  ! For test.bin
+ !r_tmax = 5.0e3
+ !r_tmax = 20.0e3  ! For test.bin
+ r_tmax = 75.0e3  ! radius maximum for retrieval
+ t_tmin = 0.0     ! azimuth minimum for retrieval
+ t_tmax = 360.0   ! azimuth maximum for retrieval
+/
+&pos_info
+ tc_xd = 0.0    ! x position of the vortex center on the Cartesian coordinate (m)
+ tc_yd = 80.0e3 ! y position of the vortex center on the Cartesian coordinate (m)
+ ra_xd = 0.0    ! x position of the virtual radar on the Cartesian coordinate (m)
+ ra_yd = 0.0    ! y position of the virtual radar on the Cartesian coordinate (m)
+/
+&draw_info    ! (dcl options)
+ IWS = 2
+ tone_grid = 10
+ cmap = 4
+ col_rev = .false.
+ contour_num = 10
+ fixc_val = 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0
+ fixc_idx = 15, 15, 15, 15, 15, 15, 15, 15, 15, 15
+ fixc_typ = 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+ form_typec = '(f3.0)'
+ contour_num2 = 15
+ fixc_val2 = -20.0, -15.0, -10.0, -6.0, -4.0, -2.0, -1.0, 0.0, 1.0, 2.0, 4.0, 6.0, 10.0, 15.0, 20.0
+ fixc_idx2 = 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15
+ fixc_typ2 = 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1
+ form_typec2 = '(f4.0)'
+ contour_num3 = 20
+ fixc_val3 = -50.0, -45.0, -40.0, -35.0, -30.0, -25.0, -20.0, -15.0, -10.0, -5.0, 0.0, 5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0
+ fixc_idx3 = 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15
+ fixc_typ3 = 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1
+ form_typec3 = '(f4.0)'
+ shade_num = 3
+ min_tab = 25999
+ max_tab = 85999
+ fix_val = -10.0, -1.0, 1.0, 10.0
+ fix_col = 35999, 55999, 75999
+ form_types = '(f4.0)'
+ xax_fact = 1.0e-3
+ yax_fact = 1.0e-3
+/

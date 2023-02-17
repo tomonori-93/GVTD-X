@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+   <meta name="description" content="Automatically-generated document of the Fortran library GVTD-HeCs">
+    <meta name="author" content="Satoki Tsujino" >
+    <link rel="icon" href="../favicon.png">
+
+    <title>tools_sub &ndash; GVTD-HeCs</title>
+
+    <link href="../css/bootstrap.min.css" rel="stylesheet">
+    <link href="../css/pygments.css" rel="stylesheet">
+    <link href="../css/font-awesome.min.css" rel="stylesheet">
+    <link href="../css/local.css" rel="stylesheet">
+    <link  href="../tipuesearch/tipuesearch.css" rel="stylesheet">
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    
+    <script src="../js/jquery-2.1.3.min.js"></script>
+    <script src="../js/svg-pan-zoom.min.js"></script>
+
+  </head>
+
+  <body>
+
+    <!-- Fixed navbar -->
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">GVTD-HeCs </a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="dropdown hidden-xs visible-sm visible-md hidden-lg">
+              <a href="#" class="dropdown-toggle"
+              data-toggle="dropdown" role="button"
+              aria-haspopup="true"
+     aria-expanded="false">Contents <span class="caret"></span></a>
+        <ul class="dropdown-menu">
+            <li><a href="../lists/files.html">Source Files</a></li>
+            <li><a href="../lists/modules.html">Modules</a></li>
+            <li><a href="../lists/procedures.html">Procedures</a></li>
+              
+            </ul>
+        
+            </li>
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/files.html">Source Files</a></li>
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/modules.html">Modules</a></li>
+<li class="visible-xs hidden-sm visible-lg"><a href="../lists/procedures.html">Procedures</a></li>
+                                       </ul>
+        <form action="../search.html" class="navbar-form navbar-right" role="search">
+        <div class="form-group">
+          <input type="text" class="form-control" placeholder="Search" name="q" id="tipue_search_input" autocomplete="off" required>
+        </div>
+<!--
+        <button type="submit" class="btn btn-default">Submit</button>
+-->
+        </form>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+  <div class="row">
+    <h1>tools_sub 
+    <small>Module</small>
+    </h1>
+    <div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+    <li><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li> 
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title="10.1% of total for modules and submodules.">417 statements</a>
+     </li> 
+    <li><i class="fa fa-code"></i><a href="../src/tools_sub.f90"> Source File</a></li>
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+     <li><a href='../sourcefile/tools_sub.f90.html'>tools_sub.f90</a></li>
+     <li class="active">tools_sub</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
+
+  </div>
+  
+  <div class="row">
+    <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
+    <div id="sidebar">
+  <h3>Contents</h3>
+ 
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-0">Functions</a></h3></div>
+  <div id="funcs-0" class="panel-collapse collapse">
+    <div class="list-group">
+      <a class="list-group-item" href="../module/tools_sub.html#proc-check_data_fulfill">check_data_fulfill</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-inner_radius_check">inner_radius_check</a>
+    </div>
+  </div>
+</div>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-0">Subroutines</a></h3></div>
+  <div class="list-group">
+    <div id="subs-0" class="panel-collapse collapse">
+      <a class="list-group-item" href="../module/tools_sub.html#proc-conv_d2r_3d">conv_d2r_3d</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-conv_r2d_2d">conv_r2d_2d</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-add_2dd">add_2dd</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-sub_2dd">sub_2dd</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-replace_val_2d">replace_val_2d</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-replace_undef">replace_undef</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-proj_vs">proj_Vs</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-proj_rtvs">proj_rtVs</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-decomp_vd2rdpn">decomp_Vd2rdpn</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-rearrange_undef_rad">rearrange_undef_rad</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-recover_undef_rad">recover_undef_rad</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-check_undef_grid~2">check_undef_grid</a>
+    </div>
+  </div>
+</div>
+
+</div>
+
+    </div>
+    
+    <div class="col-md-9" id='text'>
+    <p>Module for rearrangement of the radial grid and some operations for undef data in tools/ programs</p>
+    
+    
+    <br>
+
+    <section class="visible-xs visible-sm hidden-md">
+      <h3>Contents</h3>
+ 
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#funcs-1">Functions</a></h3></div>
+  <div id="funcs-1" class="panel-collapse collapse">
+    <div class="list-group">
+      <a class="list-group-item" href="../module/tools_sub.html#proc-check_data_fulfill">check_data_fulfill</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-inner_radius_check">inner_radius_check</a>
+    </div>
+  </div>
+</div>
+<div class="panel panel-primary">
+  <div class="panel-heading text-left"><h3 class="panel-title"><a data-toggle="collapse" href="#subs-1">Subroutines</a></h3></div>
+  <div class="list-group">
+    <div id="subs-1" class="panel-collapse collapse">
+      <a class="list-group-item" href="../module/tools_sub.html#proc-conv_d2r_3d">conv_d2r_3d</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-conv_r2d_2d">conv_r2d_2d</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-add_2dd">add_2dd</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-sub_2dd">sub_2dd</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-replace_val_2d">replace_val_2d</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-replace_undef">replace_undef</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-proj_vs">proj_Vs</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-proj_rtvs">proj_rtVs</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-decomp_vd2rdpn">decomp_Vd2rdpn</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-rearrange_undef_rad">rearrange_undef_rad</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-recover_undef_rad">recover_undef_rad</a>
+      <a class="list-group-item" href="../module/tools_sub.html#proc-check_undef_grid~2">check_undef_grid</a>
+    </div>
+  </div>
+</div>
+
+    </section>
+    <br class="visible-xs visible-sm hidden-md">
+
+
+    
+    
+
+    
+    
+ 
+    <section>
+    <h2>Functions</h2>
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-check_data_fulfill"></span><h3>public function <a href='../proc/check_data_fulfill.html'>check_data_fulfill</a>(val, undef, nt_count, dir, ncount)</h3></div>
+  <div class="panel-body">
+       
+<p>Check the innermost radius of data with no undef
+If the innermost radius has not been found, 
+the value of zero is returned.</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>val</strong>(:,:)</td><td><p>original data</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>undef</strong></td><td><p>missing value</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>nt_count</strong></td><td><p>minimum of data gridpoints
+default = size(val,2)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>character(len=3),</td>
+<td>intent(in),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>dir</strong></td><td><p>direction for searching
+'i2o': inner to outer radii
+       (default)
+'o2i': outer to inner radii</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(out),</td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>ncount</strong></td><td><p>available sampling number</p></td>
+</tr>
+</tbody>
+</table>
+
+<h4>Return Value <small>integer</small></h4>  
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-inner_radius_check"></span><h3>public function <a href='../proc/inner_radius_check.html'>inner_radius_check</a>(nrin, nrout, radi)</h3></div>
+  <div class="panel-body">
+       
+<p>Check positive value of the innermost radius. 
+If the innermost radius is negative, 
+the element number located at the innermost positive radius is returned.</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nrin</strong></td><td><p>A given element of the innermost radius</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nrout</strong></td><td><p>A given element of the outermost radius</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>radi</strong>(nrin:nrout)</td><td><p>Original radial grids</p></td>
+</tr>
+</tbody>
+</table>
+
+<h4>Return Value <small>integer</small></h4>  
+
+  </div>
+  </div>
+
+    </section>
+    <br>
+
+    <section>
+    <h2>Subroutines</h2>
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-conv_d2r_3d"></span><h3>public subroutine <a href='../proc/conv_d2r_3d.html'>conv_d2r_3d</a>(ival, oval)</h3></div>
+  <div class="panel-body">
+       
+<p>convert double to real</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ival</strong>(:,:,:)</td><td><p>input array</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>real,</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>oval</strong>(size(ival,1),size(ival,2),size(ival,3))</td><td><p>output array</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-conv_r2d_2d"></span><h3>public subroutine <a href='../proc/conv_r2d_2d.html'>conv_r2d_2d</a>(ival, oval)</h3></div>
+  <div class="panel-body">
+       
+<p>convert real to double</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>real,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ival</strong>(:,:)</td><td><p>input array</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>oval</strong>(size(ival,1),size(ival,2))</td><td><p>output array</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-add_2dd"></span><h3>public subroutine <a href='../proc/add_2dd.html'>add_2dd</a>(ioval, sval, undef)</h3></div>
+  <div class="panel-body">
+       
+<p>add sval to ioval</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ioval</strong>(:,:)</td><td><p>base</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>sval</strong>(size(ioval,1),size(ioval,2))</td><td><p>increment</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>undef</strong></td><td><p>undefined value</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-sub_2dd"></span><h3>public subroutine <a href='../proc/sub_2dd.html'>sub_2dd</a>(ioval, sval, undef)</h3></div>
+  <div class="panel-body">
+       
+<p>subtract sval from ioval</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ioval</strong>(:,:)</td><td><p>base</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>sval</strong>(size(ioval,1),size(ioval,2))</td><td><p>increment</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>undef</strong></td><td><p>undefined value</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-replace_val_2d"></span><h3>public subroutine <a href='../proc/replace_val_2d.html'>replace_val_2d</a>(ival2d, orgval, repval)</h3></div>
+  <div class="panel-body">
+       
+<p>replace orgval with repval in ival2d array</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ival2d</strong>(:,:)</td><td><p>base</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>orgval</strong></td><td><p>replace from this</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>repval</strong></td><td><p>replace to this</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-replace_undef"></span><h3>public subroutine <a href='../proc/replace_undef.html'>replace_undef</a>(ioval2d, undeflag, undefv)</h3></div>
+  <div class="panel-body">
+       
+<p>replace ioval2d with undefv at the point undeflag == .true.</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ioval2d</strong>(:,:)</td><td><p>base</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>undeflag</strong>(size(ioval2d,1),size(ioval2d,2))</td><td><p>flag for undefined point</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>undefv</strong></td><td><p>undefined value</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-proj_vs"></span><h3>public subroutine <a href='../proc/proj_vs.html'>proj_Vs</a>(xcent, ycent, xx, yy, ux, vy, projV, undef)</h3></div>
+  <div class="panel-body">
+       
+<p>projection of a uniform wind [(ux,vy) on Cartesian grids] to the line-of-sight component along the radar beam</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>xcent</strong></td><td><p>Radar location (x or lon)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ycent</strong></td><td><p>Radar location (y or lat)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>xx</strong>(:,:)</td><td><p>x coordinate (x or lon)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>yy</strong>(size(xx,1),size(xx,2))</td><td><p>y coordinate (y or lat)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ux</strong></td><td><p>X component of the uniform wind (m/s)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>vy</strong></td><td><p>Y component of the uniform wind (m/s)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>projV</strong>(size(xx,1),size(xx,2))</td><td><p>line-of-sight component on (xx,yy)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>undef</strong></td><td><p>undefined value</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-proj_rtvs"></span><h3>public subroutine <a href='../proc/proj_rtvs.html'>proj_rtVs</a>(radi, thet, ux, vy, projVR, projVT, undef)</h3></div>
+  <div class="panel-body">
+       
+<p>projection of a uniform wind [(ux,vy) on Cartesian grids] to the radial and tangential components on the polar coordinate</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>radi</strong>(:)</td><td><p>radial grid (m)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>thet</strong>(:)</td><td><p>azimuthal grid (rad)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ux</strong></td><td><p>X-component of a uniform wind (m/s)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>vy</strong></td><td><p>Y-component of a uniform wind (m/s)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>projVR</strong>(size(radi),size(thet))</td><td><p>radial wind</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>projVT</strong>(size(radi),size(thet))</td><td><p>tangential wind</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>undef</strong></td><td><p>undefined value</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-decomp_vd2rdpn"></span><h3>public subroutine <a href='../proc/decomp_vd2rdpn.html'>decomp_Vd2rdpn</a>(Vd, thetad, u_decomp, v_decomp, undef)</h3></div>
+  <div class="panel-body">
+       
+<p>decomposition of VD to the components parallel and normal 
+ to the direction of thetad = 0</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>Vd</strong>(:,:)</td><td><p>Doppler velocity (m/s)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>thetad</strong>(size(Vd,1),size(Vd,2))</td><td><p>azimuthal angle from the line of radar to TC center (rad)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>u_decomp</strong>(size(Vd,1),size(Vd,2))</td><td><p>parallel component </p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>v_decomp</strong>(size(Vd,1),size(Vd,2))</td><td><p>normal component</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>undef</strong></td><td><p>undefined value</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-rearrange_undef_rad"></span><h3>public subroutine <a href='../proc/rearrange_undef_rad.html'>rearrange_undef_rad</a>(skip_thres, nr_in, nr_out_org, nt, undef_grid, r_org, rh_org, thetad_org, Vra_org, nr_out, nn_grid, r, rh, thetad, Vra)</h3></div>
+  <div class="panel-body">
+       
+<p>rearrange the radial grids:
+1. skip radii with few azimuthal sampling (less than "skip_thres")
+2. rearrange the radial coordinate.
+[Note1]: r, rh, thetad, and Vra must be given by the same as
+         the array number in the original.
+         (that is, size(r_org) == size(r).)
+[Note2]: nr_out_org &gt;= nr_out. 
+         Undef value is given in r, rh, thetad, and Vra outside nr_out. </p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>skip_thres</strong></td><td><p>threshold for unused radius</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nr_in</strong></td><td><p>innermost array number in radius</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nr_out_org</strong></td><td><p>outermost array number in radius (orig)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nt</strong></td><td><p>azimuthal array number</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(in),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>undef_grid</strong></td><td><p>flag of undefined grid (.true. is undef)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org)</td><td>::</td>
+  <td><strong>r_org</strong></td><td><p>velocity radius (original) [m]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org+1)</td><td>::</td>
+  <td><strong>rh_org</strong></td><td><p>potential radius (original) [m]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>thetad_org</strong></td><td><p>azimuthal angle from radar (original) [rad]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>Vra_org</strong></td><td><p>Doppler velocity (original) [m/s]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nr_out</strong></td><td><p>outermost array number in radius (skip)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(out),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org)</td><td>::</td>
+  <td><strong>nn_grid</strong></td><td><p>grid number in rearranged each radius</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(out),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org)</td><td>::</td>
+  <td><strong>r</strong></td><td><p>velocity radius (skip) [m]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(out),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org+1)</td><td>::</td>
+  <td><strong>rh</strong></td><td><p>potential radius (skip) [m]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(out),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>thetad</strong></td><td><p>azimuthal angle from radar (skip) [rad]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(out),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>Vra</strong></td><td><p>Doppler velocity (skip) [m/s]</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-recover_undef_rad"></span><h3>public subroutine <a href='../proc/recover_undef_rad.html'>recover_undef_rad</a>(nrotmin, nrot, ndivmin, ndiv, nr_in, nr_out, nr_out_org, nt, undef, undef_grid, nn_grid, VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t, VRT0_GVTD_rt_t, VDR0_GVTD_rt_t, VRTns_rt_t, VRTnc_rt_t, VRRns_rt_t, VRRnc_rt_t, Vn_0_rt_t, phin_rt_t, zetan_rt_t)</h3></div>
+  <div class="panel-body">
+       
+<p>recover the retrieved values from the rearranged to original radii.</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nrotmin</strong></td><td><p>minimum wavenumber for rotational components</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nrot</strong></td><td><p>maximum wavenumber for rotational components</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ndivmin</strong></td><td><p>minimum wavenumber for divergent components</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ndiv</strong></td><td><p>maximum wavenumber for divergent components</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nr_in</strong></td><td><p>innermost array number in radius</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nr_out</strong></td><td><p>outermost array number in radius (skip)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nr_out_org</strong></td><td><p>outermost array number in radius (orig)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nt</strong></td><td><p>azimuthal array number</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>undef</strong></td><td><p>undefined value</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(in),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>undef_grid</strong></td><td><p>flag of undefined grid (.true. is undef)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>integer,</td>
+<td>intent(in),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org)</td><td>::</td>
+  <td><strong>nn_grid</strong></td><td><p>grid number in rearranged each radius</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VTtot_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRtot_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRT0_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VDR0_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRTn_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRRn_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(ndivmin:ndiv,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VDTm_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(ndivmin:ndiv,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VDRm_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRT0_GVTD_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VDR0_GVTD_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRTns_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRTnc_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRRns_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRRnc_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>Vn_0_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>phin_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(inout),</td>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>zetan_rt_t</strong></td><td></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+      <div class="panel panel-default">
+  <div class="panel-heading codesum"><span class="anchor" id="proc-check_undef_grid~2"></span><h3>public subroutine <a href='../proc/check_undef_grid~2.html'>check_undef_grid</a>(vval, undefv, undeflag)</h3></div>
+  <div class="panel-body">
+       
+<p>check missing grids</p>
+    
+<h4>Arguments</h4>      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>vval</strong>(:,:)</td><td><p>input data</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>double precision,</td>
+<td>intent(in)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>undefv</strong></td><td><p>undefined value</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" ></span>logical,</td>
+<td>intent(out)</td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>undeflag</strong>(size(vval,1),size(vval,2))</td><td><p>undefined flag (.true.)</p></td>
+</tr>
+</tbody>
+</table>
+
+
+  </div>
+  </div>
+
+    </section>    
+    <br>
+    
+    </div>
+  </div>
+
+    <hr>    
+    </div> <!-- /container -->
+    <footer>
+      <div class="container">
+      <div class="row">
+        <div class="col-xs-6 col-md-6"><p>GVTD-HeCs was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
+</p>
+        </div>
+        <div class="col-xs-6 col-md-6">
+          <p class="text-right">
+            Documentation generated by 
+            <a href="https://github.com/Fortran-FOSS-Programmers/ford">FORD</a>
+          </p>
+        </div>
+      </div>
+      <br>
+      </div> <!-- /container -->    
+    </footer>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+<!--
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+-->
+    <script src="../js/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="../js/ie10-viewport-bug-workaround.js"></script>
+
+    <!-- MathJax JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        TeX: { extensions: ['AMSmath.js','AMSsymbols.js','noErrors.js','noUndefined.js'], equationNumbers: { autoNumber: 'AMS' } },
+        jax: ['input/TeX','input/MathML','output/HTML-CSS'],
+        extensions: ['tex2jax.js','mml2jax.js','MathMenu.js','MathZoom.js']
+      });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    
+    <script src="../tipuesearch/tipuesearch_content.js"></script>
+    <script src="../tipuesearch/tipuesearch_set.js"></script>
+    <script src="../tipuesearch/tipuesearch.js"></script>
+    
+  </body>
+</html>
