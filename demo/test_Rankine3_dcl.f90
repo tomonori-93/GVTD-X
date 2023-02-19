@@ -45,11 +45,14 @@ program test_Rankine
   double precision, dimension(2) :: vx_new, vy_new
   double precision :: dxd, dyd, dr_d, dr_t, dt_d, dt_t
   double precision, allocatable, dimension(:) :: xd, yd, r_d, r_t, rh_t, t_d, t_t, t_ref_t, t_ref_d
+  double precision, allocatable, dimension(:) :: Vt_r_d, Ut_r_d, VtP_r_d, UtP_r_d
   double precision, allocatable, dimension(:,:) :: tdr_t, tdr_d
   double precision, allocatable, dimension(:,:) :: Ut_xyd, Vt_xyd, Vra_xyd, Vsra_xyd, Vratot_xyd
+  double precision, allocatable, dimension(:,:) :: UtP_xyd, VtP_xyd
   double precision, allocatable, dimension(:,:) :: Utott_xyd, Vtott_xyd, Vra_rt_d, Vratot_rt_t
   double precision, allocatable, dimension(:,:) :: Vst_rt_d, Usr_rt_d
   double precision, allocatable, dimension(:,:) :: Vx_rt_d, Vy_rt_d
+  double precision, allocatable, dimension(:,:) :: VtP_rt_d, UtP_rt_d
   double precision, allocatable, dimension(:,:) :: Vx_xyd, Vy_xyd
   double precision, allocatable, dimension(:,:) :: Vtotx_xyd, Vtoty_xyd
   double precision, allocatable, dimension(:,:) :: Vxtot_rt_t, Vytot_rt_t
@@ -127,10 +130,14 @@ program test_Rankine
   allocate(Vt_rt_d(nr_d,nt_d),stat=cstat)  ! Tangential wind on TC R-T coordinate
   allocate(Ut_xyd(nxd,nyd),stat=cstat)  ! Radial wind on X-Y coordinate
   allocate(Vt_xyd(nxd,nyd),stat=cstat)  ! Tangential wind on X-Y coordinate
+  allocate(UtP_xyd(nxd,nyd),stat=cstat)  ! Radial wind on X-Y coordinate
+  allocate(VtP_xyd(nxd,nyd),stat=cstat)  ! Tangential wind on X-Y coordinate
   allocate(Utott_xyd(nxd,nyd),stat=cstat)  ! Total radial wind on X-Y coordinate
   allocate(Vtott_xyd(nxd,nyd),stat=cstat)  ! Total tangential wind on X-Y coordinate
   allocate(Vx_rt_d(nr_d,nt_d),stat=cstat)  ! X component of wind on TC R-T coordinate
   allocate(Vy_rt_d(nr_d,nt_d),stat=cstat)  ! Y component of wind on TC R-T coordinate
+  allocate(VtP_rt_d(nr_d,nt_d),stat=cstat)  ! Radial wind on TC R-T coordinate
+  allocate(UtP_rt_d(nr_d,nt_d),stat=cstat)  ! Tangential wind on TC R-T coordinate
   allocate(Vx_xyd(nxd,nyd),stat=cstat)  ! X component of wind on X-Y coordinate
   allocate(Vy_xyd(nxd,nyd),stat=cstat)  ! Y component of wind on X-Y coordinate
   allocate(Vtotx_xyd(nxd,nyd),stat=cstat)  ! Retrieved X component of wind on X-Y coordinate
@@ -150,6 +157,10 @@ program test_Rankine
   allocate(div_xyd(nxd,nyd),stat=cstat)  ! divergence on X-Y coordinate
   allocate(rot_xyd(nxd,nyd),stat=cstat)  ! rotation on X-Y coordinate
   allocate(phin_xyd(nrot,nxd,nyd),stat=cstat)  ! phin on X-Y coordinate
+  allocate(Vt_r_d(nr_d),stat=cstat)  ! Tangential wind on R coordinate
+  allocate(Ut_r_d(nr_d),stat=cstat)  ! Radial wind on R coordinate
+  allocate(VtP_r_d(nr_d),stat=cstat)  ! Tangential wind on R coordinate
+  allocate(UtP_r_d(nr_d),stat=cstat)  ! Radial wind on R coordinate
 
   !-- For drawing variables
   allocate(draw_xd(nxd),stat=cstat)
@@ -422,6 +433,7 @@ write(*,*) "val check", Vra1d
         write(100,'(1P5E16.8)') r_d(i), Vt_r_d(i), Ut_r_d(i), VtP_r_d(i), UtP_r_d(i)
      end do
      close(100)
+     call stdout( "Output test test_Rankine3_out.dat", "main", 0 )
   end if
 
 write(*,*) "checkVt0", VRT0_rt_t(:,1)
