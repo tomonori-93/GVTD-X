@@ -36,7 +36,7 @@ program test_Rankine
   double precision :: vp(nvp_max), up(nvp_max), vpa(nvp_max), upa(nvp_max)
   double precision, dimension(nrdiv_max) :: rdiv
   character(20) :: form_typec, form_typec2, form_typec3, form_types
-  logical :: col_rev, ropt
+  logical :: col_rev, ropt, flag_fout
 
 !-- internal
   integer :: i, j, k, cstat, ivmax
@@ -76,7 +76,7 @@ program test_Rankine
   &                 xdmin, xdmax, ydmin, ydmax,  &
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
   &                 r_tmin, r_tmax, t_tmin, t_tmax
-  namelist /pos_info /tc_xd, tc_yd, ra_xd, ra_yd, pseudo_tc_xd, pseudo_tc_yd
+  namelist /pos_info /tc_xd, tc_yd, ra_xd, ra_yd, pseudo_tc_xd, pseudo_tc_yd, flag_fout
   namelist /draw_info /IWS, tone_grid, cmap, col_rev,  &
   &                    contour_num, fixc_val, fixc_idx, fixc_typ, form_typec,  &
   &                    contour_num2, fixc_val2, fixc_idx2, fixc_typ2, form_typec2,  &
@@ -400,6 +400,28 @@ write(*,*) "val check", Vra1d
      call conv_d2r_2d( phin_xyd(1,1:nxd,1:nyd), draw_phi1 )
   else
      call conv_d2r_2d( phin_xyd(nrot,1:nxd,1:nyd), draw_phi1 )
+  end if
+
+  if(flag_fout.eqv..true.)then
+     call conv_VxVy2VtVr_xy( xd, yd, pseudo_tc_xd, pseudo_tc_yd, Vx_xyd, Vy_xyd,  &
+  &                          VtP_xyd, UtP_xyd, undef=undef )
+     call tangent_conv_scal( xd, yd, pseudo_tc_xd, pseudo_tc_yd, VtP_xyd,  &
+  &                          r_d, t_ref_d, VtP_rt_d,  &
+  &                          undef=undef, undefg=undef, stdopt=.true. )
+     call tangent_conv_scal( xd, yd, pseudo_tc_xd, pseudo_tc_yd, UtP_xyd,  &
+  &                          r_d, t_ref_d, UtP_rt_d,  &
+  &                          undef=undef, undefg=undef, stdopt=.true. )
+     open(unit=100,file='test_Rankine3_out.dat',status='unknown')
+     write(100,'(a80)') 'Radius          True-center-Vt  True-center-Ur  Pseu-center-Vt  Pseu-center-Ur'
+     write(100,'(a80)') 'm               ms-1            ms-1            ms-1            ms-1          '
+     do i=1,nr_d
+        call Mean_1d( Vt_rt_d(i,1:nt_d), Vt_r_d(i), error=undef )
+        call Mean_1d( Ut_rt_d(i,1:nt_d), Ut_r_d(i), error=undef )
+        call Mean_1d( VtP_rt_d(i,1:nt_d), VtP_r_d(i), error=undef )
+        call Mean_1d( UtP_rt_d(i,1:nt_d), UtP_r_d(i), error=undef )
+        write(100,'(1P5E16.8)') r_d(i), Vt_r_d(i), Ut_r_d(i), VtP_r_d(i), UtP_r_d(i)
+     end do
+     close(100)
   end if
 
 write(*,*) "checkVt0", VRT0_rt_t(:,1)
