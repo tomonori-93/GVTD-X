@@ -59,6 +59,7 @@
  ra_yd = 0.0
  pseudo_tc_xd = 0.0e3
  pseudo_tc_yd = 85.0e3
+ flag_fout = .true.
 /
 &draw_info
  IWS = 2
