@@ -1522,10 +1522,10 @@ subroutine calc_Phi2Zetan( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr, z
            dpsdri=alp(ii)*dpsdr(kk,ii+1)+(1.0d0-alp(ii))*dpsdr(kk,ii)
            d2pcdr2i=alp(ii)*d2pcdr2(kk,ii+1)+(1.0d0-alp(ii))*d2pcdr2(kk,ii)
            dpcdri=alp(ii)*dpcdr(kk,ii+1)+(1.0d0-alp(ii))*dpcdr(kk,ii)
-           zeta_nr(kk,ii,jj)=((d2psdr2i+dpsdri*r_inv(ii)  &
+           zeta_nr(kk,ii,jj)=-((d2psdr2i+dpsdri*r_inv(ii)  &
   &                           -((dble(kk)*r_inv(ii))**2)*phisi)  &
   &                           *sinen(kk,jj)  &
-  &                          +(d2pcdr2i+dpcdri*r_inv(ii)  &
+  &                           +(d2pcdr2i+dpcdri*r_inv(ii)  &
   &                           -((dble(kk)*r_inv(ii))**2)*phici)  &
   &                           *cosinen(kk,jj))  &
   &                         *vmax*rmax_inv

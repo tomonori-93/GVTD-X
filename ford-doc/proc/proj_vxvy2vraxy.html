@@ -76,113 +76,235 @@
   <div class="row">
     <h1>proj_VxVy2Vraxy
       <small>Subroutine</small>
+      
     </h1>
-    <div class="row">
-  <div class="col-lg-12">
-<div class="well well-sm">
-  <ul class="list-inline" style="margin-bottom:0px;display:inline">
-    <li><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li> 
-     <li><i class="fa fa-list-ol"></i>
-       <a data-toggle="tooltip"
-    data-placement="bottom" data-html="true"
-    title=" 1.3% of total for procedures.">38 statements</a>
-     </li> 
-    <li><i class="fa fa-code"></i><a href="../src/sub_mod.f90"> Source File</a></li>
-  </ul>
-  <ol class="breadcrumb in-well text-right">
-     <li><a href='../sourcefile/sub_mod.f90.html'>sub_mod.f90</a></li>
-     <li><a href='../module/gvtdx_sub.html'>GVTDX_sub</a></li>
-     <li class="active">proj_VxVy2Vraxy</li>
-  </ol>
-</div>
-</div>
-</div>
-<script>
-  $(function () {
-  $('[data-toggle="tooltip"]').tooltip()
-  })
-</script>
+      <div class="row" id="info-bar">
+    <div class="col-lg-12">
+      <div class="well well-sm">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li id="meta-license"><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li>
+
+          <li id="statements"><i class="fa fa-list-ol"></i>
+            <a data-toggle="tooltip"
+               data-placement="bottom" data-html="true"
+               title=" 1.3% of total for procedures.">38 statements</a>
+          </li>
+
+            <li id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/sub_mod.f90"> Source File</a>
+            </li>
+        </ul>
+        <ol class="breadcrumb in-well text-right">
+              <li><a href='../sourcefile/sub_mod.f90.html'>sub_mod.f90</a></li>
+              <li><a href='../module/gvtdx_sub.html'>GVTDX_sub</a></li>
+          <li class="active">proj_VxVy2Vraxy</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+    })
+  </script>
 
   </div>
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-    <div id="sidebar">
-  <h3>Contents</h3>
- 
-<em>None</em>
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
-</div>
+
+  </div>
 
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public subroutine proj_VxVy2Vraxy(x, y, rax, ray, Vx, Vy, Vraxy, undef)</h2>
+    <h2>public  subroutine proj_VxVy2Vraxy(x, y, rax, ray, Vx, Vy, Vraxy, undef)  
+</h2>
     
 
     <p>Calculate Vx and Vy to Vd along with radar beams on X-Y coodinates</p>
 
     <h3>Arguments</h3>
-      <table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
-<tbody>
-<tr>
-  <td><span class="anchor" id="variable-x~2"></span>double precision,</td>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-x~2"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>x</strong>(:)</td><td><p>X-coordinate</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-y~2"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>x</strong>(:)</td>
+            <td>
+                <p>X-coordinate</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-y~2"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>y</strong>(:)</td><td><p>Y-coordinate</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-rax"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>y</strong>(:)</td>
+            <td>
+                <p>Y-coordinate</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rax"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>rax</strong></td><td><p>X-coodinate of radar location</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-ray"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rax</strong></td>
+            <td>
+                <p>X-coodinate of radar location</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-ray"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>ray</strong></td><td><p>Y-coodinate of radar location</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vx~4"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>ray</strong></td>
+            <td>
+                <p>Y-coodinate of radar location</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vx~4"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>Vx</strong>(size(x),size(y))</td><td><p>X-component of wind on X-Y coordinates</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vy~4"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>Vx</strong>(size(x),size(y))</td>
+            <td>
+                <p>X-component of wind on X-Y coordinates</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vy~4"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>Vy</strong>(size(x),size(y))</td><td><p>Y-component of wind on X-Y coordinates</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vraxy"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>Vy</strong>(size(x),size(y))</td>
+            <td>
+                <p>Y-component of wind on X-Y coordinates</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vraxy"></span>
+              double precision,
+            </td>
 <td>intent(out)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>Vraxy</strong>(size(x),size(y))</td><td><p>velocity along with beam on X-Y coordinates</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-undef~8"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>Vraxy</strong>(size(x),size(y))</td>
+            <td>
+                <p>velocity along with beam on X-Y coordinates</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-undef~18"></span>
+              double precision,
+            </td>
 <td>intent(in),</td>
-  <td>optional</td>  <td></td><td>::</td>
-  <td><strong>undef</strong></td><td><p>Undefined value</p></td>
-</tr>
-</tbody>
-</table>
+              <td>optional</td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>undef</strong></td>
+            <td>
+                <p>Undefined value</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
 
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
-      <h3>Contents</h3>
- 
-<em>None</em>
+        <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
 
     </section>
     <br class="visible-xs visible-sm hidden-md">

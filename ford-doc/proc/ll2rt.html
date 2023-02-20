@@ -76,95 +76,181 @@
   <div class="row">
     <h1>ll2rt
       <small>Subroutine</small>
+      
     </h1>
-    <div class="row">
-  <div class="col-lg-12">
-<div class="well well-sm">
-  <ul class="list-inline" style="margin-bottom:0px;display:inline">
-    <li><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li> 
-     <li><i class="fa fa-list-ol"></i>
-       <a data-toggle="tooltip"
-    data-placement="bottom" data-html="true"
-    title=" 1.5% of total for procedures.">42 statements</a>
-     </li> 
-    <li><i class="fa fa-code"></i><a href="../src/sub_mod.f90"> Source File</a></li>
-  </ul>
-  <ol class="breadcrumb in-well text-right">
-     <li><a href='../sourcefile/sub_mod.f90.html'>sub_mod.f90</a></li>
-     <li><a href='../module/gvtdx_sub.html'>GVTDX_sub</a></li>
-     <li class="active">ll2rt</li>
-  </ol>
-</div>
-</div>
-</div>
-<script>
-  $(function () {
-  $('[data-toggle="tooltip"]').tooltip()
-  })
-</script>
+      <div class="row" id="info-bar">
+    <div class="col-lg-12">
+      <div class="well well-sm">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li id="meta-license"><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li>
+
+          <li id="statements"><i class="fa fa-list-ol"></i>
+            <a data-toggle="tooltip"
+               data-placement="bottom" data-html="true"
+               title=" 1.5% of total for procedures.">42 statements</a>
+          </li>
+
+            <li id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/sub_mod.f90"> Source File</a>
+            </li>
+        </ul>
+        <ol class="breadcrumb in-well text-right">
+              <li><a href='../sourcefile/sub_mod.f90.html'>sub_mod.f90</a></li>
+              <li><a href='../module/gvtdx_sub.html'>GVTDX_sub</a></li>
+          <li class="active">ll2rt</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+    })
+  </script>
 
   </div>
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-    <div id="sidebar">
-  <h3>Contents</h3>
- 
-<em>None</em>
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
-</div>
+
+  </div>
 
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public subroutine ll2rt(lon0, lat0, lon1, lat1, r, theta)</h2>
+    <h2>public  subroutine ll2rt(lon0, lat0, lon1, lat1, r, theta)  
+</h2>
     
 
     <p>calculate radial and azimuthal location at (lon1,lat1) on the 
 polar coordinate with the center of (lon0,lat0)</p>
 
     <h3>Arguments</h3>
-      <table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
-<tbody>
-<tr>
-  <td><span class="anchor" id="variable-lon0"></span>double precision,</td>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lon0"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>lon0</strong></td><td><p>the center longitude (rad)</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-lat0"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lon0</strong></td>
+            <td>
+                <p>the center longitude (rad)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lat0"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>lat0</strong></td><td><p>the center latitude (rad)</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-lon1~2"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lat0</strong></td>
+            <td>
+                <p>the center latitude (rad)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lon1~2"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>lon1</strong></td><td><p>target longitude (rad)</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-lat1~2"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lon1</strong></td>
+            <td>
+                <p>target longitude (rad)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-lat1~2"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>lat1</strong></td><td><p>target latitude (rad)</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-r~14"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>lat1</strong></td>
+            <td>
+                <p>target latitude (rad)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-r~15"></span>
+              double precision,
+            </td>
 <td>intent(inout)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>r</strong></td><td><p>radial distance (m)</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-theta~3"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>r</strong></td>
+            <td>
+                <p>radial distance (m)</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-theta~4"></span>
+              double precision,
+            </td>
 <td>intent(inout)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>theta</strong></td><td><p>azimuthal angle (rad)</p></td>
-</tr>
-</tbody>
-</table>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>theta</strong></td>
+            <td>
+                <p>azimuthal angle (rad)</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
 
     <br>
     <div class="panel panel-default">
@@ -204,27 +290,27 @@ polar coordinate with the center of (lon0,lat0)</p>
 <path fill="none" stroke="#000000" d="M54.4,-78C62.48,-79.84 71.51,-81.89 80.1,-83.84"/>
 <polygon fill="#000000" stroke="#000000" points="79.39,-87.27 89.92,-86.07 80.94,-80.44 79.39,-87.27"/>
 </g>
-<!-- dsin -->
+<!-- dcos -->
 <g id="proc~~ll2rt~~CallsGraph_node3" class="node">
-<title>dsin</title>
+<title>dcos</title>
 <polygon fill="#777777" stroke="#777777" points="234,-146 180,-146 180,-122 234,-122 234,-146"/>
-<text text-anchor="middle" x="207" y="-131.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dsin</text>
+<text text-anchor="middle" x="207" y="-131.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dcos</text>
+</g>
+<!-- proc~ll2rt&#45;&gt;dcos -->
+<g id="proc~~ll2rt~~CallsGraph_edge2" class="edge">
+<title>proc~ll2rt&#45;&gt;dcos</title>
+<path fill="none" stroke="#000000" d="M42.82,-84.32C54.81,-93.63 72.52,-105.98 90,-113 115.53,-123.25 146.23,-128.52 169.63,-131.22"/>
+<polygon fill="#000000" stroke="#000000" points="169.52,-134.73 179.83,-132.29 170.25,-127.77 169.52,-134.73"/>
+</g>
+<!-- dsin -->
+<g id="proc~~ll2rt~~CallsGraph_node4" class="node">
+<title>dsin</title>
+<polygon fill="#777777" stroke="#777777" points="234,-62 180,-62 180,-38 234,-38 234,-62"/>
+<text text-anchor="middle" x="207" y="-47.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dsin</text>
 </g>
 <!-- proc~ll2rt&#45;&gt;dsin -->
 <g id="proc~~ll2rt~~CallsGraph_edge3" class="edge">
 <title>proc~ll2rt&#45;&gt;dsin</title>
-<path fill="none" stroke="#000000" d="M42.82,-84.32C54.81,-93.63 72.52,-105.98 90,-113 115.53,-123.25 146.23,-128.52 169.63,-131.22"/>
-<polygon fill="#000000" stroke="#000000" points="169.52,-134.73 179.83,-132.29 170.25,-127.77 169.52,-134.73"/>
-</g>
-<!-- dcos -->
-<g id="proc~~ll2rt~~CallsGraph_node4" class="node">
-<title>dcos</title>
-<polygon fill="#777777" stroke="#777777" points="234,-62 180,-62 180,-38 234,-38 234,-62"/>
-<text text-anchor="middle" x="207" y="-47.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dcos</text>
-</g>
-<!-- proc~ll2rt&#45;&gt;dcos -->
-<g id="proc~~ll2rt~~CallsGraph_edge4" class="edge">
-<title>proc~ll2rt&#45;&gt;dcos</title>
 <path fill="none" stroke="#000000" d="M54.26,-68.75C84.85,-64.97 135.55,-58.71 169.84,-54.47"/>
 <polygon fill="#000000" stroke="#000000" points="170.42,-57.92 179.92,-53.22 169.56,-50.98 170.42,-57.92"/>
 </g>
@@ -235,20 +321,20 @@ polar coordinate with the center of (lon0,lat0)</p>
 <text text-anchor="middle" x="117" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">datan</text>
 </g>
 <!-- proc~ll2rt&#45;&gt;datan -->
-<g id="proc~~ll2rt~~CallsGraph_edge2" class="edge">
+<g id="proc~~ll2rt~~CallsGraph_edge4" class="edge">
 <title>proc~ll2rt&#45;&gt;datan</title>
 <path fill="none" stroke="#000000" d="M45.81,-59.86C58.45,-51.24 75.63,-39.52 89.83,-29.84"/>
 <polygon fill="#000000" stroke="#000000" points="91.93,-32.65 98.22,-24.12 87.98,-26.87 91.93,-32.65"/>
 </g>
-<!-- proc~ll2radi&#45;&gt;dsin -->
-<g id="proc~~ll2rt~~CallsGraph_edge5" class="edge">
-<title>proc~ll2radi&#45;&gt;dsin</title>
+<!-- proc~ll2radi&#45;&gt;dcos -->
+<g id="proc~~ll2rt~~CallsGraph_edge6" class="edge">
+<title>proc~ll2radi&#45;&gt;dcos</title>
 <path fill="none" stroke="#000000" d="M143.45,-104.15C152.21,-108.33 162.17,-113.08 171.52,-117.54"/>
 <polygon fill="#000000" stroke="#000000" points="170.07,-120.73 180.6,-121.88 173.09,-114.41 170.07,-120.73"/>
 </g>
-<!-- proc~ll2radi&#45;&gt;dcos -->
-<g id="proc~~ll2rt~~CallsGraph_edge7" class="edge">
-<title>proc~ll2radi&#45;&gt;dcos</title>
+<!-- proc~ll2radi&#45;&gt;dsin -->
+<g id="proc~~ll2rt~~CallsGraph_edge5" class="edge">
+<title>proc~ll2radi&#45;&gt;dsin</title>
 <path fill="none" stroke="#000000" d="M143.45,-79.85C152.21,-75.67 162.17,-70.92 171.52,-66.46"/>
 <polygon fill="#000000" stroke="#000000" points="173.09,-69.59 180.6,-62.12 170.07,-63.27 173.09,-69.59"/>
 </g>
@@ -259,7 +345,7 @@ polar coordinate with the center of (lon0,lat0)</p>
 <text text-anchor="middle" x="207" y="-89.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dacos</text>
 </g>
 <!-- proc~ll2radi&#45;&gt;dacos -->
-<g id="proc~~ll2rt~~CallsGraph_edge6" class="edge">
+<g id="proc~~ll2rt~~CallsGraph_edge7" class="edge">
 <title>proc~ll2radi&#45;&gt;dacos</title>
 <path fill="none" stroke="#000000" d="M144.4,-92C152.39,-92 161.31,-92 169.82,-92"/>
 <polygon fill="#000000" stroke="#000000" points="169.92,-95.5 179.92,-92 169.92,-88.5 169.92,-95.5"/>
@@ -330,9 +416,27 @@ polar coordinate with the center of (lon0,lat0)</p>
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
-      <h3>Contents</h3>
- 
-<em>None</em>
+        <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
