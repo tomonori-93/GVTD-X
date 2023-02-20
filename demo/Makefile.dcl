@@ -27,12 +27,12 @@ SRCD	=  \
 	  test_Rankine3_dcl.f90 \
 	  test_Rankine4_dcl.f90 \
 	  test_Rankine6_dcl.f90
-SRCN	=  \
-	  test_Rankine1_nc.f90 \
-	  test_Rankine2_nc.f90 \
-	  test_Rankine3_nc.f90 \
-	  test_Rankine4_nc.f90 \
-	  test_Rankine6_nc.f90
+#SRCN	=  \
+#	  test_Rankine1_nc.f90 \
+#	  test_Rankine2_nc.f90 \
+#	  test_Rankine3_nc.f90 \
+#	  test_Rankine4_nc.f90 \
+#	  test_Rankine6_nc.f90
 
 TGSRC7	=  \
 	  test_draw.f90
@@ -43,12 +43,12 @@ TARGETD	=  \
 	  test_Rankine3_dcl \
 	  test_Rankine4_dcl \
 	  test_Rankine6_dcl
-TARGETN	=  \
-	  test_Rankine1_nc \
-	  test_Rankine2_nc \
-	  test_Rankine3_nc \
-	  test_Rankine4_nc \
-	  test_Rankine6_nc
+#TARGETN	=  \
+#	  test_Rankine1_nc \
+#	  test_Rankine2_nc \
+#	  test_Rankine3_nc \
+#	  test_Rankine4_nc \
+#	  test_Rankine6_nc
 TARGET7	=  \
 	  test_draw
 
@@ -60,9 +60,9 @@ $(TARGETD): %:%.f90
 	cd ../ ; \
 	$(DCLFC) $(FFLAGS) -I${DCDIR} -I${TMWINC} $< -o $@ -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB}
 
-use_nc: $(TARGETN)
-$(TARGETN): %:%.f90
-	$(GTFC) $(FFLAGS) -I${TMWINC} $< -o $@ -L${TMWDIR} -l${TMWLIB}
+#use_nc: $(TARGETN)
+#$(TARGETN): %:%.f90
+#	$(GTFC) $(FFLAGS) -I${TMWINC} $< -o $@ -L${TMWDIR} -l${TMWLIB}
 
 #$(OBJ1): %.o:%.f90
 #	$(DCLFC) $(FFLAGS) -c -I${STINC} -I${DCINC} $< -o $@ -L${STDIR} -l${STLIB} -L${DCDIR} -l${DCLIB}
