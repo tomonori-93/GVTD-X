@@ -76,77 +76,136 @@
   <div class="row">
     <h1>stdout
       <small>Subroutine</small>
+      
     </h1>
-    <div class="row">
-  <div class="col-lg-12">
-<div class="well well-sm">
-  <ul class="list-inline" style="margin-bottom:0px;display:inline">
-    <li><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li> 
-     <li><i class="fa fa-list-ol"></i>
-       <a data-toggle="tooltip"
-    data-placement="bottom" data-html="true"
-    title=" 0.8% of total for procedures.">22 statements</a>
-     </li> 
-    <li><i class="fa fa-code"></i><a href="../src/sub_mod.f90"> Source File</a></li>
-  </ul>
-  <ol class="breadcrumb in-well text-right">
-     <li><a href='../sourcefile/sub_mod.f90.html'>sub_mod.f90</a></li>
-     <li><a href='../module/gvtdx_sub.html'>GVTDX_sub</a></li>
-     <li class="active">stdout</li>
-  </ol>
-</div>
-</div>
-</div>
-<script>
-  $(function () {
-  $('[data-toggle="tooltip"]').tooltip()
-  })
-</script>
+      <div class="row" id="info-bar">
+    <div class="col-lg-12">
+      <div class="well well-sm">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li id="meta-license"><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li>
+
+          <li id="statements"><i class="fa fa-list-ol"></i>
+            <a data-toggle="tooltip"
+               data-placement="bottom" data-html="true"
+               title=" 0.8% of total for procedures.">22 statements</a>
+          </li>
+
+            <li id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/sub_mod.f90"> Source File</a>
+            </li>
+        </ul>
+        <ol class="breadcrumb in-well text-right">
+              <li><a href='../sourcefile/sub_mod.f90.html'>sub_mod.f90</a></li>
+              <li><a href='../module/gvtdx_sub.html'>GVTDX_sub</a></li>
+          <li class="active">stdout</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+    })
+  </script>
 
   </div>
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-    <div id="sidebar">
-  <h3>Contents</h3>
- 
-<em>None</em>
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
-</div>
+
+  </div>
 
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public subroutine stdout(message, routine_name, mtype)</h2>
+    <h2>public  subroutine stdout(message, routine_name, mtype)  
+</h2>
     
 
     <p>Standard output for message</p>
 
     <h3>Arguments</h3>
-      <table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
-<tbody>
-<tr>
-  <td><span class="anchor" id="variable-message"></span>character,</td>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-message"></span>
+              character,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>message</strong></td><td><p>output message</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-routine_name"></span>character,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>message</strong></td>
+            <td>
+                <p>output message</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-routine_name"></span>
+              character,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>routine_name</strong></td><td><p>called routine name</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-mtype"></span>integer,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>routine_name</strong></td>
+            <td>
+                <p>called routine name</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-mtype"></span>
+              integer,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>mtype</strong></td><td><p>message type
-0: message, -1: error, 1: warning</p></td>
-</tr>
-</tbody>
-</table>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>mtype</strong></td>
+            <td>
+                <p>message type
+0: message, -1: error, 1: warning</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
 
     <br>
     <div class="panel panel-default">
@@ -160,96 +219,96 @@
 <!-- Generated by graphviz version 2.43.0 (0)
  -->
 <!-- Title: proc~~stdout~~CalledByGraph Pages: 1 -->
-<svg id="procstdoutCalledByGraph" width="427pt" height="231pt"
- viewBox="0.00 0.00 427.00 231.44" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<g id="proc~~stdout~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 227.44)">
+<svg id="procstdoutCalledByGraph" width="427pt" height="238pt"
+ viewBox="0.00 0.00 427.00 238.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~stdout~~CalledByGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 234)">
 <title>proc~~stdout~~CalledByGraph</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-227.44 423,-227.44 423,4 -4,4"/>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-234 423,-234 423,4 -4,4"/>
 <!-- proc~stdout -->
 <g id="proc~~stdout~~CalledByGraph_node1" class="node">
 <title>proc~stdout</title>
 <polygon fill="none" stroke="black" points="419,-129 365,-129 365,-105 419,-105 419,-129"/>
 <text text-anchor="middle" x="392" y="-114.6" font-family="Helvetica,sans-Serif" font-size="10.50">stdout</text>
 </g>
-<!-- proc~calc_psid -->
+<!-- proc~retrieve_velocity_gvtd -->
 <g id="proc~~stdout~~CalledByGraph_node2" class="node">
-<title>proc~calc_psid</title>
-<g id="a_proc~~stdout~~CalledByGraph_node2"><a xlink:href=".././proc/calc_psid.html" xlink:title="calc_psid">
-<polygon fill="#d9534f" stroke="#d9534f" points="286,-192 225,-192 225,-168 286,-168 286,-192"/>
-<text text-anchor="middle" x="255.5" y="-177.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_psid</text>
+<title>proc~retrieve_velocity_gvtd</title>
+<g id="a_proc~~stdout~~CalledByGraph_node2"><a xlink:href=".././proc/retrieve_velocity_gvtd.html" xlink:title="Retrieve_velocity_GVTD">
+<polygon fill="#d9534f" stroke="#d9534f" points="325,-230 186,-230 186,-206 325,-206 325,-230"/>
+<text text-anchor="middle" x="255.5" y="-215.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Retrieve_velocity_GVTD</text>
 </a>
 </g>
 </g>
-<!-- proc~calc_psid&#45;&gt;proc~stdout -->
+<!-- proc~retrieve_velocity_gvtd&#45;&gt;proc~stdout -->
 <g id="proc~~stdout~~CalledByGraph_edge1" class="edge">
-<title>proc~calc_psid&#45;&gt;proc~stdout</title>
-<path fill="none" stroke="#000000" d="M286.19,-173.64C299.62,-170.2 315.48,-165.35 329,-159 342.69,-152.58 356.75,-143.32 368,-135.12"/>
-<polygon fill="#000000" stroke="#000000" points="370.1,-137.93 376.01,-129.13 365.91,-132.32 370.1,-137.93"/>
+<title>proc~retrieve_velocity_gvtd&#45;&gt;proc~stdout</title>
+<path fill="none" stroke="#000000" d="M302.05,-205.88C311.43,-202.26 320.9,-197.69 329,-192 349.65,-177.5 367.31,-154.39 378.43,-137.66"/>
+<polygon fill="#000000" stroke="#000000" points="381.46,-139.42 383.92,-129.11 375.57,-135.63 381.46,-139.42"/>
 </g>
 <!-- proc~retrieve_velocity_gbvtd -->
 <g id="proc~~stdout~~CalledByGraph_node3" class="node">
 <title>proc~retrieve_velocity_gbvtd</title>
 <g id="a_proc~~stdout~~CalledByGraph_node3"><a xlink:href=".././proc/retrieve_velocity_gbvtd.html" xlink:title="Retrieve_velocity_GBVTD">
-<polygon fill="#d9534f" stroke="#d9534f" points="146,-212 0,-212 0,-188 146,-188 146,-212"/>
-<text text-anchor="middle" x="73" y="-197.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Retrieve_velocity_GBVTD</text>
+<polygon fill="#d9534f" stroke="#d9534f" points="146,-170 0,-170 0,-146 146,-146 146,-170"/>
+<text text-anchor="middle" x="73" y="-155.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Retrieve_velocity_GBVTD</text>
 </a>
 </g>
 </g>
 <!-- proc~retrieve_velocity_gbvtd&#45;&gt;proc~stdout -->
 <g id="proc~~stdout~~CalledByGraph_edge2" class="edge">
 <title>proc~retrieve_velocity_gbvtd&#45;&gt;proc~stdout</title>
-<path fill="none" stroke="#000000" d="M119.67,-212.05C173,-223.55 262.41,-234.62 329,-201 354.72,-188.01 372.41,-158.76 382.12,-138.45"/>
-<polygon fill="#000000" stroke="#000000" points="385.32,-139.87 386.25,-129.31 378.94,-136.99 385.32,-139.87"/>
+<path fill="none" stroke="#000000" d="M146.02,-169.51C198.03,-175.15 269.32,-177.31 329,-159 344.05,-154.38 358.74,-144.73 370.04,-135.84"/>
+<polygon fill="#000000" stroke="#000000" points="372.49,-138.36 377.97,-129.29 368.03,-132.96 372.49,-138.36"/>
+</g>
+<!-- proc~calc_psid -->
+<g id="proc~~stdout~~CalledByGraph_node4" class="node">
+<title>proc~calc_psid</title>
+<g id="a_proc~~stdout~~CalledByGraph_node4"><a xlink:href=".././proc/calc_psid.html" xlink:title="calc_psid">
+<polygon fill="#d9534f" stroke="#d9534f" points="286,-150 225,-150 225,-126 286,-126 286,-150"/>
+<text text-anchor="middle" x="255.5" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_psid</text>
+</a>
+</g>
 </g>
 <!-- proc~retrieve_velocity_gbvtd&#45;&gt;proc~calc_psid -->
 <g id="proc~~stdout~~CalledByGraph_edge7" class="edge">
 <title>proc~retrieve_velocity_gbvtd&#45;&gt;proc~calc_psid</title>
-<path fill="none" stroke="#000000" d="M146.12,-192.01C169.53,-189.41 194.64,-186.63 214.79,-184.4"/>
-<polygon fill="#000000" stroke="#000000" points="215.29,-187.87 224.84,-183.29 214.52,-180.91 215.29,-187.87"/>
+<path fill="none" stroke="#000000" d="M146.12,-150.01C169.53,-147.41 194.64,-144.63 214.79,-142.4"/>
+<polygon fill="#000000" stroke="#000000" points="215.29,-145.87 224.84,-141.29 214.52,-138.91 215.29,-145.87"/>
+</g>
+<!-- proc~calc_psid&#45;&gt;proc~stdout -->
+<g id="proc~~stdout~~CalledByGraph_edge3" class="edge">
+<title>proc~calc_psid&#45;&gt;proc~stdout</title>
+<path fill="none" stroke="#000000" d="M286.02,-133.39C306.22,-130.24 333.14,-126.03 354.66,-122.67"/>
+<polygon fill="#000000" stroke="#000000" points="355.4,-126.1 364.74,-121.1 354.32,-119.19 355.4,-126.1"/>
 </g>
 <!-- proc~read_file_3d -->
-<g id="proc~~stdout~~CalledByGraph_node4" class="node">
+<g id="proc~~stdout~~CalledByGraph_node5" class="node">
 <title>proc~read_file_3d</title>
-<g id="a_proc~~stdout~~CalledByGraph_node4"><a xlink:href=".././proc/read_file_3d.html" xlink:title="read_file_3d">
-<polygon fill="#d9534f" stroke="#d9534f" points="294,-150 217,-150 217,-126 294,-126 294,-150"/>
-<text text-anchor="middle" x="255.5" y="-135.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">read_file_3d</text>
+<g id="a_proc~~stdout~~CalledByGraph_node5"><a xlink:href=".././proc/read_file_3d.html" xlink:title="read_file_3d">
+<polygon fill="#d9534f" stroke="#d9534f" points="294,-108 217,-108 217,-84 294,-84 294,-108"/>
+<text text-anchor="middle" x="255.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">read_file_3d</text>
 </a>
 </g>
 </g>
 <!-- proc~read_file_3d&#45;&gt;proc~stdout -->
-<g id="proc~~stdout~~CalledByGraph_edge3" class="edge">
+<g id="proc~~stdout~~CalledByGraph_edge4" class="edge">
 <title>proc~read_file_3d&#45;&gt;proc~stdout</title>
-<path fill="none" stroke="#000000" d="M294.32,-132.09C313.34,-129.13 336.26,-125.55 355.01,-122.62"/>
-<polygon fill="#000000" stroke="#000000" points="355.6,-126.07 364.94,-121.07 354.52,-119.15 355.6,-126.07"/>
+<path fill="none" stroke="#000000" d="M294.32,-101.91C313.34,-104.87 336.26,-108.45 355.01,-111.38"/>
+<polygon fill="#000000" stroke="#000000" points="354.52,-114.85 364.94,-112.93 355.6,-107.93 354.52,-114.85"/>
 </g>
 <!-- proc~green_func -->
-<g id="proc~~stdout~~CalledByGraph_node5" class="node">
+<g id="proc~~stdout~~CalledByGraph_node6" class="node">
 <title>proc~green_func</title>
-<g id="a_proc~~stdout~~CalledByGraph_node5"><a xlink:href=".././proc/green_func.html" xlink:title="green_func">
-<polygon fill="#d94e8f" stroke="#d94e8f" points="291.5,-108 219.5,-108 219.5,-84 291.5,-84 291.5,-108"/>
-<text text-anchor="middle" x="255.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">green_func</text>
+<g id="a_proc~~stdout~~CalledByGraph_node6"><a xlink:href=".././proc/green_func.html" xlink:title="green_func">
+<polygon fill="#d94e8f" stroke="#d94e8f" points="291.5,-66 219.5,-66 219.5,-42 291.5,-42 291.5,-66"/>
+<text text-anchor="middle" x="255.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">green_func</text>
 </a>
 </g>
 </g>
 <!-- proc~green_func&#45;&gt;proc~stdout -->
 <g id="proc~~stdout~~CalledByGraph_edge5" class="edge">
 <title>proc~green_func&#45;&gt;proc~stdout</title>
-<path fill="none" stroke="#000000" d="M291.84,-101.52C311.23,-104.55 335.24,-108.29 354.78,-111.34"/>
-<polygon fill="#000000" stroke="#000000" points="354.4,-114.83 364.82,-112.91 355.48,-107.91 354.4,-114.83"/>
-</g>
-<!-- proc~retrieve_velocity_gvtd -->
-<g id="proc~~stdout~~CalledByGraph_node6" class="node">
-<title>proc~retrieve_velocity_gvtd</title>
-<g id="a_proc~~stdout~~CalledByGraph_node6"><a xlink:href=".././proc/retrieve_velocity_gvtd.html" xlink:title="Retrieve_velocity_GVTD">
-<polygon fill="#d9534f" stroke="#d9534f" points="325,-66 186,-66 186,-42 325,-42 325,-66"/>
-<text text-anchor="middle" x="255.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Retrieve_velocity_GVTD</text>
-</a>
-</g>
-</g>
-<!-- proc~retrieve_velocity_gvtd&#45;&gt;proc~stdout -->
-<g id="proc~~stdout~~CalledByGraph_edge4" class="edge">
-<title>proc~retrieve_velocity_gvtd&#45;&gt;proc~stdout</title>
-<path fill="none" stroke="#000000" d="M306.02,-66.08C313.86,-68.64 321.76,-71.6 329,-75 342.69,-81.42 356.75,-90.68 368,-98.88"/>
+<path fill="none" stroke="#000000" d="M291.61,-61.79C303.75,-65.1 317.26,-69.49 329,-75 342.69,-81.42 356.75,-90.68 368,-98.88"/>
 <polygon fill="#000000" stroke="#000000" points="365.91,-101.68 376.01,-104.87 370.1,-96.07 365.91,-101.68"/>
 </g>
 <!-- proc~retrieve_velocity_gvtdx -->
@@ -271,16 +330,16 @@
 <g id="proc~~stdout~~CalledByGraph_node8" class="node">
 <title>proc~prod_vortex_structure</title>
 <g id="a_proc~~stdout~~CalledByGraph_node8"><a xlink:href=".././proc/prod_vortex_structure.html" xlink:title="prod_vortex_structure">
-<polygon fill="#d9534f" stroke="#d9534f" points="136.5,-108 9.5,-108 9.5,-84 136.5,-84 136.5,-108"/>
-<text text-anchor="middle" x="73" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">prod_vortex_structure</text>
+<polygon fill="#d9534f" stroke="#d9534f" points="136.5,-66 9.5,-66 9.5,-42 136.5,-42 136.5,-66"/>
+<text text-anchor="middle" x="73" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">prod_vortex_structure</text>
 </a>
 </g>
 </g>
 <!-- proc~prod_vortex_structure&#45;&gt;proc~green_func -->
 <g id="proc~~stdout~~CalledByGraph_edge8" class="edge">
 <title>proc~prod_vortex_structure&#45;&gt;proc~green_func</title>
-<path fill="none" stroke="#000000" d="M136.62,-96C160.53,-96 187.3,-96 209.28,-96"/>
-<polygon fill="#000000" stroke="#000000" points="209.34,-99.5 219.34,-96 209.34,-92.5 209.34,-99.5"/>
+<path fill="none" stroke="#000000" d="M136.62,-54C160.53,-54 187.3,-54 209.28,-54"/>
+<polygon fill="#000000" stroke="#000000" points="209.34,-57.5 219.34,-54 209.34,-50.5 209.34,-57.5"/>
 </g>
 </g>
 </svg>
@@ -348,9 +407,27 @@
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
-      <h3>Contents</h3>
- 
-<em>None</em>
+        <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
 
     </section>
     <br class="visible-xs visible-sm hidden-md">

@@ -1031,12 +1031,13 @@ subroutine rearrange_2d_1d( val2d, val1d )
 
 end subroutine rearrange_2d_1d
 
-subroutine display_1val_max( val, undef, cout )
+subroutine display_1val_max( val, undef, cout, vout )
 !! Display the maximum of the array val
   implicit none
   real, intent(in) :: val(:,:)  !! Input 1
   real, intent(in), optional :: undef  !! Undefined value
   character(*), intent(out), optional :: cout  !! Maximum value by character
+  real, intent(out), optional :: vout  !! Maximum value by float
   integer :: ii, jj, ni, nj, maxi, maxj
   real :: maxv, dval
 
@@ -1077,16 +1078,20 @@ subroutine display_1val_max( val, undef, cout )
   if(present(cout))then
      write(cout,'(1PE8.1)') maxv
   end if
+  if(present(vout))then
+     vout=maxv
+  end if
 
 end subroutine display_1val_max
 
-subroutine display_2valdiff_max( val1, val2, undef, cout )
+subroutine display_2valdiff_max( val1, val2, undef, cout, vout )
 !! Display the maximum of the difference between val1 and val2
   implicit none
   double precision, intent(in) :: val1(:,:)  !! Input 1
   double precision, intent(in) :: val2(size(val1,1),size(val1,2))  !! Input 2
   double precision, intent(in), optional :: undef  !! Undefined value
   character(*), intent(out), optional :: cout  !! Maximum value by character
+  real, intent(out), optional :: vout  !! Maximum value by float
   integer :: ii, jj, ni, nj, maxi, maxj
   double precision :: maxv, dval
 
@@ -1126,6 +1131,9 @@ subroutine display_2valdiff_max( val1, val2, undef, cout )
   &                           " at (", maxi, ",", maxj, ")."
   if(present(cout))then
      write(cout,'(1PE8.1)') maxv
+  end if
+  if(present(vout))then
+     vout=maxv
   end if
 
 end subroutine display_2valdiff_max

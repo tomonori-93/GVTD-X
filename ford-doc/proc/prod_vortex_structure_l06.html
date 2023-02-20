@@ -76,106 +76,210 @@
   <div class="row">
     <h1>prod_vortex_structure_L06
       <small>Subroutine</small>
+      
     </h1>
-    <div class="row">
-  <div class="col-lg-12">
-<div class="well well-sm">
-  <ul class="list-inline" style="margin-bottom:0px;display:inline">
-    <li><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li> 
-     <li><i class="fa fa-list-ol"></i>
-       <a data-toggle="tooltip"
-    data-placement="bottom" data-html="true"
-    title=" 0.9% of total for procedures.">27 statements</a>
-     </li> 
-    <li><i class="fa fa-code"></i><a href="../src/sub_mod.f90"> Source File</a></li>
-  </ul>
-  <ol class="breadcrumb in-well text-right">
-     <li><a href='../sourcefile/sub_mod.f90.html'>sub_mod.f90</a></li>
-     <li><a href='../module/gvtdx_sub.html'>GVTDX_sub</a></li>
-     <li class="active">prod_vortex_structure_L06</li>
-  </ol>
-</div>
-</div>
-</div>
-<script>
-  $(function () {
-  $('[data-toggle="tooltip"]').tooltip()
-  })
-</script>
+      <div class="row" id="info-bar">
+    <div class="col-lg-12">
+      <div class="well well-sm">
+        <ul class="list-inline" style="margin-bottom:0px;display:inline">
+            <li id="meta-license"><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li>
+
+          <li id="statements"><i class="fa fa-list-ol"></i>
+            <a data-toggle="tooltip"
+               data-placement="bottom" data-html="true"
+               title=" 0.9% of total for procedures.">27 statements</a>
+          </li>
+
+            <li id="source-file">
+              <i class="fa fa-code"></i>
+              <a href="../src/sub_mod.f90"> Source File</a>
+            </li>
+        </ul>
+        <ol class="breadcrumb in-well text-right">
+              <li><a href='../sourcefile/sub_mod.f90.html'>sub_mod.f90</a></li>
+              <li><a href='../module/gvtdx_sub.html'>GVTDX_sub</a></li>
+          <li class="active">prod_vortex_structure_L06</li>
+        </ol>
+      </div>
+    </div>
+  </div>
+  <script>
+    $(function () {
+    $('[data-toggle="tooltip"]').tooltip()
+    })
+  </script>
 
   </div>
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-    <div id="sidebar">
-  <h3>Contents</h3>
- 
-<em>None</em>
+      <div id="sidebar">
+      <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
 
-</div>
+
+  </div>
 
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public subroutine prod_vortex_structure_L06(r, t, rmax, zmax, epsr, Vt_pert_ang, Vt, Vr)</h2>
+    <h2>public  subroutine prod_vortex_structure_L06(r, t, rmax, zmax, epsr, Vt_pert_ang, Vt, Vr)  
+</h2>
     
 
     <p>Producing vortex structure with rmax, vmax, and umax in Lee et al. (2006)</p>
 
     <h3>Arguments</h3>
-      <table class="table table-striped varlist">
-<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
-<tbody>
-<tr>
-  <td><span class="anchor" id="variable-r~4"></span>double precision,</td>
+        <table class="table table-striped varlist">
+    <thead>
+      <tr>
+        <th>Type</th>
+<th>Intent</th><th>Optional</th>        <th>Attributes</th>
+        <th></th>
+        <th>Name</th>
+        <th></th>
+    </thead>
+    <tbody>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-r~5"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>r</strong>(:)</td><td><p>radius [m]</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-t~3"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>r</strong>(:)</td>
+            <td>
+                <p>radius [m]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-t~3"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>t</strong>(:)</td><td><p>azimuthal angle [rad]</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-rmax~2"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>t</strong>(:)</td>
+            <td>
+                <p>azimuthal angle [rad]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-rmax~2"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>rmax</strong></td><td><p>radius of maximum tangential wind speed [m]</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-zmax"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>rmax</strong></td>
+            <td>
+                <p>radius of maximum tangential wind speed [m]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-zmax"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>zmax</strong></td><td><p>constant vorticity in the eye [s-1]</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-epsr"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>zmax</strong></td>
+            <td>
+                <p>constant vorticity in the eye [s-1]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-epsr"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>epsr</strong></td><td><p>distance of epsilon for WN2 [m]</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vt_pert_ang~2"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>epsr</strong></td>
+            <td>
+                <p>distance of epsilon for WN2 [m]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vt_pert_ang~2"></span>
+              double precision,
+            </td>
 <td>intent(in)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>Vt_pert_ang</strong></td><td><p>angles of tangential wind [rad]</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vt~2"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>Vt_pert_ang</strong></td>
+            <td>
+                <p>angles of tangential wind [rad]</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vt~2"></span>
+              double precision,
+            </td>
 <td>intent(out)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>Vt</strong>(size(r),size(t))</td><td><p>Profile of tangential wind</p></td>
-</tr>
-<tr>
-  <td><span class="anchor" id="variable-vr~2"></span>double precision,</td>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>Vt</strong>(size(r),size(t))</td>
+            <td>
+                <p>Profile of tangential wind</p>
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vr~2"></span>
+              double precision,
+            </td>
 <td>intent(out)</td>
-  <td></td>  <td></td><td>::</td>
-  <td><strong>Vr</strong>(size(r),size(t))</td><td><p>Profile of radial wind</p></td>
-</tr>
-</tbody>
-</table>
+              <td></td>            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>Vr</strong>(size(r),size(t))</td>
+            <td>
+                <p>Profile of radial wind</p>
+            </td>
+        </tr>
+    </tbody>
+  </table>
 
     <br>
     <div class="panel panel-default">
@@ -290,9 +394,27 @@
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
-      <h3>Contents</h3>
- 
-<em>None</em>
+        <h3>Contents</h3>
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
