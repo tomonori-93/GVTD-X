@@ -4,11 +4,11 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-   <meta name="description" content="Automatically-generated document of the Fortran library GVTD-HeCs">
+   <meta name="description" content="Automatically-generated document of the Fortran library GVTD-X">
     <meta name="author" content="Satoki Tsujino" >
     <link rel="icon" href="../favicon.png">
 
-    <title>Retrieve_velocity_GVTDX &ndash; GVTD-HeCs</title>
+    <title>Retrieve_velocity_GVTDX &ndash; GVTD-X</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -39,7 +39,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="../index.html">GVTD-HeCs </a>
+          <a class="navbar-brand" href="../index.html">GVTD-X </a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
@@ -85,7 +85,7 @@
      <li><i class="fa fa-list-ol"></i>
        <a data-toggle="tooltip"
     data-placement="bottom" data-html="true"
-    title=" 8.1% of total for procedures.">231 statements</a>
+    title=" 8.0% of total for procedures.">231 statements</a>
      </li> 
     <li><i class="fa fa-code"></i><a href="../src/gvtdx_main_mod.f90"> Source File</a></li>
   </ul>
@@ -243,7 +243,7 @@
   <td><strong>VDRm</strong>(ndiv,size(r),size(t))</td><td><p>retrieved radial component of divergent wind [m s-1]</p></td>
 </tr>
 <tr>
-  <td><span class="anchor" id="variable-undef~30"></span>double precision,</td>
+  <td><span class="anchor" id="variable-undef~31"></span>double precision,</td>
 <td>intent(in),</td>
   <td>optional</td>  <td></td><td>::</td>
   <td><strong>undef</strong></td><td><p>undefined value for Vd</p></td>
@@ -343,47 +343,47 @@
 <path fill="none" stroke="#000000" d="M105.83,-87.15C133.14,-97.73 172.73,-113.08 201.26,-124.15"/>
 <polygon fill="#000000" stroke="#000000" points="200.27,-127.51 210.86,-127.86 202.8,-120.99 200.27,-127.51"/>
 </g>
-<!-- proc~fp_gauss -->
+<!-- dcos -->
 <g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_node3" class="node">
+<title>dcos</title>
+<polygon fill="#777777" stroke="#777777" points="265,-108 211,-108 211,-84 265,-84 265,-108"/>
+<text text-anchor="middle" x="238" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dcos</text>
+</g>
+<!-- proc~retrieve_velocity_gvtdx&#45;&gt;dcos -->
+<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_edge2" class="edge">
+<title>proc~retrieve_velocity_gvtdx&#45;&gt;dcos</title>
+<path fill="none" stroke="#000000" d="M147.19,-84.39C165.6,-86.77 184.59,-89.23 200.34,-91.26"/>
+<polygon fill="#000000" stroke="#000000" points="200.32,-94.79 210.68,-92.6 201.21,-87.85 200.32,-94.79"/>
+</g>
+<!-- proc~fp_gauss -->
+<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_node4" class="node">
 <title>proc~fp_gauss</title>
-<g id="a_proc~~retrieve_velocity_gvtdx~~CallsGraph_node3"><a xlink:href=".././proc/fp_gauss.html" xlink:title="fp_gauss">
-<polygon fill="#d9534f" stroke="#d9534f" points="267.5,-108 208.5,-108 208.5,-84 267.5,-84 267.5,-108"/>
-<text text-anchor="middle" x="238" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fp_gauss</text>
+<g id="a_proc~~retrieve_velocity_gvtdx~~CallsGraph_node4"><a xlink:href=".././proc/fp_gauss.html" xlink:title="fp_gauss">
+<polygon fill="#d9534f" stroke="#d9534f" points="267.5,-66 208.5,-66 208.5,-42 267.5,-42 267.5,-66"/>
+<text text-anchor="middle" x="238" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fp_gauss</text>
 </a>
 </g>
 </g>
 <!-- proc~retrieve_velocity_gvtdx&#45;&gt;proc~fp_gauss -->
-<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_edge2" class="edge">
+<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_edge3" class="edge">
 <title>proc~retrieve_velocity_gvtdx&#45;&gt;proc~fp_gauss</title>
-<path fill="none" stroke="#000000" d="M147.19,-84.39C164.77,-86.67 182.89,-89.01 198.21,-90.99"/>
-<polygon fill="#000000" stroke="#000000" points="197.96,-94.48 208.32,-92.29 198.85,-87.54 197.96,-94.48"/>
+<path fill="none" stroke="#000000" d="M147.19,-65.61C164.77,-63.33 182.89,-60.99 198.21,-59.01"/>
+<polygon fill="#000000" stroke="#000000" points="198.85,-62.46 208.32,-57.71 197.96,-55.52 198.85,-62.46"/>
 </g>
 <!-- proc~interpo_search_1d -->
-<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_node4" class="node">
+<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_node5" class="node">
 <title>proc~interpo_search_1d</title>
-<g id="a_proc~~retrieve_velocity_gvtdx~~CallsGraph_node4"><a xlink:href=".././proc/interpo_search_1d.html" xlink:title="interpo_search_1d">
-<polygon fill="#d9534f" stroke="#d9534f" points="293,-66 183,-66 183,-42 293,-42 293,-66"/>
-<text text-anchor="middle" x="238" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">interpo_search_1d</text>
+<g id="a_proc~~retrieve_velocity_gvtdx~~CallsGraph_node5"><a xlink:href=".././proc/interpo_search_1d.html" xlink:title="interpo_search_1d">
+<polygon fill="#d9534f" stroke="#d9534f" points="293,-24 183,-24 183,0 293,0 293,-24"/>
+<text text-anchor="middle" x="238" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">interpo_search_1d</text>
 </a>
 </g>
 </g>
 <!-- proc~retrieve_velocity_gvtdx&#45;&gt;proc~interpo_search_1d -->
-<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_edge3" class="edge">
-<title>proc~retrieve_velocity_gvtdx&#45;&gt;proc~interpo_search_1d</title>
-<path fill="none" stroke="#000000" d="M147.19,-65.61C155.73,-64.5 164.38,-63.38 172.79,-62.3"/>
-<polygon fill="#000000" stroke="#000000" points="173.42,-65.75 182.89,-60.99 172.52,-58.8 173.42,-65.75"/>
-</g>
-<!-- dcos -->
-<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_node5" class="node">
-<title>dcos</title>
-<polygon fill="#777777" stroke="#777777" points="265,-24 211,-24 211,0 265,0 265,-24"/>
-<text text-anchor="middle" x="238" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dcos</text>
-</g>
-<!-- proc~retrieve_velocity_gvtdx&#45;&gt;dcos -->
 <g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_edge4" class="edge">
-<title>proc~retrieve_velocity_gvtdx&#45;&gt;dcos</title>
-<path fill="none" stroke="#000000" d="M105.83,-62.85C133.14,-52.27 172.73,-36.92 201.26,-25.85"/>
-<polygon fill="#000000" stroke="#000000" points="202.8,-29.01 210.86,-22.14 200.27,-22.49 202.8,-29.01"/>
+<title>proc~retrieve_velocity_gvtdx&#45;&gt;proc~interpo_search_1d</title>
+<path fill="none" stroke="#000000" d="M105.83,-62.85C131.65,-52.84 168.46,-38.57 196.51,-27.7"/>
+<polygon fill="#000000" stroke="#000000" points="197.98,-30.88 206.04,-24 195.45,-24.35 197.98,-30.88"/>
 </g>
 </g>
 </svg>
@@ -476,7 +476,7 @@
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>GVTD-HeCs was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-6"><p>GVTD-X was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
 </p>
         </div>
         <div class="col-xs-6 col-md-6">
