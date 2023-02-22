@@ -4,11 +4,11 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-   <meta name="description" content="Automatically-generated document of the Fortran library GVTD-HeCs">
+   <meta name="description" content="Automatically-generated document of the Fortran library GVTD-X">
     <meta name="author" content="Satoki Tsujino" >
     <link rel="icon" href="../favicon.png">
 
-    <title>recover_undef_rad &ndash; GVTD-HeCs</title>
+    <title>recover_undef_rad &ndash; GVTD-X</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -39,7 +39,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="../index.html">GVTD-HeCs </a>
+          <a class="navbar-brand" href="../index.html">GVTD-X </a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
@@ -76,535 +76,233 @@
   <div class="row">
     <h1>recover_undef_rad
       <small>Subroutine</small>
-      
     </h1>
-      <div class="row" id="info-bar">
-    <div class="col-lg-12">
-      <div class="well well-sm">
-        <ul class="list-inline" style="margin-bottom:0px;display:inline">
-            <li id="meta-license"><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li>
-
-          <li id="statements"><i class="fa fa-list-ol"></i>
-            <a data-toggle="tooltip"
-               data-placement="bottom" data-html="true"
-               title=" 3.8% of total for procedures.">109 statements</a>
-          </li>
-
-            <li id="source-file">
-              <i class="fa fa-code"></i>
-              <a href="../src/tools_sub.f90"> Source File</a>
-            </li>
-        </ul>
-        <ol class="breadcrumb in-well text-right">
-              <li><a href='../sourcefile/tools_sub.f90.html'>tools_sub.f90</a></li>
-              <li><a href='../module/tools_sub.html'>tools_sub</a></li>
-          <li class="active">recover_undef_rad</li>
-        </ol>
-      </div>
-    </div>
-  </div>
-  <script>
-    $(function () {
-    $('[data-toggle="tooltip"]').tooltip()
-    })
-  </script>
+    <div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+    <li><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li> 
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 3.8% of total for procedures.">109 statements</a>
+     </li> 
+    <li><i class="fa fa-code"></i><a href="../src/tools_sub.f90"> Source File</a></li>
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+     <li><a href='../sourcefile/tools_sub.f90.html'>tools_sub.f90</a></li>
+     <li><a href='../module/tools_sub.html'>tools_sub</a></li>
+     <li class="active">recover_undef_rad</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
 
   </div>
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-      <div id="sidebar">
-      <h3>Contents</h3>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+    <div id="sidebar">
+  <h3>Contents</h3>
+ 
+<em>None</em>
 
-
-  </div>
+</div>
 
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine recover_undef_rad(nrotmin, nrot, ndivmin, ndiv, nr_in, nr_out, nr_out_org, nt, undef, undef_grid, nn_grid, VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t, VRT0_GVTD_rt_t, VDR0_GVTD_rt_t, VRTns_rt_t, VRTnc_rt_t, VRRns_rt_t, VRRnc_rt_t, Vn_0_rt_t, phin_rt_t, zetan_rt_t)  
-</h2>
+    <h2>public subroutine recover_undef_rad(nrotmin, nrot, ndivmin, ndiv, nr_in, nr_out, nr_out_org, nt, undef, undef_grid, nn_grid, VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t, VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t, VRT0_GVTD_rt_t, VDR0_GVTD_rt_t, VRTns_rt_t, VRTnc_rt_t, VRRns_rt_t, VRRnc_rt_t, Vn_0_rt_t, phin_rt_t, zetan_rt_t)</h2>
     
 
     <p>recover the retrieved values from the rearranged to original radii.</p>
 
     <h3>Arguments</h3>
-        <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Intent</th><th>Optional</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-nrotmin"></span>
-              integer,
-            </td>
+      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-nrotmin"></span>integer,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>nrotmin</strong></td>
-            <td>
-                <p>minimum wavenumber for rotational components</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-nrot"></span>
-              integer,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nrotmin</strong></td><td><p>minimum wavenumber for rotational components</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-nrot"></span>integer,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>nrot</strong></td>
-            <td>
-                <p>maximum wavenumber for rotational components</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-ndivmin"></span>
-              integer,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nrot</strong></td><td><p>maximum wavenumber for rotational components</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-ndivmin"></span>integer,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>ndivmin</strong></td>
-            <td>
-                <p>minimum wavenumber for divergent components</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-ndiv"></span>
-              integer,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ndivmin</strong></td><td><p>minimum wavenumber for divergent components</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-ndiv"></span>integer,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>ndiv</strong></td>
-            <td>
-                <p>maximum wavenumber for divergent components</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-nr_in~2"></span>
-              integer,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ndiv</strong></td><td><p>maximum wavenumber for divergent components</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-nr_in~2"></span>integer,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>nr_in</strong></td>
-            <td>
-                <p>innermost array number in radius</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-nr_out~2"></span>
-              integer,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nr_in</strong></td><td><p>innermost array number in radius</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-nr_out~2"></span>integer,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>nr_out</strong></td>
-            <td>
-                <p>outermost array number in radius (skip)</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-nr_out_org~2"></span>
-              integer,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nr_out</strong></td><td><p>outermost array number in radius (skip)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-nr_out_org~2"></span>integer,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>nr_out_org</strong></td>
-            <td>
-                <p>outermost array number in radius (orig)</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-nt~2"></span>
-              integer,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nr_out_org</strong></td><td><p>outermost array number in radius (orig)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-nt~2"></span>integer,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>nt</strong></td>
-            <td>
-                <p>azimuthal array number</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-undef~7"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nt</strong></td><td><p>azimuthal array number</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-undef~29"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>undef</strong></td>
-            <td>
-                <p>undefined value</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-undef_grid~2"></span>
-              logical,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>undef</strong></td><td><p>undefined value</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-undef_grid~2"></span>logical,</td>
 <td>intent(in),</td>
-              <td></td>            <td>
-              dimension(nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>undef_grid</strong></td>
-            <td>
-                <p>flag of undefined grid (.true. is undef)</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-nn_grid~2"></span>
-              integer,
-            </td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>undef_grid</strong></td><td><p>flag of undefined grid (.true. is undef)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-nn_grid~2"></span>integer,</td>
 <td>intent(in),</td>
-              <td></td>            <td>
-              dimension(nr_in:nr_out_org)
-            </td>
-            <td>::</td>
-            <td><strong>nn_grid</strong></td>
-            <td>
-                <p>grid number in rearranged each radius</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vttot_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(nr_in:nr_out_org)</td><td>::</td>
+  <td><strong>nn_grid</strong></td><td><p>grid number in rearranged each radius</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vttot_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>VTtot_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrtot_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VTtot_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrtot_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>VRtot_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrt0_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRtot_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrt0_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>VRT0_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vdr0_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRT0_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vdr0_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>VDR0_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrtn_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VDR0_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrtn_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>VRTn_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrrn_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRTn_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrrn_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>VRRn_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vdtm_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRRn_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vdtm_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(ndivmin:ndiv,nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>VDTm_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vdrm_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(ndivmin:ndiv,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VDTm_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vdrm_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(ndivmin:ndiv,nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>VDRm_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrt0_gvtd_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(ndivmin:ndiv,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VDRm_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrt0_gvtd_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>VRT0_GVTD_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vdr0_gvtd_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRT0_GVTD_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vdr0_gvtd_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>VDR0_GVTD_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrtns_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VDR0_GVTD_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrtns_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>VRTns_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrtnc_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRTns_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrtnc_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>VRTnc_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrrns_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRTnc_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrrns_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>VRRns_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrrnc_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRRns_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrrnc_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>VRRnc_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vn_0_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>VRRnc_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vn_0_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>Vn_0_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-phin_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>Vn_0_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-phin_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>phin_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-zetan_rt_t"></span>
-              double precision,
-            </td>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>phin_rt_t</strong></td><td></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-zetan_rt_t"></span>double precision,</td>
 <td>intent(inout),</td>
-              <td></td>            <td>
-              dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)
-            </td>
-            <td>::</td>
-            <td><strong>zetan_rt_t</strong></td>
-            <td>
-                
-            </td>
-        </tr>
-    </tbody>
-  </table>
+  <td></td>  <td>dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt)</td><td>::</td>
+  <td><strong>zetan_rt_t</strong></td><td></td>
+</tr>
+</tbody>
+</table>
 
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
-        <h3>Contents</h3>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
+      <h3>Contents</h3>
+ 
+<em>None</em>
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
@@ -627,7 +325,7 @@
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>GVTD-HeCs was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-6"><p>GVTD-X was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
 </p>
         </div>
         <div class="col-xs-6 col-md-6">

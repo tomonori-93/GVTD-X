@@ -367,6 +367,10 @@ write(*,*) "val check", Vra1d
   &                       undefg=undef, stdopt=.true. )
   end if
 
+  !-- convert E-W / N-S directions to storm-relative angle
+  call rotate_thetad_tc( pseudo_thetad_tc, Vx_xyd, Vy_xyd, undef=undef )
+  call rotate_thetad_tc( pseudo_thetad_tc, Vtotx_xyd, Vtoty_xyd, undef=undef )
+
 !-- calculate the maximum difference between analysis and retrieval
   call display_2valdiff_max( Vt_xyd, Vtott_xyd, undef=undef, cout=cvtmax )
   call display_2valdiff_max( Ut_xyd, Utott_xyd, undef=undef, cout=cvrmax )
@@ -690,7 +694,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Retrieved u\_{x} and Δu\_{x}',  &
+  call Dcl_2D_cont_shade( 'Retrieved u and Δu',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vx_ret(1:nxd,1:nyd),  &
   &       draw_dVx(1:nxd,1:nyd),  &
@@ -725,7 +729,7 @@ write(*,*) "checkUt0", VDR0_rt_t(:,1)
   &                   val_spec=fix_val(1:shade_num+1),  &
   &                   col_spec=fix_col(1:shade_num) )
 
-  call Dcl_2D_cont_shade( 'Retrieved v\_{y} and Δv\_{y}',  &
+  call Dcl_2D_cont_shade( 'Retrieved v and Δv',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vy_ret(1:nxd,1:nyd),  &
   &       draw_dVy(1:nxd,1:nyd),  &

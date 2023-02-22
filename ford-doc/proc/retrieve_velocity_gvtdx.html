@@ -4,11 +4,11 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-   <meta name="description" content="Automatically-generated document of the Fortran library GVTD-HeCs">
+   <meta name="description" content="Automatically-generated document of the Fortran library GVTD-X">
     <meta name="author" content="Satoki Tsujino" >
     <link rel="icon" href="../favicon.png">
 
-    <title>Retrieve_velocity_GVTDX &ndash; GVTD-HeCs</title>
+    <title>Retrieve_velocity_GVTDX &ndash; GVTD-X</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -39,7 +39,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="../index.html">GVTD-HeCs </a>
+          <a class="navbar-brand" href="../index.html">GVTD-X </a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
@@ -76,73 +76,48 @@
   <div class="row">
     <h1>Retrieve_velocity_GVTDX
       <small>Subroutine</small>
-      
     </h1>
-      <div class="row" id="info-bar">
-    <div class="col-lg-12">
-      <div class="well well-sm">
-        <ul class="list-inline" style="margin-bottom:0px;display:inline">
-            <li id="meta-license"><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li>
-
-          <li id="statements"><i class="fa fa-list-ol"></i>
-            <a data-toggle="tooltip"
-               data-placement="bottom" data-html="true"
-               title=" 8.1% of total for procedures.">231 statements</a>
-          </li>
-
-            <li id="source-file">
-              <i class="fa fa-code"></i>
-              <a href="../src/gvtdx_main_mod.f90"> Source File</a>
-            </li>
-        </ul>
-        <ol class="breadcrumb in-well text-right">
-              <li><a href='../sourcefile/gvtdx_main_mod.f90.html'>gvtdx_main_mod.f90</a></li>
-              <li><a href='../module/gvtdx_main.html'>GVTDX_main</a></li>
-          <li class="active">Retrieve_velocity_GVTDX</li>
-        </ol>
-      </div>
-    </div>
-  </div>
-  <script>
-    $(function () {
-    $('[data-toggle="tooltip"]').tooltip()
-    })
-  </script>
+    <div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+    <li><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li> 
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 8.0% of total for procedures.">231 statements</a>
+     </li> 
+    <li><i class="fa fa-code"></i><a href="../src/gvtdx_main_mod.f90"> Source File</a></li>
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+     <li><a href='../sourcefile/gvtdx_main_mod.f90.html'>gvtdx_main_mod.f90</a></li>
+     <li><a href='../module/gvtdx_main.html'>GVTDX_main</a></li>
+     <li class="active">Retrieve_velocity_GVTDX</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
 
   </div>
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-      <div id="sidebar">
-      <h3>Contents</h3>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+    <div id="sidebar">
+  <h3>Contents</h3>
+ 
+<em>None</em>
 
-
-  </div>
+</div>
 
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine Retrieve_velocity_GVTDX(nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadTC, VT, VR, VRT0, VDR0, VRTn, VRRn, VDTm, VDRm, undef, phin, zetan, VRT0_GVTD, VDR0_GVTD, VRTns, VRTnc, VRRns, VRRnc, Vn_0)  
-</h2>
+    <h2>public subroutine Retrieve_velocity_GVTDX(nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadTC, VT, VR, VRT0, VDR0, VRTn, VRRn, VDTm, VDRm, undef, phin, zetan, VRT0_GVTD, VDR0_GVTD, VRTns, VRTnc, VRRns, VRRnc, Vn_0)</h2>
     
 
     <p>Solve unknown variables and return wind velocity on R-T coordinates. <br>
@@ -156,438 +131,179 @@
 <hr>
 
     <h3>Arguments</h3>
-        <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Intent</th><th>Optional</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-nrot~2"></span>
-              integer,
-            </td>
+      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-nrot~2"></span>integer,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>nrot</strong></td>
-            <td>
-                <p>wave number for rotating wind</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-ndiv~2"></span>
-              integer,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nrot</strong></td><td><p>wave number for rotating wind</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-ndiv~2"></span>integer,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>ndiv</strong></td>
-            <td>
-                <p>wave number for divergent wind</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-r~19"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>ndiv</strong></td><td><p>wave number for divergent wind</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-r~19"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>r</strong>(:)</td>
-            <td>
-                <p>radial coordinate on which Vd is defined [m]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-t~11"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>r</strong>(:)</td><td><p>radial coordinate on which Vd is defined [m]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-t~11"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>t</strong>(:)</td>
-            <td>
-                <p>azimuthal coordinate on which Vd is defined [rad]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-rh~2"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>t</strong>(:)</td><td><p>azimuthal coordinate on which Vd is defined [rad]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-rh~2"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>rh</strong>(size(r)+1)</td>
-            <td>
-                <p>radial coordinate on which Phi (staggered for Vd) is defined [m]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-td~4"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>rh</strong>(size(r)+1)</td><td><p>radial coordinate on which Phi (staggered for Vd) is defined [m]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-td~4"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>td</strong>(size(r),size(t))</td>
-            <td>
-                <p>radar azimuthal angle defined at Vd(r,t) [rad]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-rdiv"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>td</strong>(size(r),size(t))</td><td><p>radar azimuthal angle defined at Vd(r,t) [rad]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-rdiv"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>rdiv</strong>(:)</td>
-            <td>
-                <p>radial coordinate on which Dc (staggered for Vd) is defined [m]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vd~4"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>rdiv</strong>(:)</td><td><p>radial coordinate on which Dc (staggered for Vd) is defined [m]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vd~4"></span>double precision,</td>
 <td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>Vd</strong>(size(r),size(t))</td>
-            <td>
-                <p>Doppler velocity defined on r-t [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vn"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>Vd</strong>(size(r),size(t))</td><td><p>Doppler velocity defined on r-t [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vn"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>Vn</strong></td>
-            <td>
-                <p>y component of storm-relative mean wind on Cartesian coordinate (x,y) which is defined in the direction of the radar to TC ccenter [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-radtc~3"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>Vn</strong></td><td><p>y component of storm-relative mean wind on Cartesian coordinate (x,y) which is defined in the direction of the radar to TC ccenter [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-radtc~3"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>RadTC</strong></td>
-            <td>
-                <p>Distance from radar to TC center [m]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vt~3"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>RadTC</strong></td><td><p>Distance from radar to TC center [m]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vt~3"></span>double precision,</td>
 <td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VT</strong>(size(r),size(t))</td>
-            <td>
-                <p>retrieved total tangential wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vr~3"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>VT</strong>(size(r),size(t))</td><td><p>retrieved total tangential wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vr~3"></span>double precision,</td>
 <td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VR</strong>(size(r),size(t))</td>
-            <td>
-                <p>retrieved total radial wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrt0"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>VR</strong>(size(r),size(t))</td><td><p>retrieved total radial wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrt0"></span>double precision,</td>
 <td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VRT0</strong>(size(r),size(t))</td>
-            <td>
-                <p>retrieved axisymmetric radial component of rotating wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vdr0"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>VRT0</strong>(size(r),size(t))</td><td><p>retrieved axisymmetric radial component of rotating wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vdr0"></span>double precision,</td>
 <td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VDR0</strong>(size(r),size(t))</td>
-            <td>
-                <p>retrieved axisymmetric tangential component of divergent wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrtn"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>VDR0</strong>(size(r),size(t))</td><td><p>retrieved axisymmetric tangential component of divergent wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrtn"></span>double precision,</td>
 <td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VRTn</strong>(nrot,size(r),size(t))</td>
-            <td>
-                <p>retrieved tangential component of rotating wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrrn"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>VRTn</strong>(nrot,size(r),size(t))</td><td><p>retrieved tangential component of rotating wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrrn"></span>double precision,</td>
 <td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VRRn</strong>(nrot,size(r),size(t))</td>
-            <td>
-                <p>retrieved radial component of rotating wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vdtm"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>VRRn</strong>(nrot,size(r),size(t))</td><td><p>retrieved radial component of rotating wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vdtm"></span>double precision,</td>
 <td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VDTm</strong>(ndiv,size(r),size(t))</td>
-            <td>
-                <p>retrieved tangential component of divergent wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vdrm"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>VDTm</strong>(ndiv,size(r),size(t))</td><td><p>retrieved tangential component of divergent wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vdrm"></span>double precision,</td>
 <td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VDRm</strong>(ndiv,size(r),size(t))</td>
-            <td>
-                <p>retrieved radial component of divergent wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-undef~35"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>VDRm</strong>(ndiv,size(r),size(t))</td><td><p>retrieved radial component of divergent wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-undef~31"></span>double precision,</td>
 <td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>undef</strong></td>
-            <td>
-                <p>undefined value for Vd</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-phin"></span>
-              double precision,
-            </td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>undef</strong></td><td><p>undefined value for Vd</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-phin"></span>double precision,</td>
 <td>intent(out),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>phin</strong>(nrot,size(r),size(t))</td>
-            <td>
-                <p>retrieved stream function [m2 s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-zetan"></span>
-              double precision,
-            </td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>phin</strong>(nrot,size(r),size(t))</td><td><p>retrieved stream function [m2 s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-zetan"></span>double precision,</td>
 <td>intent(out),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>zetan</strong>(nrot,size(r),size(t))</td>
-            <td>
-                <p>retrieved vorticity [s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrt0_gvtd"></span>
-              double precision,
-            </td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>zetan</strong>(nrot,size(r),size(t))</td><td><p>retrieved vorticity [s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrt0_gvtd"></span>double precision,</td>
 <td>intent(out),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VRT0_GVTD</strong>(size(r),size(t))</td>
-            <td>
-                <p>retrieved axisymmetric radial component of pseudo-GVTD tangential wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vdr0_gvtd"></span>
-              double precision,
-            </td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>VRT0_GVTD</strong>(size(r),size(t))</td><td><p>retrieved axisymmetric radial component of pseudo-GVTD tangential wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vdr0_gvtd"></span>double precision,</td>
 <td>intent(out),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VDR0_GVTD</strong>(size(r),size(t))</td>
-            <td>
-                <p>retrieved axisymmetric tangential component of pseudo-GVTD tangential wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrtns"></span>
-              double precision,
-            </td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>VDR0_GVTD</strong>(size(r),size(t))</td><td><p>retrieved axisymmetric tangential component of pseudo-GVTD tangential wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrtns"></span>double precision,</td>
 <td>intent(out),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VRTns</strong>(nrot,size(r),size(t))</td>
-            <td>
-                <p>Sine component of retrieved asymmetric radial wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrtnc"></span>
-              double precision,
-            </td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>VRTns</strong>(nrot,size(r),size(t))</td><td><p>Sine component of retrieved asymmetric radial wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrtnc"></span>double precision,</td>
 <td>intent(out),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VRTnc</strong>(nrot,size(r),size(t))</td>
-            <td>
-                <p>Cosine component of retrieved asymmetric radial wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrrns"></span>
-              double precision,
-            </td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>VRTnc</strong>(nrot,size(r),size(t))</td><td><p>Cosine component of retrieved asymmetric radial wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrrns"></span>double precision,</td>
 <td>intent(out),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VRRns</strong>(nrot,size(r),size(t))</td>
-            <td>
-                <p>Sine component of retrieved asymmetric tangential wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vrrnc"></span>
-              double precision,
-            </td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>VRRns</strong>(nrot,size(r),size(t))</td><td><p>Sine component of retrieved asymmetric tangential wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vrrnc"></span>double precision,</td>
 <td>intent(out),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VRRnc</strong>(nrot,size(r),size(t))</td>
-            <td>
-                <p>Cosine component of retrieved asymmetric tangential wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vn_0"></span>
-              double precision,
-            </td>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>VRRnc</strong>(nrot,size(r),size(t))</td><td><p>Cosine component of retrieved asymmetric tangential wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vn_0"></span>double precision,</td>
 <td>intent(out),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>Vn_0</strong>(size(r),size(t))</td>
-            <td>
-                <p>Aliased component to asymmetric tangential wind from (storm-relative) mean wind [m s-1]</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>Vn_0</strong>(size(r),size(t))</td><td><p>Aliased component to asymmetric tangential wind from (storm-relative) mean wind [m s-1]</p></td>
+</tr>
+</tbody>
+</table>
 
     <br>
     <div class="panel panel-default">
@@ -627,47 +343,47 @@
 <path fill="none" stroke="#000000" d="M105.83,-87.15C133.14,-97.73 172.73,-113.08 201.26,-124.15"/>
 <polygon fill="#000000" stroke="#000000" points="200.27,-127.51 210.86,-127.86 202.8,-120.99 200.27,-127.51"/>
 </g>
-<!-- proc~interpo_search_1d -->
-<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_node3" class="node">
-<title>proc~interpo_search_1d</title>
-<g id="a_proc~~retrieve_velocity_gvtdx~~CallsGraph_node3"><a xlink:href=".././proc/interpo_search_1d.html" xlink:title="interpo_search_1d">
-<polygon fill="#d9534f" stroke="#d9534f" points="293,-108 183,-108 183,-84 293,-84 293,-108"/>
-<text text-anchor="middle" x="238" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">interpo_search_1d</text>
-</a>
-</g>
-</g>
-<!-- proc~retrieve_velocity_gvtdx&#45;&gt;proc~interpo_search_1d -->
-<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_edge2" class="edge">
-<title>proc~retrieve_velocity_gvtdx&#45;&gt;proc~interpo_search_1d</title>
-<path fill="none" stroke="#000000" d="M147.19,-84.39C155.73,-85.5 164.38,-86.62 172.79,-87.7"/>
-<polygon fill="#000000" stroke="#000000" points="172.52,-91.2 182.89,-89.01 173.42,-84.25 172.52,-91.2"/>
-</g>
 <!-- dcos -->
-<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_node4" class="node">
+<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_node3" class="node">
 <title>dcos</title>
-<polygon fill="#777777" stroke="#777777" points="265,-66 211,-66 211,-42 265,-42 265,-66"/>
-<text text-anchor="middle" x="238" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dcos</text>
+<polygon fill="#777777" stroke="#777777" points="265,-108 211,-108 211,-84 265,-84 265,-108"/>
+<text text-anchor="middle" x="238" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dcos</text>
 </g>
 <!-- proc~retrieve_velocity_gvtdx&#45;&gt;dcos -->
-<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_edge3" class="edge">
+<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_edge2" class="edge">
 <title>proc~retrieve_velocity_gvtdx&#45;&gt;dcos</title>
-<path fill="none" stroke="#000000" d="M147.19,-65.61C165.6,-63.23 184.59,-60.77 200.34,-58.74"/>
-<polygon fill="#000000" stroke="#000000" points="201.21,-62.15 210.68,-57.4 200.32,-55.21 201.21,-62.15"/>
+<path fill="none" stroke="#000000" d="M147.19,-84.39C165.6,-86.77 184.59,-89.23 200.34,-91.26"/>
+<polygon fill="#000000" stroke="#000000" points="200.32,-94.79 210.68,-92.6 201.21,-87.85 200.32,-94.79"/>
 </g>
 <!-- proc~fp_gauss -->
-<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_node5" class="node">
+<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_node4" class="node">
 <title>proc~fp_gauss</title>
-<g id="a_proc~~retrieve_velocity_gvtdx~~CallsGraph_node5"><a xlink:href=".././proc/fp_gauss.html" xlink:title="fp_gauss">
-<polygon fill="#d9534f" stroke="#d9534f" points="267.5,-24 208.5,-24 208.5,0 267.5,0 267.5,-24"/>
-<text text-anchor="middle" x="238" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fp_gauss</text>
+<g id="a_proc~~retrieve_velocity_gvtdx~~CallsGraph_node4"><a xlink:href=".././proc/fp_gauss.html" xlink:title="fp_gauss">
+<polygon fill="#d9534f" stroke="#d9534f" points="267.5,-66 208.5,-66 208.5,-42 267.5,-42 267.5,-66"/>
+<text text-anchor="middle" x="238" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fp_gauss</text>
 </a>
 </g>
 </g>
 <!-- proc~retrieve_velocity_gvtdx&#45;&gt;proc~fp_gauss -->
-<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_edge4" class="edge">
+<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_edge3" class="edge">
 <title>proc~retrieve_velocity_gvtdx&#45;&gt;proc~fp_gauss</title>
-<path fill="none" stroke="#000000" d="M105.83,-62.85C132.4,-52.55 170.59,-37.75 198.91,-26.77"/>
-<polygon fill="#000000" stroke="#000000" points="200.43,-29.93 208.49,-23.05 197.9,-23.41 200.43,-29.93"/>
+<path fill="none" stroke="#000000" d="M147.19,-65.61C164.77,-63.33 182.89,-60.99 198.21,-59.01"/>
+<polygon fill="#000000" stroke="#000000" points="198.85,-62.46 208.32,-57.71 197.96,-55.52 198.85,-62.46"/>
+</g>
+<!-- proc~interpo_search_1d -->
+<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_node5" class="node">
+<title>proc~interpo_search_1d</title>
+<g id="a_proc~~retrieve_velocity_gvtdx~~CallsGraph_node5"><a xlink:href=".././proc/interpo_search_1d.html" xlink:title="interpo_search_1d">
+<polygon fill="#d9534f" stroke="#d9534f" points="293,-24 183,-24 183,0 293,0 293,-24"/>
+<text text-anchor="middle" x="238" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">interpo_search_1d</text>
+</a>
+</g>
+</g>
+<!-- proc~retrieve_velocity_gvtdx&#45;&gt;proc~interpo_search_1d -->
+<g id="proc~~retrieve_velocity_gvtdx~~CallsGraph_edge4" class="edge">
+<title>proc~retrieve_velocity_gvtdx&#45;&gt;proc~interpo_search_1d</title>
+<path fill="none" stroke="#000000" d="M105.83,-62.85C131.65,-52.84 168.46,-38.57 196.51,-27.7"/>
+<polygon fill="#000000" stroke="#000000" points="197.98,-30.88 206.04,-24 195.45,-24.35 197.98,-30.88"/>
 </g>
 </g>
 </svg>
@@ -735,27 +451,9 @@
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
-        <h3>Contents</h3>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
+      <h3>Contents</h3>
+ 
+<em>None</em>
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
@@ -778,7 +476,7 @@
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>GVTD-HeCs was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-6"><p>GVTD-X was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
 </p>
         </div>
         <div class="col-xs-6 col-md-6">

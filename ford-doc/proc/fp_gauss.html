@@ -4,11 +4,11 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-   <meta name="description" content="Automatically-generated document of the Fortran library GVTD-HeCs">
+   <meta name="description" content="Automatically-generated document of the Fortran library GVTD-X">
     <meta name="author" content="Satoki Tsujino" >
     <link rel="icon" href="../favicon.png">
 
-    <title>fp_gauss &ndash; GVTD-HeCs</title>
+    <title>fp_gauss &ndash; GVTD-X</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -39,7 +39,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="../index.html">GVTD-HeCs </a>
+          <a class="navbar-brand" href="../index.html">GVTD-X </a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
@@ -76,135 +76,76 @@
   <div class="row">
     <h1>fp_gauss
       <small>Subroutine</small>
-      
     </h1>
-      <div class="row" id="info-bar">
-    <div class="col-lg-12">
-      <div class="well well-sm">
-        <ul class="list-inline" style="margin-bottom:0px;display:inline">
-            <li id="meta-license"><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li>
-
-          <li id="statements"><i class="fa fa-list-ol"></i>
-            <a data-toggle="tooltip"
-               data-placement="bottom" data-html="true"
-               title=" 2.7% of total for procedures.">76 statements</a>
-          </li>
-
-            <li id="source-file">
-              <i class="fa fa-code"></i>
-              <a href="../src/sub_mod.f90"> Source File</a>
-            </li>
-        </ul>
-        <ol class="breadcrumb in-well text-right">
-              <li><a href='../sourcefile/sub_mod.f90.html'>sub_mod.f90</a></li>
-              <li><a href='../module/gvtdx_sub.html'>GVTDX_sub</a></li>
-          <li class="active">fp_gauss</li>
-        </ol>
-      </div>
-    </div>
-  </div>
-  <script>
-    $(function () {
-    $('[data-toggle="tooltip"]').tooltip()
-    })
-  </script>
+    <div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+    <li><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li> 
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 2.6% of total for procedures.">76 statements</a>
+     </li> 
+    <li><i class="fa fa-code"></i><a href="../src/sub_mod.f90"> Source File</a></li>
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+     <li><a href='../sourcefile/sub_mod.f90.html'>sub_mod.f90</a></li>
+     <li><a href='../module/gvtdx_sub.html'>GVTDX_sub</a></li>
+     <li class="active">fp_gauss</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
 
   </div>
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-      <div id="sidebar">
-      <h3>Contents</h3>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+    <div id="sidebar">
+  <h3>Contents</h3>
+ 
+<em>None</em>
 
-
-  </div>
+</div>
 
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine fp_gauss(c, d, x)  
-</h2>
+    <h2>public subroutine fp_gauss(c, d, x)</h2>
     
 
     <p>Gauss-Jordan method with fully pivotting (from STPK)</p>
 
     <h3>Arguments</h3>
-        <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Intent</th><th>Optional</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-c"></span>
-              double precision,
-            </td>
+      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-c"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>c</strong>(size(d),size(d))</td>
-            <td>
-                <p>Square matrix (array is the first elements)</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-d"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>c</strong>(size(d),size(d))</td><td><p>Square matrix (array is the first elements)</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-d"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>d</strong>(:)</td>
-            <td>
-                <p>Vector</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-x~3"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>d</strong>(:)</td><td><p>Vector</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-x~3"></span>double precision,</td>
 <td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>x</strong>(size(d))</td>
-            <td>
-                <p>Vector for unknown variables</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>x</strong>(size(d))</td><td><p>Vector for unknown variables</p></td>
+</tr>
+</tbody>
+</table>
 
     <br>
     <div class="panel panel-default">
@@ -244,49 +185,49 @@
 <path fill="none" stroke="#000000" d="M123.58,-125.93C131.55,-123.36 139.61,-120.38 147,-117 161.13,-110.53 175.74,-101.26 187.48,-93.08"/>
 <polygon fill="#000000" stroke="#000000" points="189.74,-95.77 195.83,-87.1 185.66,-90.07 189.74,-95.77"/>
 </g>
-<!-- proc~fp_invert_mat -->
-<g id="proc~~fp_gauss~~CalledByGraph_node3" class="node">
-<title>proc~fp_invert_mat</title>
-<g id="a_proc~~fp_gauss~~CalledByGraph_node3"><a xlink:href=".././proc/fp_invert_mat.html" xlink:title="fp_invert_mat">
-<polygon fill="#d9534f" stroke="#d9534f" points="116,-108 31,-108 31,-84 116,-84 116,-108"/>
-<text text-anchor="middle" x="73.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fp_invert_mat</text>
-</a>
-</g>
-</g>
-<!-- proc~fp_invert_mat&#45;&gt;proc~fp_gauss -->
-<g id="proc~~fp_gauss~~CalledByGraph_edge2" class="edge">
-<title>proc~fp_invert_mat&#45;&gt;proc~fp_gauss</title>
-<path fill="none" stroke="#000000" d="M116.35,-89.59C134.37,-86.82 155.31,-83.61 172.95,-80.91"/>
-<polygon fill="#000000" stroke="#000000" points="173.56,-84.36 182.91,-79.38 172.5,-77.44 173.56,-84.36"/>
-</g>
 <!-- proc~retrieve_velocity_gbvtd -->
-<g id="proc~~fp_gauss~~CalledByGraph_node4" class="node">
+<g id="proc~~fp_gauss~~CalledByGraph_node3" class="node">
 <title>proc~retrieve_velocity_gbvtd</title>
-<g id="a_proc~~fp_gauss~~CalledByGraph_node4"><a xlink:href=".././proc/retrieve_velocity_gbvtd.html" xlink:title="Retrieve_velocity_GBVTD">
-<polygon fill="#d9534f" stroke="#d9534f" points="146.5,-66 0.5,-66 0.5,-42 146.5,-42 146.5,-66"/>
-<text text-anchor="middle" x="73.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Retrieve_velocity_GBVTD</text>
+<g id="a_proc~~fp_gauss~~CalledByGraph_node3"><a xlink:href=".././proc/retrieve_velocity_gbvtd.html" xlink:title="Retrieve_velocity_GBVTD">
+<polygon fill="#d9534f" stroke="#d9534f" points="146.5,-108 0.5,-108 0.5,-84 146.5,-84 146.5,-108"/>
+<text text-anchor="middle" x="73.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Retrieve_velocity_GBVTD</text>
 </a>
 </g>
 </g>
 <!-- proc~retrieve_velocity_gbvtd&#45;&gt;proc~fp_gauss -->
-<g id="proc~~fp_gauss~~CalledByGraph_edge3" class="edge">
+<g id="proc~~fp_gauss~~CalledByGraph_edge2" class="edge">
 <title>proc~retrieve_velocity_gbvtd&#45;&gt;proc~fp_gauss</title>
-<path fill="none" stroke="#000000" d="M146.61,-65.05C155.68,-66.44 164.66,-67.82 172.92,-69.09"/>
-<polygon fill="#000000" stroke="#000000" points="172.53,-72.57 182.94,-70.62 173.59,-65.65 172.53,-72.57"/>
+<path fill="none" stroke="#000000" d="M146.61,-84.95C155.68,-83.56 164.66,-82.18 172.92,-80.91"/>
+<polygon fill="#000000" stroke="#000000" points="173.59,-84.35 182.94,-79.38 172.53,-77.43 173.59,-84.35"/>
 </g>
 <!-- proc~retrieve_velocity_gvtdx -->
-<g id="proc~~fp_gauss~~CalledByGraph_node5" class="node">
+<g id="proc~~fp_gauss~~CalledByGraph_node4" class="node">
 <title>proc~retrieve_velocity_gvtdx</title>
-<g id="a_proc~~fp_gauss~~CalledByGraph_node5"><a xlink:href=".././proc/retrieve_velocity_gvtdx.html" xlink:title="Retrieve_velocity_GVTDX">
-<polygon fill="#d9534f" stroke="#d9534f" points="147,-24 0,-24 0,0 147,0 147,-24"/>
-<text text-anchor="middle" x="73.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Retrieve_velocity_GVTDX</text>
+<g id="a_proc~~fp_gauss~~CalledByGraph_node4"><a xlink:href=".././proc/retrieve_velocity_gvtdx.html" xlink:title="Retrieve_velocity_GVTDX">
+<polygon fill="#d9534f" stroke="#d9534f" points="147,-66 0,-66 0,-42 147,-42 147,-66"/>
+<text text-anchor="middle" x="73.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">Retrieve_velocity_GVTDX</text>
 </a>
 </g>
 </g>
 <!-- proc~retrieve_velocity_gvtdx&#45;&gt;proc~fp_gauss -->
-<g id="proc~~fp_gauss~~CalledByGraph_edge4" class="edge">
+<g id="proc~~fp_gauss~~CalledByGraph_edge3" class="edge">
 <title>proc~retrieve_velocity_gvtdx&#45;&gt;proc~fp_gauss</title>
-<path fill="none" stroke="#000000" d="M123.58,-24.07C131.55,-26.64 139.61,-29.62 147,-33 161.13,-39.47 175.74,-48.74 187.48,-56.92"/>
+<path fill="none" stroke="#000000" d="M147.01,-65.11C155.95,-66.48 164.79,-67.84 172.93,-69.09"/>
+<polygon fill="#000000" stroke="#000000" points="172.41,-72.55 182.82,-70.6 173.47,-65.63 172.41,-72.55"/>
+</g>
+<!-- proc~fp_invert_mat -->
+<g id="proc~~fp_gauss~~CalledByGraph_node5" class="node">
+<title>proc~fp_invert_mat</title>
+<g id="a_proc~~fp_gauss~~CalledByGraph_node5"><a xlink:href=".././proc/fp_invert_mat.html" xlink:title="fp_invert_mat">
+<polygon fill="#d9534f" stroke="#d9534f" points="116,-24 31,-24 31,0 116,0 116,-24"/>
+<text text-anchor="middle" x="73.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fp_invert_mat</text>
+</a>
+</g>
+</g>
+<!-- proc~fp_invert_mat&#45;&gt;proc~fp_gauss -->
+<g id="proc~~fp_gauss~~CalledByGraph_edge4" class="edge">
+<title>proc~fp_invert_mat&#45;&gt;proc~fp_gauss</title>
+<path fill="none" stroke="#000000" d="M116.29,-21.83C126.55,-24.85 137.35,-28.58 147,-33 161.13,-39.47 175.74,-48.74 187.48,-56.92"/>
 <polygon fill="#000000" stroke="#000000" points="185.66,-59.93 195.83,-62.9 189.74,-54.23 185.66,-59.93"/>
 </g>
 </g>
@@ -355,27 +296,9 @@
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
-        <h3>Contents</h3>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
+      <h3>Contents</h3>
+ 
+<em>None</em>
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
@@ -398,7 +321,7 @@
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>GVTD-HeCs was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-6"><p>GVTD-X was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
 </p>
         </div>
         <div class="col-xs-6 col-md-6">

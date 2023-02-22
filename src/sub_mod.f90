@@ -833,6 +833,49 @@ subroutine div_curl_2d( r, t, ur, vt, divr, curl, undef )
 
 end subroutine div_curl_2d
 
+
+subroutine rotate_thetad_tc( thetad_tc, Vx, Vy, undef )
+!! Rotate horizontal winds in the east-west and north-south directions to the storm-relative direction. 
+  implicit none
+  double precision, intent(in) :: thetad_tc   !! Angle of the direction from the radar to the storm center [rad]
+  double precision, intent(inout) :: Vx(:,:)  !! Horizontal wind component in the east-west direction [m/s]
+  double precision, intent(inout) :: Vy(size(Vx,1),size(Vx,2))  !! Horizontal wind component in the north-south direction [m/s]
+  double precision, intent(in), optional :: undef  !! Undefined value
+  integer :: ii, jj, ni, nj
+  double precision :: tmpu, tmpv
+
+  ni=size(Vx,1)
+  nj=size(Vx,2)
+
+  if(present(undef))then
+
+     do jj=1,nj
+        do ii=1,ni
+           if(Vx(ii,jj)/=undef.and.Vy(ii,jj)/=undef)then
+              tmpu=Vx(ii,jj)*dcos(thetad_tc)+Vy(ii,jj)*dsin(thetad_tc)
+              tmpv=-Vx(ii,jj)*dsin(thetad_tc)+Vy(ii,jj)*dcos(thetad_tc)
+              Vx(ii,jj)=tmpu
+              Vy(ii,jj)=tmpv
+           end if
+        end do
+     end do
+
+  else
+
+     do jj=1,nj
+        do ii=1,ni
+           tmpu=Vx(ii,jj)*dcos(thetad_tc)+Vy(ii,jj)*dsin(thetad_tc)
+           tmpv=-Vx(ii,jj)*dsin(thetad_tc)+Vy(ii,jj)*dcos(thetad_tc)
+           Vx(ii,jj)=tmpu
+           Vy(ii,jj)=tmpv
+        end do
+     end do
+
+  end if
+
+end subroutine rotate_thetad_tc
+
+
 subroutine conv_d2r_1d( ival, oval )
 !! Convert double to real
   implicit none

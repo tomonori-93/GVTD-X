@@ -4,11 +4,11 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-   <meta name="description" content="Automatically-generated document of the Fortran library GVTD-HeCs">
+   <meta name="description" content="Automatically-generated document of the Fortran library GVTD-X">
     <meta name="author" content="Satoki Tsujino" >
     <link rel="icon" href="../favicon.png">
 
-    <title>Retrieve_velocity_GBVTD &ndash; GVTD-HeCs</title>
+    <title>Retrieve_velocity_GBVTD &ndash; GVTD-X</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -39,7 +39,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="../index.html">GVTD-HeCs </a>
+          <a class="navbar-brand" href="../index.html">GVTD-X </a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
@@ -76,73 +76,48 @@
   <div class="row">
     <h1>Retrieve_velocity_GBVTD
       <small>Subroutine</small>
-      
     </h1>
-      <div class="row" id="info-bar">
-    <div class="col-lg-12">
-      <div class="well well-sm">
-        <ul class="list-inline" style="margin-bottom:0px;display:inline">
-            <li id="meta-license"><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li>
-
-          <li id="statements"><i class="fa fa-list-ol"></i>
-            <a data-toggle="tooltip"
-               data-placement="bottom" data-html="true"
-               title=" 3.9% of total for procedures.">111 statements</a>
-          </li>
-
-            <li id="source-file">
-              <i class="fa fa-code"></i>
-              <a href="../src/gbvtd_main_mod.f90"> Source File</a>
-            </li>
-        </ul>
-        <ol class="breadcrumb in-well text-right">
-              <li><a href='../sourcefile/gbvtd_main_mod.f90.html'>gbvtd_main_mod.f90</a></li>
-              <li><a href='../module/gbvtd_main.html'>GBVTD_main</a></li>
-          <li class="active">Retrieve_velocity_GBVTD</li>
-        </ol>
-      </div>
-    </div>
-  </div>
-  <script>
-    $(function () {
-    $('[data-toggle="tooltip"]').tooltip()
-    })
-  </script>
+    <div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+    <li><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li> 
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 3.8% of total for procedures.">111 statements</a>
+     </li> 
+    <li><i class="fa fa-code"></i><a href="../src/gbvtd_main_mod.f90"> Source File</a></li>
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+     <li><a href='../sourcefile/gbvtd_main_mod.f90.html'>gbvtd_main_mod.f90</a></li>
+     <li><a href='../module/gbvtd_main.html'>GBVTD_main</a></li>
+     <li class="active">Retrieve_velocity_GBVTD</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
 
   </div>
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-      <div id="sidebar">
-      <h3>Contents</h3>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+    <div id="sidebar">
+  <h3>Contents</h3>
+ 
+<em>None</em>
 
-
-  </div>
+</div>
 
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  subroutine Retrieve_velocity_GBVTD(nasym, r, t, td, Vd, RadTC, VT, VR, VT0, VR0, VTSn, VTCn, undef)  
-</h2>
+    <h2>public subroutine Retrieve_velocity_GBVTD(nasym, r, t, td, Vd, RadTC, VT, VR, VT0, VR0, VTSn, VTCn, undef)</h2>
     
 
     <p>Solve unknown variables and return wind velocity on R-T coordinates
@@ -155,213 +130,89 @@
 <hr>
 
     <h3>Arguments</h3>
-        <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Intent</th><th>Optional</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-nasym~6"></span>
-              integer,
-            </td>
+      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-nasym~2"></span>integer,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>nasym</strong></td>
-            <td>
-                <p>wave number for asymmetric tangential wind</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-r~17"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>nasym</strong></td><td><p>wave number for asymmetric tangential wind</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-r~17"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>r</strong>(:)</td>
-            <td>
-                <p>radial coordinate on which Vd is defined [m]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-t~10"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>r</strong>(:)</td><td><p>radial coordinate on which Vd is defined [m]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-t~10"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>t</strong>(:)</td>
-            <td>
-                <p>azimuthal coordinate on which Vd is defined [rad]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-td~3"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>t</strong>(:)</td><td><p>azimuthal coordinate on which Vd is defined [rad]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-td~3"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>td</strong>(size(r),size(t))</td>
-            <td>
-                <p>radar azimuthal angle defined at Vd(r,t) [rad]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vd~3"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>td</strong>(size(r),size(t))</td><td><p>radar azimuthal angle defined at Vd(r,t) [rad]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vd~3"></span>double precision,</td>
 <td>intent(inout)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>Vd</strong>(size(r),size(t))</td>
-            <td>
-                <p>Doppler velocity defined on r-t [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-radtc~2"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>Vd</strong>(size(r),size(t))</td><td><p>Doppler velocity defined on r-t [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-radtc~2"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>RadTC</strong></td>
-            <td>
-                <p>Distance from radar to TC center [m]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vt~2"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>RadTC</strong></td><td><p>Distance from radar to TC center [m]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vt~2"></span>double precision,</td>
 <td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VT</strong>(size(r),size(t))</td>
-            <td>
-                <p>retrieved total tangential wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vr~2"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>VT</strong>(size(r),size(t))</td><td><p>retrieved total tangential wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vr~2"></span>double precision,</td>
 <td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VR</strong>(size(r),size(t))</td>
-            <td>
-                <p>retrieved total radial wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vt0~2"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>VR</strong>(size(r),size(t))</td><td><p>retrieved total radial wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vt0~2"></span>double precision,</td>
 <td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VT0</strong>(size(r),size(t))</td>
-            <td>
-                <p>retrieved axisymmetric radial component of rotating wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vr0~2"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>VT0</strong>(size(r),size(t))</td><td><p>retrieved axisymmetric radial component of rotating wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vr0~2"></span>double precision,</td>
 <td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VR0</strong>(size(r),size(t))</td>
-            <td>
-                <p>retrieved axisymmetric tangential component of divergent wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vtsn~2"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>VR0</strong>(size(r),size(t))</td><td><p>retrieved axisymmetric tangential component of divergent wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vtsn~2"></span>double precision,</td>
 <td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VTSn</strong>(nasym,size(r),size(t))</td>
-            <td>
-                <p>retrieved tangential component of rotating wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-vtcn~2"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>VTSn</strong>(nasym,size(r),size(t))</td><td><p>retrieved tangential component of rotating wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-vtcn~2"></span>double precision,</td>
 <td>intent(out)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>VTCn</strong>(nasym,size(r),size(t))</td>
-            <td>
-                <p>retrieved radial component of rotating wind [m s-1]</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-undef~31"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>VTCn</strong>(nasym,size(r),size(t))</td><td><p>retrieved radial component of rotating wind [m s-1]</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-undef~30"></span>double precision,</td>
 <td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>undef</strong></td>
-            <td>
-                <p>undefined value for Vd</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>undef</strong></td><td><p>undefined value for Vd</p></td>
+</tr>
+</tbody>
+</table>
 
     <br>
     <div class="panel panel-default">
@@ -375,106 +226,106 @@
 <!-- Generated by graphviz version 2.43.0 (0)
  -->
 <!-- Title: proc~~retrieve_velocity_gbvtd~~CallsGraph Pages: 1 -->
-<svg id="procretrieve_velocity_gbvtdCallsGraph" width="353pt" height="150pt"
- viewBox="0.00 0.00 353.00 149.77" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<g id="proc~~retrieve_velocity_gbvtd~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 145.77)">
+<svg id="procretrieve_velocity_gbvtdCallsGraph" width="353pt" height="157pt"
+ viewBox="0.00 0.00 353.00 157.00" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<g id="proc~~retrieve_velocity_gbvtd~~CallsGraph" class="graph" transform="scale(1 1) rotate(0) translate(4 153)">
 <title>proc~~retrieve_velocity_gbvtd~~CallsGraph</title>
-<polygon fill="white" stroke="transparent" points="-4,4 -4,-145.77 349,-145.77 349,4 -4,4"/>
+<polygon fill="white" stroke="transparent" points="-4,4 -4,-153 349,-153 349,4 -4,4"/>
 <!-- proc~retrieve_velocity_gbvtd -->
 <g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_node1" class="node">
 <title>proc~retrieve_velocity_gbvtd</title>
-<polygon fill="none" stroke="black" points="146,-108 0,-108 0,-84 146,-84 146,-108"/>
-<text text-anchor="middle" x="73" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50">Retrieve_velocity_GBVTD</text>
+<polygon fill="none" stroke="black" points="146,-87 0,-87 0,-63 146,-63 146,-87"/>
+<text text-anchor="middle" x="73" y="-72.6" font-family="Helvetica,sans-Serif" font-size="10.50">Retrieve_velocity_GBVTD</text>
 </g>
 <!-- proc~stdout -->
 <g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_node2" class="node">
 <title>proc~stdout</title>
 <g id="a_proc~~retrieve_velocity_gbvtd~~CallsGraph_node2"><a xlink:href=".././proc/stdout.html" xlink:title="stdout">
-<polygon fill="#d9534f" stroke="#d9534f" points="345,-138 291,-138 291,-114 345,-114 345,-138"/>
-<text text-anchor="middle" x="318" y="-123.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">stdout</text>
+<polygon fill="#d9534f" stroke="#d9534f" points="345,-149 291,-149 291,-125 345,-125 345,-149"/>
+<text text-anchor="middle" x="318" y="-134.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">stdout</text>
 </a>
 </g>
 </g>
 <!-- proc~retrieve_velocity_gbvtd&#45;&gt;proc~stdout -->
 <g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_edge1" class="edge">
 <title>proc~retrieve_velocity_gbvtd&#45;&gt;proc~stdout</title>
-<path fill="none" stroke="#000000" d="M97.69,-108.17C119.08,-118.43 151.75,-132.32 182,-138 213.89,-143.98 222.7,-141.1 255,-138 263.46,-137.19 272.48,-135.77 280.94,-134.18"/>
-<polygon fill="#000000" stroke="#000000" points="281.79,-137.58 290.92,-132.2 280.42,-130.72 281.79,-137.58"/>
+<path fill="none" stroke="#000000" d="M100.08,-87.05C121.62,-96.53 153.22,-109.37 182,-117 214.76,-125.68 253.05,-130.9 280.46,-133.82"/>
+<polygon fill="#000000" stroke="#000000" points="280.47,-137.34 290.77,-134.87 281.17,-130.38 280.47,-137.34"/>
 </g>
-<!-- proc~check_max -->
+<!-- proc~calc_psid -->
 <g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_node3" class="node">
-<title>proc~check_max</title>
-<g id="a_proc~~retrieve_velocity_gbvtd~~CallsGraph_node3"><a xlink:href=".././proc/check_max.html" xlink:title="check_max">
-<polygon fill="#d9534f" stroke="#d9534f" points="255,-129 182,-129 182,-105 255,-105 255,-129"/>
-<text text-anchor="middle" x="218.5" y="-114.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">check_max</text>
+<title>proc~calc_psid</title>
+<g id="a_proc~~retrieve_velocity_gbvtd~~CallsGraph_node3"><a xlink:href=".././proc/calc_psid.html" xlink:title="calc_psid">
+<polygon fill="#d9534f" stroke="#d9534f" points="249,-108 188,-108 188,-84 249,-84 249,-108"/>
+<text text-anchor="middle" x="218.5" y="-93.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_psid</text>
 </a>
 </g>
 </g>
-<!-- proc~retrieve_velocity_gbvtd&#45;&gt;proc~check_max -->
-<g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_edge2" class="edge">
-<title>proc~retrieve_velocity_gbvtd&#45;&gt;proc~check_max</title>
-<path fill="none" stroke="#000000" d="M146.17,-106.56C154.91,-107.84 163.63,-109.12 171.83,-110.32"/>
-<polygon fill="#000000" stroke="#000000" points="171.5,-113.81 181.9,-111.79 172.51,-106.88 171.5,-113.81"/>
+<!-- proc~retrieve_velocity_gbvtd&#45;&gt;proc~calc_psid -->
+<g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_edge3" class="edge">
+<title>proc~retrieve_velocity_gbvtd&#45;&gt;proc~calc_psid</title>
+<path fill="none" stroke="#000000" d="M146.17,-85.56C157.15,-87.17 168.12,-88.77 178.05,-90.23"/>
+<polygon fill="#000000" stroke="#000000" points="177.57,-93.69 187.97,-91.68 178.58,-86.77 177.57,-93.69"/>
 </g>
 <!-- proc~fp_gauss -->
 <g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_node4" class="node">
 <title>proc~fp_gauss</title>
 <g id="a_proc~~retrieve_velocity_gbvtd~~CallsGraph_node4"><a xlink:href=".././proc/fp_gauss.html" xlink:title="fp_gauss">
-<polygon fill="#d9534f" stroke="#d9534f" points="248,-87 189,-87 189,-63 248,-63 248,-87"/>
-<text text-anchor="middle" x="218.5" y="-72.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fp_gauss</text>
+<polygon fill="#d9534f" stroke="#d9534f" points="248,-66 189,-66 189,-42 248,-42 248,-66"/>
+<text text-anchor="middle" x="218.5" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">fp_gauss</text>
 </a>
 </g>
 </g>
 <!-- proc~retrieve_velocity_gbvtd&#45;&gt;proc~fp_gauss -->
-<g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_edge3" class="edge">
+<g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_edge2" class="edge">
 <title>proc~retrieve_velocity_gbvtd&#45;&gt;proc~fp_gauss</title>
-<path fill="none" stroke="#000000" d="M146.17,-85.44C157.36,-83.8 168.53,-82.17 178.61,-80.69"/>
-<polygon fill="#000000" stroke="#000000" points="179.27,-84.13 188.66,-79.22 178.26,-77.21 179.27,-84.13"/>
+<path fill="none" stroke="#000000" d="M146.17,-64.44C157.36,-62.8 168.53,-61.17 178.61,-59.69"/>
+<polygon fill="#000000" stroke="#000000" points="179.27,-63.13 188.66,-58.22 178.26,-56.21 179.27,-63.13"/>
 </g>
-<!-- proc~calc_psid -->
+<!-- proc~check_max -->
 <g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_node5" class="node">
-<title>proc~calc_psid</title>
-<g id="a_proc~~retrieve_velocity_gbvtd~~CallsGraph_node5"><a xlink:href=".././proc/calc_psid.html" xlink:title="calc_psid">
-<polygon fill="#d9534f" stroke="#d9534f" points="249,-45 188,-45 188,-21 249,-21 249,-45"/>
-<text text-anchor="middle" x="218.5" y="-30.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">calc_psid</text>
+<title>proc~check_max</title>
+<g id="a_proc~~retrieve_velocity_gbvtd~~CallsGraph_node5"><a xlink:href=".././proc/check_max.html" xlink:title="check_max">
+<polygon fill="#d9534f" stroke="#d9534f" points="255,-24 182,-24 182,0 255,0 255,-24"/>
+<text text-anchor="middle" x="218.5" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">check_max</text>
 </a>
 </g>
 </g>
-<!-- proc~retrieve_velocity_gbvtd&#45;&gt;proc~calc_psid -->
+<!-- proc~retrieve_velocity_gbvtd&#45;&gt;proc~check_max -->
 <g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_edge4" class="edge">
-<title>proc~retrieve_velocity_gbvtd&#45;&gt;proc~calc_psid</title>
-<path fill="none" stroke="#000000" d="M101.67,-83.85C124.1,-74 155.92,-60.04 180.53,-49.23"/>
-<polygon fill="#000000" stroke="#000000" points="182.17,-52.33 189.92,-45.11 179.35,-45.92 182.17,-52.33"/>
+<title>proc~retrieve_velocity_gbvtd&#45;&gt;proc~check_max</title>
+<path fill="none" stroke="#000000" d="M101.67,-62.85C124.1,-53 155.92,-39.04 180.53,-28.23"/>
+<polygon fill="#000000" stroke="#000000" points="182.17,-31.33 189.92,-24.11 179.35,-24.92 182.17,-31.33"/>
 </g>
 <!-- proc~calc_psid&#45;&gt;proc~stdout -->
 <g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_edge5" class="edge">
 <title>proc~calc_psid&#45;&gt;proc~stdout</title>
-<path fill="none" stroke="#000000" d="M242.4,-45.05C246.76,-47.75 251.16,-50.78 255,-54 273.29,-69.31 290.7,-90.3 302.39,-105.67"/>
-<polygon fill="#000000" stroke="#000000" points="299.8,-108.05 308.57,-113.98 305.41,-103.87 299.8,-108.05"/>
+<path fill="none" stroke="#000000" d="M248.23,-108.08C258.65,-112.46 270.56,-117.47 281.5,-122.07"/>
+<polygon fill="#000000" stroke="#000000" points="280.23,-125.34 290.81,-125.99 282.95,-118.88 280.23,-125.34"/>
 </g>
 <!-- dsin -->
 <g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_node6" class="node">
 <title>dsin</title>
-<polygon fill="#777777" stroke="#777777" points="345,-66 291,-66 291,-42 345,-42 345,-66"/>
-<text text-anchor="middle" x="318" y="-51.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dsin</text>
+<polygon fill="#777777" stroke="#777777" points="345,-107 291,-107 291,-83 345,-83 345,-107"/>
+<text text-anchor="middle" x="318" y="-92.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">dsin</text>
 </g>
 <!-- proc~calc_psid&#45;&gt;dsin -->
 <g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_edge6" class="edge">
 <title>proc~calc_psid&#45;&gt;dsin</title>
-<path fill="none" stroke="#000000" d="M249.02,-39.36C259.13,-41.53 270.55,-44 281.11,-46.27"/>
-<polygon fill="#000000" stroke="#000000" points="280.38,-49.69 290.89,-48.38 281.85,-42.85 280.38,-49.69"/>
+<path fill="none" stroke="#000000" d="M249.02,-95.7C259.02,-95.59 270.31,-95.48 280.78,-95.37"/>
+<polygon fill="#000000" stroke="#000000" points="280.93,-98.87 290.89,-95.27 280.86,-91.87 280.93,-98.87"/>
 </g>
 <!-- datan2 -->
 <g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_node7" class="node">
 <title>datan2</title>
-<polygon fill="#777777" stroke="#777777" points="345,-24 291,-24 291,0 345,0 345,-24"/>
-<text text-anchor="middle" x="318" y="-9.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">datan2</text>
+<polygon fill="#777777" stroke="#777777" points="345,-65 291,-65 291,-41 345,-41 345,-65"/>
+<text text-anchor="middle" x="318" y="-50.6" font-family="Helvetica,sans-Serif" font-size="10.50" fill="white">datan2</text>
 </g>
 <!-- proc~calc_psid&#45;&gt;datan2 -->
 <g id="proc~~retrieve_velocity_gbvtd~~CallsGraph_edge7" class="edge">
 <title>proc~calc_psid&#45;&gt;datan2</title>
-<path fill="none" stroke="#000000" d="M249.02,-26.64C259.13,-24.47 270.55,-22 281.11,-19.73"/>
-<polygon fill="#000000" stroke="#000000" points="281.85,-23.15 290.89,-17.62 280.38,-16.31 281.85,-23.15"/>
+<path fill="none" stroke="#000000" d="M246.92,-83.91C257.66,-79.17 270.11,-73.68 281.52,-68.65"/>
+<polygon fill="#000000" stroke="#000000" points="283.06,-71.8 290.79,-64.56 280.23,-65.39 283.06,-71.8"/>
 </g>
 </g>
 </svg>
@@ -542,27 +393,9 @@
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
-        <h3>Contents</h3>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
+      <h3>Contents</h3>
+ 
+<em>None</em>
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
@@ -585,7 +418,7 @@
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>GVTD-HeCs was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-6"><p>GVTD-X was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
 </p>
         </div>
         <div class="col-xs-6 col-md-6">

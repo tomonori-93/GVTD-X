@@ -4,11 +4,11 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-   <meta name="description" content="Automatically-generated document of the Fortran library GVTD-HeCs">
+   <meta name="description" content="Automatically-generated document of the Fortran library GVTD-X">
     <meta name="author" content="Satoki Tsujino" >
     <link rel="icon" href="../favicon.png">
 
-    <title>matrix_sum &ndash; GVTD-HeCs</title>
+    <title>matrix_sum &ndash; GVTD-X</title>
 
     <link href="../css/bootstrap.min.css" rel="stylesheet">
     <link href="../css/pygments.css" rel="stylesheet">
@@ -39,7 +39,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="../index.html">GVTD-HeCs </a>
+          <a class="navbar-brand" href="../index.html">GVTD-X </a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
@@ -76,167 +76,85 @@
   <div class="row">
     <h1>matrix_sum
       <small>Function</small>
-      
     </h1>
-      <div class="row" id="info-bar">
-    <div class="col-lg-12">
-      <div class="well well-sm">
-        <ul class="list-inline" style="margin-bottom:0px;display:inline">
-            <li id="meta-license"><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li>
-
-          <li id="statements"><i class="fa fa-list-ol"></i>
-            <a data-toggle="tooltip"
-               data-placement="bottom" data-html="true"
-               title=" 0.8% of total for procedures.">23 statements</a>
-          </li>
-
-            <li id="source-file">
-              <i class="fa fa-code"></i>
-              <a href="../src/gvtd_main_mod.f90"> Source File</a>
-            </li>
-        </ul>
-        <ol class="breadcrumb in-well text-right">
-              <li><a href='../sourcefile/gvtd_main_mod.f90.html'>gvtd_main_mod.f90</a></li>
-              <li><a href='../module/gvtd_main.html'>GVTD_main</a></li>
-          <li class="active">matrix_sum</li>
-        </ol>
-      </div>
-    </div>
-  </div>
-  <script>
-    $(function () {
-    $('[data-toggle="tooltip"]').tooltip()
-    })
-  </script>
+    <div class="row">
+  <div class="col-lg-12">
+<div class="well well-sm">
+  <ul class="list-inline" style="margin-bottom:0px;display:inline">
+    <li><i class="fa fa-legal"></i> <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a></li> 
+     <li><i class="fa fa-list-ol"></i>
+       <a data-toggle="tooltip"
+    data-placement="bottom" data-html="true"
+    title=" 0.8% of total for procedures.">23 statements</a>
+     </li> 
+    <li><i class="fa fa-code"></i><a href="../src/gvtd_main_mod.f90"> Source File</a></li>
+  </ul>
+  <ol class="breadcrumb in-well text-right">
+     <li><a href='../sourcefile/gvtd_main_mod.f90.html'>gvtd_main_mod.f90</a></li>
+     <li><a href='../module/gvtd_main.html'>GVTD_main</a></li>
+     <li class="active">matrix_sum</li>
+  </ol>
+</div>
+</div>
+</div>
+<script>
+  $(function () {
+  $('[data-toggle="tooltip"]').tooltip()
+  })
+</script>
 
   </div>
   
   <div class="row">
     <div class="col-md-3 hidden-xs hidden-sm visible-md visible-lg">
-      <div id="sidebar">
-      <h3>Contents</h3>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
+    <div id="sidebar">
+  <h3>Contents</h3>
+ 
+<em>None</em>
 
-
-  </div>
+</div>
 
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  function matrix_sum(aij, akj, undeflag)  
-</h2>
+    <h2>public function matrix_sum(aij, akj, undeflag)</h2>
     
 
     <p>Calculate product for a component in a matrix</p>
 
     <h3>Arguments</h3>
-        <table class="table table-striped varlist">
-    <thead>
-      <tr>
-        <th>Type</th>
-<th>Intent</th><th>Optional</th>        <th>Attributes</th>
-        <th></th>
-        <th>Name</th>
-        <th></th>
-    </thead>
-    <tbody>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-aij"></span>
-              double precision,
-            </td>
+      <table class="table table-striped varlist">
+<thead><tr><th>Type</th><th>Intent</th><th>Optional</th><th>Attributes</th><th></th><th>Name</th><th></th></thead>
+<tbody>
+<tr>
+  <td><span class="anchor" id="variable-aij"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>aij</strong>(:)</td>
-            <td>
-                <p>Matrix A1</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-akj"></span>
-              double precision,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>aij</strong>(:)</td><td><p>Matrix A1</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-akj"></span>double precision,</td>
 <td>intent(in)</td>
-              <td></td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>akj</strong>(size(aij))</td>
-            <td>
-                <p>Matrix A2</p>
-            </td>
-        </tr>
-        <tr>
-            <td>
-              <span class="anchor" id="variable-undeflag~3"></span>
-              logical,
-            </td>
+  <td></td>  <td></td><td>::</td>
+  <td><strong>akj</strong>(size(aij))</td><td><p>Matrix A2</p></td>
+</tr>
+<tr>
+  <td><span class="anchor" id="variable-undeflag"></span>logical,</td>
 <td>intent(in),</td>
-              <td>optional</td>            <td>
-              
-            </td>
-            <td>::</td>
-            <td><strong>undeflag</strong>(size(aij))</td>
-            <td>
-                <p>Undefined flag at each sampling point</p>
-            </td>
-        </tr>
-    </tbody>
-  </table>
+  <td>optional</td>  <td></td><td>::</td>
+  <td><strong>undeflag</strong>(size(aij))</td><td><p>Undefined flag at each sampling point</p></td>
+</tr>
+</tbody>
+</table>
 
-      <h3>Return Value
-        <small>
-          <span class="anchor" id="variable-matrix_sum"></span>
-          doubleprecision
-        </small>
-      </h3>
-      
+   <h3>Return Value <small><span class="anchor" id="variable-matrix_sum"></span>doubleprecision</small></h3>
+    
     <br>
 
     <section class="visible-xs visible-sm hidden-md">
-        <h3>Contents</h3>
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-  
-
+      <h3>Contents</h3>
+ 
+<em>None</em>
 
     </section>
     <br class="visible-xs visible-sm hidden-md">
@@ -259,7 +177,7 @@
     <footer>
       <div class="container">
       <div class="row">
-        <div class="col-xs-6 col-md-6"><p>GVTD-HeCs was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
+        <div class="col-xs-6 col-md-6"><p>GVTD-X was developed by Satoki Tsujino<br>&copy; 2023 <a rel="license" href="http://creativecommons.org/licenses/by-nc/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-nc/4.0/80x15.png" /></a>
 </p>
         </div>
         <div class="col-xs-6 col-md-6">
