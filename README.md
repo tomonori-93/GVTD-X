@@ -7,7 +7,7 @@ GVTD-X is a numerical method to retrieve tangential and radial wind components i
 
 [Method descriptions](https://tomonori-93.github.io/GVTD-X/ford-doc/index.html)
 
-<!--[Formulation and derivation (Japanese document)](doc/formulation.pdf)-->
+[日本語による手法の定式化とその導出: Formulation and derivation (Japanese document)](https://github.com/tomonori-93/GVTD-X/blob/document/tex/document.pdf)
 
 # Images
 ![Test Image 1](image/image1.png)
