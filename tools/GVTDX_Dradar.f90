@@ -412,6 +412,8 @@ program GVTDX_Dradar
               vdm=dsqrt(umd(k)**2+vmd(k)**2)*dsin(thetaM-thetad_tc)  ! VM x sin(thetaM-thetaS)
               dvm=vdm-vds
               write(100,'(1P2E16.8)') real(i), dvm  ! Output storm-relative mean wind
+
+              if(nr_in<nr_out)then
               call Retrieve_velocity_GVTDX( nrot, ndiv, r_t(nr_in:nr_out), theta_t,  &
   &                                         rh_t(nr_in:nr_out+1),  &
   &                                         thetad_t(nr_in:nr_out,1:nt), rdiv_t(1:nrdiv),  &
@@ -435,6 +437,8 @@ program GVTDX_Dradar
   &                                         VRRns=VRRns_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
   &                                         VRRnc=VRRnc_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
   &                                         Vn_0=Vn_0_rt_t(nr_in:nr_out,1:nt) )
+              end if
+
            case (2)  ! Run GVTD
               call Retrieve_velocity_GVTD( nrot, r_t(nr_in:nr_out), theta_t,  &
   &                                        thetad_t(nr_in:nr_out,1:nt),  &
