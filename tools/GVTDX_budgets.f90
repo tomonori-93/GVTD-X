@@ -1,13 +1,13 @@
-program GVTDX_Dradar
+program GVTDX_budgets
 
-!! Perform GVTD-X (you can choose the retrieval method by flag_GVTDX) <br>
-!! Input data: Doppler velocity based CAPPI <br>
-!! Data format: 4-byte binary (nr_org x nt_org x nz) at one time for one file <br>
-!! Output data: 4-byte binary (nr x nt x nzo) at one time for one file <br>
+!! Perform budget analysis with GVTD-X-retrieved variables <br>
+!! Buget equations: Absolute angular momentum (AAM), vorticity, and enstrophy <br>
+!! Input data: GVTD-X-retrieved variables <br>
+!! Data format: 4-byte direct access binary <br>
+!! Output data: 4-byte binary (nr x nz) at one time for one file <br>
 !! Data grid coordinate: polar with the origin of the vortex center <br>
-!! You can resample the input data from the original grid in GVTD-X retrieval. <br>
 !! <br>
-!! [USAGE]: ./GVTDX_Dradar < GVTDX_Dradar.nml
+!! [USAGE]: ./GVTDX_budgets < GVTDX_budgets.nml
 
   use GVTDX_sub
   use GVTDX_main, only : Retrieve_velocity_GVTDX
@@ -44,7 +44,6 @@ program GVTDX_Dradar
   double precision :: zmin     !! the bottom height where Doppler velocity is defined in the original data (m)
   double precision :: dz       !! the vertical grid spacing where Doppler velocity is defined (m)
   character(1000) :: listname  !! ASCII file name listing file name and other information
-  logical :: out2d_flag        !! Flag for output of 2d (r-z) data
 
   !-- internal variables
   integer :: i, j, k, id, it, m, stat, nr, ntz, nt, nl, irec, tccol
@@ -55,7 +54,6 @@ program GVTDX_Dradar
   double precision :: vdm, vds, dvm
   double precision, parameter :: undef=-999.0d0
   real, allocatable, dimension(:) :: ttime
-  real, allocatable, dimension(:,:) :: rval2d
   real, allocatable, dimension(:,:,:) :: rval, rval_org
   double precision, allocatable, dimension(:) :: umd, vmd
   double precision, allocatable, dimension(:) :: theta_ref_t
@@ -69,38 +67,32 @@ program GVTDX_Dradar
   double precision, allocatable, dimension(:,:,:,:) :: VRTn, VRRn, VDTm, VDRm, phin, zetan
   double precision, allocatable, dimension(:,:,:) :: Vra, Vra_ret
   double precision, allocatable, dimension(:,:,:) :: VRT0_GVTD, VDR0_GVTD, Vn_0
+  double precision, allocatable, dimension(:,:,:,:) :: VRTns, VRTnc, VRRns, VRRnc
   double precision, allocatable, dimension(:,:) :: VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t
   double precision, allocatable, dimension(:,:) :: VRT0_GVTD_rt_t, VDR0_GVTD_rt_t, Vn_0_rt_t
-  double precision, allocatable, dimension(:,:,:) :: VRTns_2d, VRTnc_2d, VRRns_2d, VRRnc_2d
+  double precision, allocatable, dimension(:,:,:) :: VRTns_rt_t, VRTnc_rt_t, VRRns_rt_t, VRRnc_rt_t
   double precision, allocatable, dimension(:,:) :: Vra_rt_t
   double precision, allocatable, dimension(:,:,:) :: VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t
   double precision, allocatable, dimension(:,:,:) :: phin_rt_t, zetan_rt_t
-!-- Variables for amplitude of each component
-!  double precision, allocatable, dimension(:,:) :: VTtot_2d, VRtot_2d, VRT0_2d, VDR0_2d
-!  double precision, allocatable, dimension(:,:) :: VRT0_GVTD_2d, VDR0_GVTD_2d, Vn_0_2d
-  double precision, allocatable, dimension(:,:,:) :: VRTn_2d, VRRn_2d, VDTm_2d, VDRm_2d
-!  double precision, allocatable, dimension(:,:,:) :: phin_2d
-  double precision, allocatable, dimension(:,:,:) :: zetans_2d, zetanc_2d
 
   integer :: nr_out_skp
   integer, allocatable, dimension(:) :: nr_grid_skp
   double precision, allocatable, dimension(:) :: r_skp_t, rh_skp_t
   double precision, allocatable, dimension(:,:) :: thetad_skp_t, Vra_skp_rt_t
 
-  character(200) :: input_fname, output_fname, output2d_fname
+  character(200) :: input_fname, output_fname
 !  character(1), dimension(3) :: dimname, unitname
 !  character(12), dimension(3) :: lname
   character(200), allocatable, dimension(:,:) :: cval
 !  character(50) :: valc, vall, valu
 !  character(50), dimension(2) :: vecc, vecl, vecu
   logical :: stdflag
-  logical, allocatable, dimension(:,:) :: undef_grid, undef_grid_2d
+  logical, allocatable, dimension(:,:) :: undef_grid
 !  logical :: vec_flag, stdflag
 !  type(GT_HISTORY) :: vr_hst, vt_hst, w_hst
 
 !-- read namelist file
-  namelist /iocheck /listname, out2d_flag, nr_org, nt_org, nz,  &
-  &                  rmin, dr, tmin, dt, zmin, dz
+  namelist /iocheck /listname, nr_org, nt_org, nz, rmin, dr, tmin, dt, zmin, dz
   namelist /ret_opt /nrot, ndiv, nrdiv, rdiv_t, undefobs, nthres_undef,  &
   &                  smooth_r, smooth_t, nnz, skip_min_t, flag_GVTDX
   namelist /rad_opt /dpoint_x, dpoint_y
@@ -204,6 +196,10 @@ program GVTDX_Dradar
   allocate(zetan(nrotmin:nrot,nr,nt,nnz(1):nnz(2)))
   allocate(VRT0_GVTD(nr,nt,nnz(1):nnz(2)))
   allocate(VDR0_GVTD(nr,nt,nnz(1):nnz(2)))
+  allocate(VRTns(nrotmin:nrot,nr,nt,nnz(1):nnz(2)))
+  allocate(VRTnc(nrotmin:nrot,nr,nt,nnz(1):nnz(2)))
+  allocate(VRRns(nrotmin:nrot,nr,nt,nnz(1):nnz(2)))
+  allocate(VRRnc(nrotmin:nrot,nr,nt,nnz(1):nnz(2)))
   allocate(Vn_0(nr,nt,nnz(1):nnz(2)))
   allocate(Vra(nr,nt,nnz(1):nnz(2)))
   allocate(Vra_ret(nr,nt,nnz(1):nnz(2)))
@@ -220,30 +216,13 @@ program GVTDX_Dradar
   allocate(zetan_rt_t(nrotmin:nrot,nr,nt))
   allocate(VRT0_GVTD_rt_t(nr,nt))
   allocate(VDR0_GVTD_rt_t(nr,nt))
-  allocate(VRTns_2d(nrotmin:nrot,nr,nz))
-  allocate(VRTnc_2d(nrotmin:nrot,nr,nz))
-  allocate(VRRns_2d(nrotmin:nrot,nr,nz))
-  allocate(VRRnc_2d(nrotmin:nrot,nr,nz))
+  allocate(VRTns_rt_t(nrotmin:nrot,nr,nt))
+  allocate(VRTnc_rt_t(nrotmin:nrot,nr,nt))
+  allocate(VRRns_rt_t(nrotmin:nrot,nr,nt))
+  allocate(VRRnc_rt_t(nrotmin:nrot,nr,nt))
   allocate(Vn_0_rt_t(nr,nt))
   allocate(rval(nr,nt,nz))
-  allocate(rval2d(nr,nz))
   allocate(undef_grid(nr,nt))
-
-  allocate(undef_grid_2d(nr,nz))
-!  allocate(VTtot_2d(nr,nz))
-!  allocate(VRtot_2d(nr,nz))
-!  allocate(VRT0_2d(nr,nz))
-!  allocate(VDR0_2d(nr,nz))
-  allocate(VRTn_2d(nrotmin:nrot,nr,nz))
-  allocate(VRRn_2d(nrotmin:nrot,nr,nz))
-  allocate(VDTm_2d(ndivmin:ndiv,nr,nz))
-  allocate(VDRm_2d(ndivmin:ndiv,nr,nz))
-!  allocate(VRT0_GVTD_2d(nr,nz))
-!  allocate(VDR0_GVTD_2d(nr,nz))
-!  allocate(Vn_0_2d(nr,nz))
-!  allocate(phin_2d(nrotmin:nrot,nr,nz))
-  allocate(zetans_2d(nrotmin:nrot,nr,nz))
-  allocate(zetanc_2d(nrotmin:nrot,nr,nz))
 
 !-- Read vortex center, storm motion, and mean wind
 
@@ -263,15 +242,13 @@ program GVTDX_Dradar
   write(100,'(a32)') "'Time'          'Vm-SR'         "
   write(100,'(a32)') "'s'             'ms-1'          "
 
+!-- 以下から編集していく (上は見ていない)
 !-- Loop for time
 
   do i=1,nl
      input_fname=trim(adjustl(cval(1,i)))
-     output_fname=trim(adjustl(input_fname))//'.GVTDX'
+     output_fname=trim(adjustl(input_fname))//'.budget'
      write(*,*) trim(adjustl(input_fname))
-
-     !-- Read Doppler velocity
-     call read_file_3d( trim(adjustl(input_fname)), nr_org, nt_org, nz, 1, rval_org )
 
      !-- Set temporary variables
      VTtot=undef
@@ -288,7 +265,59 @@ program GVTDX_Dradar
      Vra_ret=undef
      VRT0_GVTD=undef
      VDR0_GVTD=undef
+     VRTns=undef
+     VRTnc=undef
+     VRRns=undef
+     VRRnc=undef
      Vn_0=undef
+
+     !-- Read GVTD-X-retrieved variables
+     call read_file( trim(adjustl(input_fname)), nr, nz, iord_VRT0, rval )
+     call conv_d2r_3d( rval(1:nr,1:nz), VRT0(1:nr,1:nz) )
+
+     call read_file( trim(adjustl(input_fname)), nr, nz, iord_VDR0, rval )
+     call conv_d2r_3d( rval(1:nr,1:nz), VDR0(1:nr,1:nz) )
+
+     if(nrot>0)then
+        do k=1,nrot
+           call read_file( trim(adjustl(input_fname)), nr, nz, iord_VRTns(k), rval )
+           call conv_d2r_3d( rval(1:nr,1:nz), VRTns(1:nr,1:nz,k) )
+
+           call read_file( trim(adjustl(input_fname)), nr, nz, iord_VRTnc(k), rval )
+           call conv_d2r_3d( rval(1:nr,1:nz), VRTnc(1:nr,1:nz,k) )
+
+           call read_file( trim(adjustl(input_fname)), nr, nz, iord_VRRns(k), rval )
+           call conv_d2r_3d( rval(1:nr,1:nz), VRRns(1:nr,1:nz,k) )
+
+           call read_file( trim(adjustl(input_fname)), nr, nz, iord_VRRnc(k), rval )
+           call conv_d2r_3d( rval(1:nr,1:nz), VRRnc(1:nr,1:nz,k) )
+
+           call read_file( trim(adjustl(input_fname)), nr, nz, iord_zetans(k), rval )
+           call conv_d2r_3d( rval(1:nr,1:nz), zetans(1:nr,1:nz,k) )
+
+           call read_file( trim(adjustl(input_fname)), nr, nz, iord_zetanc(k), rval )
+           call conv_d2r_3d( rval(1:nr,1:nz), zetanc(1:nr,1:nz,k) )
+        end do
+     end if
+
+     if(ndiv>0)then
+        do k=1,ndiv
+           call read_file( trim(adjustl(input_fname)), nr, nz, iord_VDTmc(k), rval )
+           call conv_d2r_3d( rval(1:nr,1:nz), VDTmc(1:nr,1:nz,k) )
+
+           call read_file( trim(adjustl(input_fname)), nr, nz, iord_VDRmc(k), rval )
+           call conv_d2r_3d( rval(1:nr,1:nz), VDRmc(1:nr,1:nz,k) )
+        end do
+     end if
+
+     !-- 1. Calculate AAM budget (ここから作成)
+     call calc_AAM( nrot, r_t, rh_t, )
+
+     !-- 2. Calculate vorticity budget
+     call calc_vort()
+
+     !-- 3. Calculate enstrophy budget
+     call calc_enst()
 
      !-- Read the vortex center position on lon-lat
      x_tc=dble( c2r_convert( trim(adjustl(cval(3,i))) ) )
@@ -357,10 +386,10 @@ program GVTDX_Dradar
         zetan_rt_t(nrotmin:nrot,1:nr,1:nt)=undef
         VRT0_GVTD_rt_t(1:nr,1:nt)=undef
         VDR0_GVTD_rt_t(1:nr,1:nt)=undef
-        VRTns_2d(nrotmin:nrot,1:nr,1:nz)=undef
-        VRTnc_2d(nrotmin:nrot,1:nr,1:nz)=undef
-        VRRns_2d(nrotmin:nrot,1:nr,1:nz)=undef
-        VRRnc_2d(nrotmin:nrot,1:nr,1:nz)=undef
+        VRTns_rt_t(nrotmin:nrot,1:nr,1:nt)=undef
+        VRTnc_rt_t(nrotmin:nrot,1:nr,1:nt)=undef
+        VRRns_rt_t(nrotmin:nrot,1:nr,1:nt)=undef
+        VRRnc_rt_t(nrotmin:nrot,1:nr,1:nt)=undef
         Vn_0_rt_t(1:nr,1:nt)=undef
 
         !-- B. do interpolation from nr_org, nt_org to smooth_r, smooth_t = (nr,nt)
@@ -449,13 +478,11 @@ program GVTDX_Dradar
   &                                         zetan=zetan_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
   &                                         VRT0_GVTD=VRT0_GVTD_rt_t(nr_in:nr_out,1:nt),  &
   &                                         VDR0_GVTD=VDR0_GVTD_rt_t(nr_in:nr_out,1:nt),  &
-  &                                         Vn_0=Vn_0_rt_t(nr_in:nr_out,1:nt),  &
-  &                                         VRTns_r=VRTns_2d(nrotmin:nrot,nr_in:nr_out,k),  &
-  &                                         VRTnc_r=VRTnc_2d(nrotmin:nrot,nr_in:nr_out,k),  &
-  &                                         VRRns_r=VRRns_2d(nrotmin:nrot,nr_in:nr_out,k),  &
-  &                                         VRRnc_r=VRRnc_2d(nrotmin:nrot,nr_in:nr_out,k),  &
-  &                                         zetans_r=zetans_2d(nrotmin:nrot,nr_in:nr_out,k),  &
-  &                                         zetanc_r=zetanc_2d(nrotmin:nrot,nr_in:nr_out,k) )
+  &                                         VRTns=VRTns_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
+  &                                         VRTnc=VRTnc_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
+  &                                         VRRns=VRRns_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
+  &                                         VRRnc=VRRnc_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
+  &                                         Vn_0=Vn_0_rt_t(nr_in:nr_out,1:nt) )
               end if
 
            case (2)  ! Run GVTD
@@ -504,15 +531,13 @@ program GVTDX_Dradar
   &                                   VDRm_rt_t(ndivmin:ndiv,nr_in:nr_out_skp,1:nt),  &
   &                                   VRT0_GVTD_rt_t(nr_in:nr_out_skp,1:nt),  &
   &                                   VDR0_GVTD_rt_t(nr_in:nr_out_skp,1:nt),  &
-  &                                   VRTns_2d(nrotmin:nrot,nr_in:nr_out_skp,k),  &
-  &                                   VRTnc_2d(nrotmin:nrot,nr_in:nr_out_skp,k),  &
-  &                                   VRRns_2d(nrotmin:nrot,nr_in:nr_out_skp,k),  &
-  &                                   VRRnc_2d(nrotmin:nrot,nr_in:nr_out_skp,k),  &
+  &                                   VRTns_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt),  &
+  &                                   VRTnc_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt),  &
+  &                                   VRRns_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt),  &
+  &                                   VRRnc_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt),  &
   &                                   Vn_0_rt_t(nr_in:nr_out_skp,1:nt),  &
   &                                   phin_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt),  &
-  &                                   zetan_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt),  &
-  &                                   zetans_2d(nrotmin:nrot,nr_in:nr_out_skp,k),  &
-  &                                   zetanc_2d(nrotmin:nrot,nr_in:nr_out_skp,k) )
+  &                                   zetan_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt) )
               nr_out=nr_out_skp
               r_t(nr_in:nr_out_skp)=r_skp_t(nr_in:nr_out_skp)
               rh_t(nr_in:nr_out_skp+1)=rh_skp_t(nr_in:nr_out_skp+1)
@@ -529,6 +554,10 @@ program GVTDX_Dradar
         VDR0(1:nr,1:nt,k)=VDR0_rt_t(1:nr,1:nt)
         VRT0_GVTD(1:nr,1:nt,k)=VRT0_GVTD_rt_t(1:nr,1:nt)
         VDR0_GVTD(1:nr,1:nt,k)=VDR0_GVTD_rt_t(1:nr,1:nt)
+        VRTns(nrotmin:nrot,1:nr,1:nt,k)=VRTns_rt_t(nrotmin:nrot,1:nr,1:nt)
+        VRTnc(nrotmin:nrot,1:nr,1:nt,k)=VRTnc_rt_t(nrotmin:nrot,1:nr,1:nt)
+        VRRns(nrotmin:nrot,1:nr,1:nt,k)=VRRns_rt_t(nrotmin:nrot,1:nr,1:nt)
+        VRRnc(nrotmin:nrot,1:nr,1:nt,k)=VRRnc_rt_t(nrotmin:nrot,1:nr,1:nt)
         Vn_0(1:nr,1:nt,k)=Vn_0_rt_t(1:nr,1:nt)
         VRTn(nrotmin:nrot,1:nr,1:nt,k)=VRTn_rt_t(nrotmin:nrot,1:nr,1:nt)
         VRRn(nrotmin:nrot,1:nr,1:nt,k)=VRRn_rt_t(nrotmin:nrot,1:nr,1:nt)
@@ -591,6 +620,26 @@ program GVTDX_Dradar
   &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
 
            irec=irec+ntz
+           call conv_d2r_3d( VRTns(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
+           call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
+  &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+
+           irec=irec+ntz
+           call conv_d2r_3d( VRTnc(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
+           call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
+  &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+
+           irec=irec+ntz
+           call conv_d2r_3d( VRRns(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
+           call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
+  &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+
+           irec=irec+ntz
+           call conv_d2r_3d( VRRnc(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
+           call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
+  &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+
+           irec=irec+ntz
            call conv_d2r_3d( phin(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
            call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
@@ -627,54 +676,6 @@ program GVTDX_Dradar
 !     call HistoryPut( trim(adjustl(valc)), varbar(1:nr,nnz(1):nnz(2)) )
 
      write(*,*) "Writing the data at "//trim(adjustl(output_fname))
-
-     !-- (5.1) output to 2d binary file (float)
-     if(out2d_flag.eqv..true.)then
-        output2d_fname=trim(adjustl(output_fname))//'.2d'
-        irec=1
-        call conv_d2r_2d( VRT0(1:nr,1,nnz(1):nnz(2)), rval2d(1:nr,nnz(1):nnz(2)) )
-        call write_file_2d( trim(adjustl(output2d_fname)), nr, ntz, irec,  &
-  &                         rval2d(1:nr,nnz(1):nnz(2)), mode='replace' )
-        irec=irec+1
-        call conv_d2r_2d( VDR0(1:nr,1,nnz(1):nnz(2)), rval2d(1:nr,nnz(1):nnz(2)) )
-        call write_file_2d( trim(adjustl(output2d_fname)), nr, ntz, irec,  &
-  &                         rval2d(1:nr,nnz(1):nnz(2)), mode='old' )
-        irec=irec+1
-        call conv_d2r_2d( VRT0_GVTD(1:nr,1,nnz(1):nnz(2)), rval2d(1:nr,nnz(1):nnz(2)) )
-        call write_file_2d( trim(adjustl(output2d_fname)), nr, ntz, irec,  &
-  &                         rval2d(1:nr,nnz(1):nnz(2)), mode='old' )
-        irec=irec+1
-        call conv_d2r_2d( VDR0_GVTD(1:nr,1,nnz(1):nnz(2)), rval2d(1:nr,nnz(1):nnz(2)) )
-        call write_file_2d( trim(adjustl(output2d_fname)), nr, ntz, irec,  &
-  &                         rval2d(1:nr,nnz(1):nnz(2)), mode='old' )
-
-        if(nrot>0)then
-           do k=1,nrot
-              irec=irec+1
-              call conv_d2r_2d( zetans_2d(k,1:nr,nnz(1):nnz(2)), rval2d(1:nr,nnz(1):nnz(2)) )
-              call write_file_2d( trim(adjustl(output2d_fname)), nr, ntz, irec,  &
-  &                               rval2d(1:nr,nnz(1):nnz(2)), mode='old' )
-              irec=irec+1
-              call conv_d2r_2d( VRTns_2d(k,1:nr,nnz(1):nnz(2)), rval2d(1:nr,nnz(1):nnz(2)) )
-              call write_file_2d( trim(adjustl(output2d_fname)), nr, ntz, irec,  &
-  &                               rval2d(1:nr,nnz(1):nnz(2)), mode='old' )
-              irec=irec+1
-              call conv_d2r_2d( VRTnc_2d(k,1:nr,nnz(1):nnz(2)), rval2d(1:nr,nnz(1):nnz(2)) )
-              call write_file_2d( trim(adjustl(output2d_fname)), nr, ntz, irec,  &
-  &                               rval2d(1:nr,nnz(1):nnz(2)), mode='old' )
-              irec=irec+1
-              call conv_d2r_2d( VRRns_2d(k,1:nr,nnz(1):nnz(2)), rval2d(1:nr,nnz(1):nnz(2)) )
-              call write_file_2d( trim(adjustl(output2d_fname)), nr, ntz, irec,  &
-  &                               rval2d(1:nr,nnz(1):nnz(2)), mode='old' )
-              irec=irec+1
-              call conv_d2r_2d( VRRnc_2d(k,1:nr,nnz(1):nnz(2)), rval2d(1:nr,nnz(1):nnz(2)) )
-              call write_file_2d( trim(adjustl(output2d_fname)), nr, ntz, irec,  &
-  &                               rval2d(1:nr,nnz(1):nnz(2)), mode='old' )
-           end do
-        end if
-     end if
-
-     write(*,*) "Writing the data at "//trim(adjustl(output2d_fname))
 
   end do
 

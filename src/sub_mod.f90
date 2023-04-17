@@ -2525,6 +2525,44 @@ end subroutine write_file_3d
 !--------------------------------------------------------------
 !--------------------------------------------------------------
 
+subroutine write_file_2d( file_name, nx, ny, rec_num, var, mode, funit )
+  !! write float data from 4-byte unformatted binary
+  implicit none
+  integer, intent(in) :: nx  !! data number in x
+  integer, intent(in) :: ny  !! data number in y
+  integer, intent(in) :: rec_num  !! record number for reading data
+  character(*), intent(in) :: file_name  !! file name
+  real, intent(in) :: var(nx,ny)  !! output data
+  character(*), optional, intent(in) :: mode  !! option for output
+  integer, intent(in), optional :: funit   !! file unit
+  integer :: i, j, unitn
+  character(10) :: cmode
+  integer, parameter :: bnum=4
+
+  cmode=''
+
+  if(present(funit))then
+     unitn=funit
+  else
+     unitn=11
+  end if
+
+  if(present(mode))then
+     cmode=mode
+  else
+     cmode='unknown'
+  end if
+
+  open(unit=unitn, file=trim(adjustl(file_name)), access='direct',  &
+  &    recl=bnum*nx*ny, status=trim(cmode))
+     write(unitn,rec=rec_num) ((var(i,j),i=1,nx),j=1,ny)
+  close(unit=unitn)
+
+end subroutine write_file_2d
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
 real function c2r_convert( cval )
   !! convert char to float
   implicit none

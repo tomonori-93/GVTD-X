@@ -1,6 +1,5 @@
 &iocheck
 listname = 'list_GVTDX.dat'  ! ASCII file name listing file name and other information
-out2d_flag = .true.  ! Flag for output of 2d (r-z) data
 nr_org = 400  ! the radial grid number of the original data
 nt_org = 512  ! the azimuthal grid number of the original data
 nz = 10       ! the vertical grid number of the original data

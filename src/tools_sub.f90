@@ -420,8 +420,9 @@ subroutine recover_undef_rad( nrotmin, nrot, ndivmin, ndiv,  &
   &                           VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                           VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t,  &
   &                           VRT0_GVTD_rt_t, VDR0_GVTD_rt_t,  &
-  &                           VRTns_rt_t, VRTnc_rt_t, VRRns_rt_t, VRRnc_rt_t,  &
-  &                           Vn_0_rt_t, phin_rt_t, zetan_rt_t )
+  &                           VRTns_r, VRTnc_r, VRRns_r, VRRnc_r,  &
+  &                           Vn_0_rt_t, phin_rt_t, zetan_rt_t,  &
+  &                           zetans_r, zetanc_r )
 !! recover the retrieved values from the rearranged to original radii.
   implicit none
   integer, intent(in) :: nrotmin     !! minimum wavenumber for rotational components
@@ -447,18 +448,22 @@ subroutine recover_undef_rad( nrotmin, nrot, ndivmin, ndiv,  &
   double precision, dimension(ndivmin:ndiv,nr_in:nr_out_org,1:nt), intent(inout) :: VDRm_rt_t
   double precision, dimension(nr_in:nr_out_org,1:nt), intent(inout) :: VRT0_GVTD_rt_t
   double precision, dimension(nr_in:nr_out_org,1:nt), intent(inout) :: VDR0_GVTD_rt_t
-  double precision, dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt), intent(inout) :: VRTns_rt_t
-  double precision, dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt), intent(inout) :: VRTnc_rt_t
-  double precision, dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt), intent(inout) :: VRRns_rt_t
-  double precision, dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt), intent(inout) :: VRRnc_rt_t
+  double precision, dimension(nrotmin:nrot,nr_in:nr_out_org), intent(inout) :: VRTns_r
+  double precision, dimension(nrotmin:nrot,nr_in:nr_out_org), intent(inout) :: VRTnc_r
+  double precision, dimension(nrotmin:nrot,nr_in:nr_out_org), intent(inout) :: VRRns_r
+  double precision, dimension(nrotmin:nrot,nr_in:nr_out_org), intent(inout) :: VRRnc_r
   double precision, dimension(nr_in:nr_out_org,1:nt), intent(inout) :: Vn_0_rt_t
   double precision, dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt), intent(inout) :: phin_rt_t
   double precision, dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt), intent(inout) :: zetan_rt_t
+  double precision, dimension(nrotmin:nrot,nr_in:nr_out_org), intent(inout) :: zetans_r
+  double precision, dimension(nrotmin:nrot,nr_in:nr_out_org), intent(inout) :: zetanc_r
 
   integer :: rcounter, tcounter, ii, jj
   double precision, dimension(nr_in:nr_out_org,1:nt) :: VTtot_skp_rt_t, VRtot_skp_rt_t, VRT0_skp_rt_t, VDR0_skp_rt_t, VRT0_GVTD_skp_rt_t, VDR0_GVTD_skp_rt_t, Vn_0_skp_rt_t
-  double precision, dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt) :: VRTn_skp_rt_t, VRRn_skp_rt_t, VRTns_skp_rt_t, VRTnc_skp_rt_t, VRRns_skp_rt_t, VRRnc_skp_rt_t
+  double precision, dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt) :: VRTn_skp_rt_t, VRRn_skp_rt_t
+  double precision, dimension(nrotmin:nrot,nr_in:nr_out_org) :: VRTns_skp_r, VRTnc_skp_r, VRRns_skp_r, VRRnc_skp_r
   double precision, dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt) :: phin_skp_rt_t, zetan_skp_rt_t
+  double precision, dimension(nrotmin:nrot,nr_in:nr_out_org) :: zetans_skp_r, zetanc_skp_r
   double precision, dimension(ndivmin:ndiv,nr_in:nr_out_org,1:nt) :: VDTm_skp_rt_t, VDRm_skp_rt_t
 
   VTtot_skp_rt_t(nr_in:nr_out_org,1:nt)=VTtot_rt_t(nr_in:nr_out_org,1:nt)
@@ -471,13 +476,15 @@ subroutine recover_undef_rad( nrotmin, nrot, ndivmin, ndiv,  &
   VDRm_skp_rt_t(ndivmin:ndiv,nr_in:nr_out_org,1:nt)=VDRm_rt_t(ndivmin:ndiv,nr_in:nr_out_org,1:nt)
   VRT0_GVTD_skp_rt_t(nr_in:nr_out_org,1:nt)=VRT0_GVTD_rt_t(nr_in:nr_out_org,1:nt)
   VDR0_GVTD_skp_rt_t(nr_in:nr_out_org,1:nt)=VDR0_GVTD_rt_t(nr_in:nr_out_org,1:nt)
-  VRTns_skp_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)=VRTns_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)
-  VRTnc_skp_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)=VRTnc_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)
-  VRRns_skp_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)=VRRns_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)
-  VRRnc_skp_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)=VRRnc_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)
+  VRTns_skp_r(nrotmin:nrot,nr_in:nr_out_org)=VRTns_r(nrotmin:nrot,nr_in:nr_out_org)
+  VRTnc_skp_r(nrotmin:nrot,nr_in:nr_out_org)=VRTnc_r(nrotmin:nrot,nr_in:nr_out_org)
+  VRRns_skp_r(nrotmin:nrot,nr_in:nr_out_org)=VRRns_r(nrotmin:nrot,nr_in:nr_out_org)
+  VRRnc_skp_r(nrotmin:nrot,nr_in:nr_out_org)=VRRnc_r(nrotmin:nrot,nr_in:nr_out_org)
   Vn_0_skp_rt_t(nr_in:nr_out_org,1:nt)=Vn_0_rt_t(nr_in:nr_out_org,1:nt)
   phin_skp_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)=phin_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)
   zetan_skp_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)=zetan_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)
+  zetans_skp_r(nrotmin:nrot,nr_in:nr_out_org)=zetans_r(nrotmin:nrot,nr_in:nr_out_org)
+  zetanc_skp_r(nrotmin:nrot,nr_in:nr_out_org)=zetanc_r(nrotmin:nrot,nr_in:nr_out_org)
 
   VTtot_rt_t(nr_in:nr_out_org,1:nt)=undef
   VRtot_rt_t(nr_in:nr_out_org,1:nt)=undef
@@ -489,13 +496,15 @@ subroutine recover_undef_rad( nrotmin, nrot, ndivmin, ndiv,  &
   VDRm_rt_t(ndivmin:ndiv,nr_in:nr_out_org,1:nt)=undef
   VRT0_GVTD_rt_t(nr_in:nr_out_org,1:nt)=undef
   VDR0_GVTD_rt_t(nr_in:nr_out_org,1:nt)=undef
-  VRTns_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)=undef
-  VRTnc_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)=undef
-  VRRns_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)=undef
-  VRRnc_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)=undef
+  VRTns_r(nrotmin:nrot,nr_in:nr_out_org)=undef
+  VRTnc_r(nrotmin:nrot,nr_in:nr_out_org)=undef
+  VRRns_r(nrotmin:nrot,nr_in:nr_out_org)=undef
+  VRRnc_r(nrotmin:nrot,nr_in:nr_out_org)=undef
   Vn_0_rt_t(nr_in:nr_out_org,1:nt)=undef
   phin_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)=undef
   zetan_rt_t(nrotmin:nrot,nr_in:nr_out_org,1:nt)=undef
+  zetans_r(nrotmin:nrot,nr_in:nr_out_org)=undef
+  zetanc_r(nrotmin:nrot,nr_in:nr_out_org)=undef
 
   do jj=nr_out,nr_in,-1
      VRT0_rt_t(nn_grid(jj),1:nt)=VRT0_skp_rt_t(jj,1:nt)
@@ -518,13 +527,15 @@ subroutine recover_undef_rad( nrotmin, nrot, ndivmin, ndiv,  &
               VRRn_rt_t(nrotmin:nrot,nn_grid(jj),ii)=VRRn_skp_rt_t(nrotmin:nrot,jj,ii)
            end if
         end do
-        VRTns_rt_t(nrotmin:nrot,nn_grid(jj),1:nt)=VRTns_skp_rt_t(nrotmin:nrot,jj,1:nt)
-        VRTnc_rt_t(nrotmin:nrot,nn_grid(jj),1:nt)=VRTnc_skp_rt_t(nrotmin:nrot,jj,1:nt)
-        VRRns_rt_t(nrotmin:nrot,nn_grid(jj),1:nt)=VRRns_skp_rt_t(nrotmin:nrot,jj,1:nt)
-        VRRnc_rt_t(nrotmin:nrot,nn_grid(jj),1:nt)=VRRnc_skp_rt_t(nrotmin:nrot,jj,1:nt)
+        VRTns_r(nrotmin:nrot,nn_grid(jj))=VRTns_skp_r(nrotmin:nrot,jj)
+        VRTnc_r(nrotmin:nrot,nn_grid(jj))=VRTnc_skp_r(nrotmin:nrot,jj)
+        VRRns_r(nrotmin:nrot,nn_grid(jj))=VRRns_skp_r(nrotmin:nrot,jj)
+        VRRnc_r(nrotmin:nrot,nn_grid(jj))=VRRnc_skp_r(nrotmin:nrot,jj)
         Vn_0_rt_t(nn_grid(jj),1:nt)=Vn_0_skp_rt_t(jj,1:nt)
         phin_rt_t(nrotmin:nrot,nn_grid(jj),1:nt)=phin_skp_rt_t(nrotmin:nrot,jj,1:nt)
         zetan_rt_t(nrotmin:nrot,nn_grid(jj),1:nt)=zetan_skp_rt_t(nrotmin:nrot,jj,1:nt)
+        zetans_r(nrotmin:nrot,nn_grid(jj))=zetans_skp_r(nrotmin:nrot,jj)
+        zetanc_r(nrotmin:nrot,nn_grid(jj))=zetanc_skp_r(nrotmin:nrot,jj)
      end do
   end if
 
