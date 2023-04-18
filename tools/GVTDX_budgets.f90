@@ -10,9 +10,6 @@ program GVTDX_budgets
 !! [USAGE]: ./GVTDX_budgets < GVTDX_budgets.nml
 
   use GVTDX_sub
-  use GVTDX_main, only : Retrieve_velocity_GVTDX
-  use GVTD_main, only : Retrieve_velocity_GVTD
-  use GBVTD_main, only : Retrieve_velocity_GBVTD
   use tools_sub
 
   implicit none
@@ -314,10 +311,10 @@ program GVTDX_budgets
      call calc_AAM( nrot, r_t, rh_t, )
 
      !-- 2. Calculate vorticity budget
-     call calc_vort()
+     call calc_vort( nrot, r_t, rh_t, )
 
-     !-- 3. Calculate enstrophy budget
-     call calc_enst()
+!     !-- 3. Calculate enstrophy budget
+!     call calc_enst()
 
      !-- Read the vortex center position on lon-lat
      x_tc=dble( c2r_convert( trim(adjustl(cval(3,i))) ) )
@@ -682,5 +679,129 @@ program GVTDX_budgets
   close(unit=100)
 
 !  call HistoryClose
+
+contains
+
+subroutine calc_AAM( nw, f0, r, rh, z, UD0, VR0, w0, Uns, Unc, Vns, Vnc, undef,  & ! in
+  &                  dVR0dt, HADVAX, HADVAS, VADVAX )  ! out
+!! Perform budget analysis of V0
+  integer, intent(in) :: nw  ! wavenumber for rotating component
+  double precision, intent(in) :: f0    !! Coriolis parameter (1/s)
+  double precision, intent(in) :: r(:)  !! Radius at which velocity is defined (m)
+  double precision, intent(in) :: rh(size(r)+1)  !! Staggered radius at which scalar is defined (m)
+  double precision, intent(in) :: z(:)  !! Height at which velocity is defined (m)
+  double precision, intent(in) :: UD0(size(r),size(z))   !! Divergent zero wind component (m/s)
+  double precision, intent(in) :: VR0(size(r),size(z))   !! Rotating zero wind component (m/s)
+  double precision, intent(in) :: w0(size(r),size(z))    !! Vertical zero wind component (m/s)
+  double precision, intent(in) :: Uns(nw,size(r),size(z))   !! Sine coefficient for asymmetric radial winds (m/s)
+  double precision, intent(in) :: Unc(nw,size(r),size(z))   !! Cosine coefficient for asymmetric radial winds (m/s)
+  double precision, intent(in) :: zetans(nw,size(r),size(z))   !! Sine coefficient for asymmetric vorticity (1/s)
+  double precision, intent(in) :: zetanc(nw,size(r),size(z))   !! Cosine coefficient for asymmetric vorticity (1/s)
+  double precision, intent(in) :: undef  !! Undefined value
+  double precision, intent(out) :: dVR0dt(size(r),size(z))   !! Sum of the budget equation (m/s2)
+  double precision, intent(out) :: HADVAX(size(r),size(z))   !! Horizontal advection for axisymmetric flows (m/s2)
+  double precision, intent(out) :: HADVAS(nw,size(r),size(z))  !! Horizontal advection for asymmetric flows (m/s2)
+  double precision, intent(out) :: VADVAX(size(r),size(z))   !! Vertical advection for axisymmetric flows (m/s2)
+
+  !-- internal variables
+  integer :: ii, jj, kk, nnr, nnz
+  double precision :: r_inv(size(r))
+  double precision, dimension(size(r),size(z)) :: tmp_dVR0dt, tmp_HADVAX, tmp_VADVAX
+  double precision, dimension(size(r),size(z)) :: zeta0, dv0dz
+  double precision :: tmp_HADVAS(nw,size(r),size(z))
+
+  nnr=size(r)
+  nnz=size(z)
+
+  tmp_dVR0dt=undef
+  tmp_HADVAX=undef
+  tmp_HADVAS=undef
+  tmp_VADVAX=undef
+
+  r_inv=0.0d0
+  do ii=1,nnr
+     if(r(ii)/=0.0d0)then
+        r_inv(ii)=1.0d0/r(ii)
+     end if
+  end do
+
+!$omp parallel default(shared)
+!$omp do schedule(runtime) private(ii)
+
+  !-- calculate dV0/dz
+  do ii=1,nnr
+     call grad_1d( z, VR0(ii,1:nnz), dv0dz(ii,1:nnz), undef=undef )
+  end do
+
+!$omp end do
+!$omp barrier
+!$omp do schedule(runtime) private(kk)
+
+  !-- calculate dV0/dr
+  do kk=1,nnz
+     call grad_1d( r, VR0(1:nnr,kk), zeta0(1:nnr,kk), undef=undef )
+  end do
+
+!$omp end do
+!$omp barrier
+!$omp do schedule(runtime) private(ii,jj,kk)
+
+  do kk=1,nnz
+     do ii=1,nnr
+        do jj=1,nw
+           if(Unc(jj,ii,kk)/=undef.and.zetanc(jj,ii,kk)/=undef.and.  &
+  &           Uns(jj,ii,kk)/=undef.and.zetans(jj,ii,kk)/=undef.and.  &
+              tmp_HADVAS(jj,ii,kk)=-0.5d0*(Unc(jj,ii,kk)*zetanc(jj,ii,kk)  &
+  &                                       +Uns(jj,ii,kk)*zetans(jj,ii,kk))
+           end if
+        end do
+     end do
+  end do
+
+!$omp end do
+!$omp barrier
+!$omp do schedule(runtime) private(ii,kk)
+
+  do kk=1,nnz
+     do ii=1,nnr
+        if(UD0(ii,kk)/=undef.and.zeta0(ii,kk)/=undef.and.  &
+  &        r(ii)/=0.0d0.and.VR0(ii,kk)/=undef)then
+           tmp_HADVAX(ii,kk)=-UD0(ii,kk)*(zeta0(ii,kk)+VR0(ii,kk)*r_inv(ii)+f0)
+        end if
+        if(w0(ii,kk)/=undef.and.dv0dz(ii,kk)/=undef)then
+           tmp_VADVAX(ii,kk)=-w0(ii,kk)*dv0dz(ii,kk)
+        end if
+     end do
+  end do
+
+!$omp end do
+!$omp end parallel
+
+!-- Return each argument
+
+  HADVAX=tmp_HADVAX
+  HADVAS=tmp_HADVAS
+  VADVAX=tmp_VADVAX
+
+  tmp_dVT0dt=tmp_HADVAX
+
+  call add_2dd( tmp_dVT0dt, tmp_VADVAX, undef=undef )
+  do jj=1,nw
+     call add_2dd( tmp_dVT0dt, tmp_HADVAS(jj,1:nnr,1:nnz), undef=undef )
+  end do
+
+  dVT0dt=tmp_dVT0dt
+
+end subroutine calc_AAM
+
+!--------------------------------
+!--------------------------------
+
+subroutine calc_vort( nw, f0, r, rh, zetans, zetanc, Uns, Unc, Vns, Vnc, undef,  & ! in
+  &                   dzdt,  )  ! out
+!! Perform budget analysis of vorticity
+
+
+end subroutine calc_vort
 
 end program
