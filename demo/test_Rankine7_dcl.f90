@@ -7,6 +7,7 @@ program test_Rankine7
   use GVTDX_main
   use GVTD_main
   use GBVTD_main
+  use tools_sub
 !  use GVTDX_main2
 
   implicit none
@@ -22,6 +23,8 @@ program test_Rankine7
   integer :: IWS, tone_grid, cmap
   integer :: contour_num, contour_num2, contour_num3
   integer :: shade_num, min_tab, max_tab
+  integer :: skip_min_t        !! threshold of the azimuthal sampling number to determine unused radii
+  integer :: nthres_undef(2)   !! thresholds of the azimuthal sampling number to determine the (1) innermost and (2) outermost radii, respectively
   integer, dimension(80) :: fix_col
   integer, dimension(20) :: fixc_idx, fixc_typ, fixc_idx2, fixc_typ2, fixc_idx3, fixc_typ3
   real, dimension(80) :: fix_val
@@ -41,6 +44,8 @@ program test_Rankine7
 
 !-- internal
   integer :: i, j, k, cstat
+  integer :: nrotmin, ndivmin
+  integer :: nr_in, nr_out
   double precision :: d2r, r2d, rad_tc
   double precision :: Usrn(2), Vsrn(2), Vra1d, thetad_tc
   double precision, dimension(2) :: vx_new, vy_new
@@ -61,6 +66,12 @@ program test_Rankine7
   double precision, allocatable, dimension(:,:,:) :: phin_rt_t, phin_xyd, zetan_rt_t
   double precision, allocatable, dimension(:,:,:) :: VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t
 
+  integer :: nr_out_skp
+  integer, allocatable, dimension(:) :: nr_grid_skp
+  double precision, allocatable, dimension(:) :: r_skp_t, rh_skp_t
+  double precision, allocatable, dimension(:,:) :: tdr_skp_t, Vra_skp_rt_t
+  double precision, allocatable, dimension(:,:) :: dummy_rt, dummy_kr
+
   real :: dundef
   real, allocatable, dimension(:) :: draw_xd, draw_yd
   real, allocatable, dimension(:,:) :: draw_Vt, draw_Vr, draw_Vt_ret, draw_Vr_ret
@@ -69,6 +80,7 @@ program test_Rankine7
   real, allocatable, dimension(:,:,:) :: draw_phin
   character(20) :: cvtmax, cvrmax, cvamax
   character(1) :: tmpk
+  logical, allocatable, dimension(:,:) :: undef_grid
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
   &                us, vs, nrot, ndiv, ropt, nrdiv, rdiv, flag_GVTDX
@@ -77,7 +89,8 @@ program test_Rankine7
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
   &                 r_tmin, r_tmax, t_tmin, t_tmax
   namelist /pos_info /tc_xd, tc_yd, ra_xd, ra_yd
-  namelist /missing_info /nmiss, irmin_miss, irmax_miss, itmin_miss, itmax_miss
+  namelist /missing_info /nmiss, irmin_miss, irmax_miss, itmin_miss, itmax_miss,  &
+  &                       skip_min_t, nthres_undef
   namelist /draw_info /IWS, tone_grid, cmap, col_rev,  &
   &                    contour_num, fixc_val, fixc_idx, fixc_typ, form_typec,  &
   &                    contour_num2, fixc_val2, fixc_idx2, fixc_typ2, form_typec2,  &
@@ -96,6 +109,17 @@ program test_Rankine7
 
   if(flag_GVTDX/=1)then
      nrot=3
+  end if
+
+  if(nrot==0)then
+     nrotmin=0
+  else
+     nrotmin=1
+  end if
+  if(ndiv==0)then
+     ndivmin=0
+  else
+     ndivmin=1
   end if
 
 !-- Allocate and assign variables for coordinates
@@ -151,6 +175,15 @@ program test_Rankine7
   allocate(rot_xyd(nxd,nyd),stat=cstat)  ! rotation on X-Y coordinate
   allocate(phin_xyd(nrot,nxd,nyd),stat=cstat)  ! phin on X-Y coordinate
   allocate(zeta_xyd(nxd,nyd),stat=cstat)  ! zeta_tot on X-Y coordinate
+
+  allocate(nr_grid_skp(nr_t))
+  allocate(rh_skp_t(nr_t))
+  allocate(r_skp_t(nr_t+1))
+  allocate(tdr_skp_t(nr_t,nt_t))
+  allocate(Vra_skp_rt_t(nr_t,nt_t))
+  allocate(undef_grid(nr_t,nt_t))
+  allocate(dummy_rt(nr_t,nt_t))
+  allocate(dummy_kr(nrotmin:nrot,nr_t))
 
   !-- For drawing variables
   allocate(draw_xd(nxd),stat=cstat)
@@ -269,26 +302,124 @@ write(*,*) "val check", Vra1d
   &               itmin_miss(1:nmiss), itmax_miss(1:nmiss),  &
   &               Vra_rt_t, undef=undef )
 
+  nr_in=check_data_fulfill( Vra_rt_t(1:nr_t,1:nt_t), undef,  &
+  &                         nt_count=nthres_undef(1), dir="i2o" )
+  if(nr_in/=0)then  ! if there is no radius with sufficient sampling, the retrieval is not performed.
+
+     !-- check the positive value of r_t(nr_in)
+     nr_in=inner_radius_check( nr_in, nr_t, rh_t(nr_in:nr_t) )
+!write(*,*) "nr", nr_in, ntin_c
+     !-- D.2. check the outermost radius index
+     nr_out=check_data_fulfill( Vra_rt_t(1:nr_t,1:nt_t), undef, &
+  &                             nt_count=nthres_undef(2), dir="o2i" )
+
+     !-- (opt): activate the undef flag for each grid with undef
+     call check_undef_grid( Vra_rt_t, undef, undef_grid )
+
+     if(skip_min_t>0)then
+        !-- skip undefined radii
+        !-- _skp_: the original variables before the rearrangement
+        nr_out_skp=nr_out
+        rh_skp_t(1:nr_t)=rh_t(1:nr_t)
+        r_skp_t(1:nr_t+1)=r_t(1:nr_t+1)
+        tdr_skp_t(1:nr_t,1:nt_t)=tdr_t(1:nr_t,1:nt_t)
+        Vra_skp_rt_t(1:nr_t,1:nt_t)=Vra_rt_t(1:nr_t,1:nt_t)
+        call rearrange_undef_rad( skip_min_t, nr_in, nr_out_skp, nt_t,  &
+  &                               undef_grid(nr_in:nr_out_skp,1:nt_t),  &
+  &                               rh_skp_t(nr_in:nr_out_skp),  &
+  &                               r_skp_t(nr_in:nr_out_skp+1),  &
+  &                               tdr_skp_t(nr_in:nr_out_skp,1:nt_t),  &
+  &                               Vra_skp_rt_t(nr_in:nr_out_skp,1:nt_t),  &
+  &                               nr_out, nr_grid_skp(nr_in:nr_out_skp),  &  ! 調整後
+  &                               rh_t(nr_in:nr_out_skp),  &
+  &                               r_t(nr_in:nr_out_skp+1),  &
+  &                               tdr_t(nr_in:nr_out_skp,1:nt_t),  &
+  &                               Vra_rt_t(nr_in:nr_out_skp,1:nt_t) )
+        write(*,*) "rearrange (nr_out): ", nr_out_skp, nr_out, nr_grid_skp
+     end if
+  end if
+
   select case (flag_GVTDX)
   case (1)  ! GVTDX
-     call Retrieve_velocity_GVTDX( nrot, ndiv, rh_t, t_t, r_t, tdr_t, rdiv(1:nrdiv),  &
-  &                                Vra_rt_t, Vsrn(2), rad_tc,  &
-  &                                VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
-  &                                VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t,  &
-  &                                undef=undef, phin=phin_rt_t, zetan=zetan_rt_t,  &
-  &                                zetans_r=zetans_r, zetanc_r=zetanc_r )
+     call Retrieve_velocity_GVTDX( nrot, ndiv, rh_t(nr_in:nr_out), t_t,  &
+  &                                r_t(nr_in:nr_out+1),  &
+  &                                tdr_t(nr_in:nr_out,1:nt_t), rdiv(1:nrdiv),  &
+  &                                Vra_rt_t(nr_in:nr_out,1:nt_t), Vsrn(2), rad_tc,  &
+  &                                VTtot_rt_t(nr_in:nr_out,1:nt_t),  &
+  &                                VRtot_rt_t(nr_in:nr_out,1:nt_t),  &
+  &                                VRT0_rt_t(nr_in:nr_out,1:nt_t),  &
+  &                                VDR0_rt_t(nr_in:nr_out,1:nt_t),  &
+  &                                VRTn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
+  &                                VRRn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
+  &                                VDTm_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
+  &                                VDRm_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
+  &                                undef=undef,  &
+  &                                phin=phin_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
+  &                                zetan=zetan_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
+  &                                zetans_r=zetans_r(nrotmin:nrot,nr_in:nr_out),  &
+  &                                zetanc_r=zetanc_r(nrotmin:nrot,nr_in:nr_out) )
   case (2)  ! GVTD
-     call Retrieve_velocity_GVTD( nrot, rh_t, t_t, tdr_t, Vra_rt_t,  &
+     call Retrieve_velocity_GVTD( nrot, rh_t(nr_in:nr_out), t_t,  &
+  &                               tdr_t(nr_in:nr_out,1:nt_t),  &
+  &                               Vra_rt_t(nr_in:nr_out,1:nt_t),  &
   &                               rad_tc,  &
-  &                               VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
-  &                               VRTn_rt_t, VRRn_rt_t, undef )
+  &                               VTtot_rt_t(nr_in:nr_out,1:nt_t),  &
+  &                               VRtot_rt_t(nr_in:nr_out,1:nt_t),  &
+  &                               VRT0_rt_t(nr_in:nr_out,1:nt_t),  &
+  &                               VDR0_rt_t(nr_in:nr_out,1:nt_t),  &
+  &                               VRTn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
+  &                               VRRn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
+  &                               undef )
   case (3)  ! GBVTD
-     call Retrieve_velocity_GBVTD( nrot, rh_t, t_t, tdr_t, Vra_rt_t,  &
+     call Retrieve_velocity_GBVTD( nrot, rh_t(nr_in:nr_out), t_t,  &
+  &                                tdr_t(nr_in:nr_out,1:nt_t),  &
+  &                                Vra_rt_t(nr_in:nr_out,1:nt_t),  &
   &                                rad_tc,  &
-  &                                VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
-  &                                VRTn_rt_t, VRRn_rt_t, undef )
+  &                                VTtot_rt_t(nr_in:nr_out,1:nt_t),  &
+  &                                VRtot_rt_t(nr_in:nr_out,1:nt_t),  &
+  &                                VRT0_rt_t(nr_in:nr_out,1:nt_t),  &
+  &                                VDR0_rt_t(nr_in:nr_out,1:nt_t),  &
+  &                                VRTn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
+  &                                VRRn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
+  &                                undef )
   end select
+
   call stdout( "Retrieved velocity.", "main", 0 )
+
+  !-- recover retrieved data on the rearranged radii to the original radii
+  if(skip_min_t>0)then
+     !-- _skp_: the original variables before the rearrangement
+     !-- _rt_t, intent(inout): replace the index in the rearranged with the original index
+     !-- From the above reasons, the element numbers are given from nr_in to nr_out_skp (not nr_out)
+     call recover_undef_rad( nrotmin, nrot, ndivmin, ndiv,  &
+  &                          nr_in, nr_out, nr_out_skp, nt_t,  &
+  &                          undef, undef_grid(nr_in:nr_out_skp,1:nt_t),  &
+  &                          nr_grid_skp(nr_in:nr_out_skp),  &
+  &                          VTtot_rt_t(nr_in:nr_out_skp,1:nt_t),  &
+  &                          VRtot_rt_t(nr_in:nr_out_skp,1:nt_t),  &
+  &                          VRT0_rt_t(nr_in:nr_out_skp,1:nt_t),  &
+  &                          VDR0_rt_t(nr_in:nr_out_skp,1:nt_t),  &
+  &                          VRTn_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt_t),  &
+  &                          VRRn_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt_t),  &
+  &                          VDTm_rt_t(ndivmin:ndiv,nr_in:nr_out_skp,1:nt_t),  &
+  &                          VDRm_rt_t(ndivmin:ndiv,nr_in:nr_out_skp,1:nt_t),  &
+  &                          dummy_rt(nr_in:nr_out_skp,1:nt_t),  &
+  &                          dummy_rt(nr_in:nr_out_skp,1:nt_t),  &
+  &                          dummy_kr(nrotmin:nrot,nr_in:nr_out_skp),  &
+  &                          dummy_kr(nrotmin:nrot,nr_in:nr_out_skp),  &
+  &                          dummy_kr(nrotmin:nrot,nr_in:nr_out_skp),  &
+  &                          dummy_kr(nrotmin:nrot,nr_in:nr_out_skp),  &
+  &                          dummy_kr(nr_in:nr_out_skp,1:nt_t),  &
+  &                          phin_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt_t),  &
+  &                          zetan_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt_t),  &
+  &                          dummy_kr(nrotmin:nrot,nr_in:nr_out_skp),  &
+  &                          dummy_kr(nrotmin:nrot,nr_in:nr_out_skp) )
+     nr_out=nr_out_skp
+     rh_t(nr_in:nr_out_skp)=rh_skp_t(nr_in:nr_out_skp)
+     r_t(nr_in:nr_out_skp+1)=r_skp_t(nr_in:nr_out_skp+1)
+     tdr_t(nr_in:nr_out_skp,1:nt_t)=tdr_skp_t(nr_in:nr_out_skp,1:nt_t)
+     Vra_rt_t(nr_in:nr_out_skp,1:nt_t)=Vra_skp_rt_t(nr_in:nr_out_skp,1:nt_t)
+  end if
 
 !-- converting (r_t,t_ref_t) -> (xd,yd)
   call proj_VtVr2Vrart( rh_t, t_t, tdr_t, VTtot_rt_t, VRtot_rt_t, Vratot_rt_t, undef=undef )
