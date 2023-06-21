@@ -1,4 +1,4 @@
-program test_Rankine1
+program test_Rankine7
 !-- A retrieval program for a 2-dim analytical vortex
 
   use dcl
@@ -13,11 +13,12 @@ program test_Rankine1
 
   integer, parameter :: nvp_max=100
   integer, parameter :: nrdiv_max=100
+  integer, parameter :: nmiss_max=100
 
 !-- namelist
   integer :: flag_GVTDX
   integer :: nvp, nup, nxd, nyd, nr_d, nr_t, nt_d, nt_t
-  integer :: nrot, ndiv, nrdiv
+  integer :: nrot, ndiv, nrdiv, nmiss
   integer :: IWS, tone_grid, cmap
   integer :: contour_num, contour_num2, contour_num3
   integer :: shade_num, min_tab, max_tab
@@ -34,6 +35,7 @@ program test_Rankine1
   double precision :: rvmax, vmax, c1u, c2u
   double precision :: vp(nvp_max), up(nvp_max), vpa(nvp_max), upa(nvp_max)
   double precision, dimension(nrdiv_max) :: rdiv
+  integer, dimension(nmiss_max) :: irmin_miss, irmax_miss, itmin_miss, itmax_miss
   character(20) :: form_typec, form_typec2, form_typec3, form_types
   logical :: col_rev, ropt
 
@@ -75,6 +77,7 @@ program test_Rankine1
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
   &                 r_tmin, r_tmax, t_tmin, t_tmax
   namelist /pos_info /tc_xd, tc_yd, ra_xd, ra_yd
+  namelist /missing_info /nmiss, irmin_miss, irmax_miss, itmin_miss, itmax_miss
   namelist /draw_info /IWS, tone_grid, cmap, col_rev,  &
   &                    contour_num, fixc_val, fixc_idx, fixc_typ, form_typec,  &
   &                    contour_num2, fixc_val2, fixc_idx2, fixc_typ2, form_typec2,  &
@@ -85,6 +88,7 @@ program test_Rankine1
   read(5,nml=input)
   read(5,nml=domain)
   read(5,nml=pos_info)
+  read(5,nml=missing_info)
   read(5,nml=draw_info)
 
   d2r=pi/180.0d0
@@ -259,6 +263,11 @@ program test_Rankine1
   &                    undef=undef, undefg=undef, stdopt=.true. )
   call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
 write(*,*) "val check", Vra1d
+
+!-- Setting missing regions
+  call make_miss( nmiss, irmin_miss(1:nmiss), irmax_miss(1:nmiss),  &
+  &               itmin_miss(1:nmiss), itmax_miss(1:nmiss),  &
+  &               Vra_rt_t, undef=undef )
 
   select case (flag_GVTDX)
   case (1)  ! GVTDX
@@ -681,5 +690,36 @@ write(*,*) "val check", Vra1d
   end if
 
   call DclCloseGraphics
+
+contains
+
+  subroutine make_miss( miss_num, irad_min, irad_max, itheta_min, itheta_max,  &
+                        Vd, undef )
+  !! Setting artificial undefined grids
+  !! [NOTE] : the areas must be specified by grid indices.
+  implicit none
+  integer, intent(in) :: miss_num  !! areas for missing grids
+  integer, intent(in) :: irad_min(miss_num)  !! innermost radii for the areas
+  integer, intent(in) :: irad_max(miss_num)  !! outermost radii for the areas
+  integer, intent(in) :: itheta_min(miss_num)  !! minimum angles for the areas
+  integer, intent(in) :: itheta_max(miss_num)  !! maximum angles for the areas
+  double precision, intent(inout) :: Vd(:,:)  !! Doppler velocity (m/s)
+  double precision, intent(in) :: undef  ! undefined value
+  integer :: ii, jj, kk, ir, jt
+
+  ir=size(Vd,1)
+  jt=size(Vd,2)
+
+  if(miss_num>0)then
+     do kk=1,miss_num
+        do jj=itheta_min(kk),itheta_max(kk)
+           do ii=irad_min(kk),irad_max(kk)
+              Vd(ii,jj)=undef
+           end do
+        end do
+     end do
+  end if
+
+end subroutine make_miss
 
 end program

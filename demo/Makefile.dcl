@@ -26,7 +26,8 @@ SRCD	=  \
 	  test_Rankine2_dcl.f90 \
 	  test_Rankine3_dcl.f90 \
 	  test_Rankine4_dcl.f90 \
-	  test_Rankine6_dcl.f90
+	  test_Rankine6_dcl.f90 \
+	  test_Rankine7_dcl.f90
 #SRCN	=  \
 #	  test_Rankine1_nc.f90 \
 #	  test_Rankine2_nc.f90 \
@@ -42,7 +43,8 @@ TARGETD	=  \
 	  test_Rankine2_dcl \
 	  test_Rankine3_dcl \
 	  test_Rankine4_dcl \
-	  test_Rankine6_dcl
+	  test_Rankine6_dcl \
+	  test_Rankine7_dcl
 #TARGETN	=  \
 #	  test_Rankine1_nc \
 #	  test_Rankine2_nc \
