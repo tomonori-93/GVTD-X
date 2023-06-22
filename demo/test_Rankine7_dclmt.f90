@@ -294,13 +294,6 @@ program test_Rankine7
 
   call stdout( "Converted r-t -> x-y.", "main", 0 )
 
-!-- Retrieving all components of horizontal winds (VRT, VRR, VDT, and VDR) from Vd
-  call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )  ! Vd - proj(Vs)
-  call cart_conv_scal( rh_t, t_ref_t, Vra_rt_t, xd, yd, tc_xd, tc_yd, Vra_xyd,  &
-  &                    undef=undef, undefg=undef, stdopt=.true. )
-  call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
-write(*,*) "val check", Vra1d
-
 !-- Adding random noise of the Gaussian distribution
   if(random_flag.eqv..true.)then
      if(len_trim(adjustl(noise_fname))>0)then
@@ -310,6 +303,13 @@ write(*,*) "val check", Vra1d
         call add_random( Vra_rt_t, sig_Vd, undef=undef )
      end if
   end if
+
+!-- Retrieving all components of horizontal winds (VRT, VRR, VDT, and VDR) from Vd
+  call subst_2d( Vra_rt_t, Vsra_rt_t, undef=undef )  ! Vd - proj(Vs)
+  call cart_conv_scal( rh_t, t_ref_t, Vra_rt_t, xd, yd, tc_xd, tc_yd, Vra_xyd,  &
+  &                    undef=undef, undefg=undef, stdopt=.true. )
+  call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
+write(*,*) "val check", Vra1d
 
 !-- Setting missing regions
   if(nmiss>0)then
