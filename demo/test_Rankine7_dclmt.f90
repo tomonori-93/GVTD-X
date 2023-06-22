@@ -38,9 +38,11 @@ program test_Rankine7
   double precision :: rvmax, vmax, c1u, c2u
   double precision :: vp(nvp_max), up(nvp_max), vpa(nvp_max), upa(nvp_max)
   double precision, dimension(nrdiv_max) :: rdiv
+  double precision :: sig_Vd
   integer, dimension(nmiss_max) :: irmin_miss, irmax_miss, itmin_miss, itmax_miss
   character(20) :: form_typec, form_typec2, form_typec3, form_types
-  logical :: col_rev, ropt
+  character(1000) :: noise_fname
+  logical :: col_rev, ropt, random_flag
 
 !-- internal
   integer :: i, j, k, cstat
@@ -91,6 +93,7 @@ program test_Rankine7
   namelist /pos_info /tc_xd, tc_yd, ra_xd, ra_yd
   namelist /missing_info /nmiss, irmin_miss, irmax_miss, itmin_miss, itmax_miss,  &
   &                       skip_min_t, nthres_undef
+  namelist /random_info /random_flag, sig_Vd, noise_fname
   namelist /draw_info /IWS, tone_grid, cmap, col_rev,  &
   &                    contour_num, fixc_val, fixc_idx, fixc_typ, form_typec,  &
   &                    contour_num2, fixc_val2, fixc_idx2, fixc_typ2, form_typec2,  &
@@ -102,6 +105,7 @@ program test_Rankine7
   read(5,nml=domain)
   read(5,nml=pos_info)
   read(5,nml=missing_info)
+  read(5,nml=random_info)
   read(5,nml=draw_info)
 
   d2r=pi/180.0d0
@@ -296,6 +300,16 @@ program test_Rankine7
   &                    undef=undef, undefg=undef, stdopt=.true. )
   call sum_1d( Vra_rt_t(1,1:nt_t), Vra1d, undef )  ! calc. mean Vra
 write(*,*) "val check", Vra1d
+
+!-- Adding random noise of the Gaussian distribution
+  if(random_flag.eqv..true.)then
+     if(len_trim(adjustl(noise_fname))>0)then
+        call add_random( Vra_rt_t, sig_Vd, undef=undef,  &
+  &                      input_fname=trim(adjustl(noise_fname)) )
+     else
+        call add_random( Vra_rt_t, sig_Vd, undef=undef )
+     end if
+  end if
 
 !-- Setting missing regions
   call make_miss( nmiss, irmin_miss(1:nmiss), irmax_miss(1:nmiss),  &
@@ -824,8 +838,8 @@ write(*,*) "val check", Vra1d
 
 contains
 
-  subroutine make_miss( miss_num, irad_min, irad_max, itheta_min, itheta_max,  &
-                        Vd, undef )
+subroutine make_miss( miss_num, irad_min, irad_max, itheta_min, itheta_max,  &
+                      Vd, undef )
   !! Setting artificial undefined grids
   !! [NOTE] : the areas must be specified by grid indices.
   implicit none
@@ -852,5 +866,88 @@ contains
   end if
 
 end subroutine make_miss
+
+
+subroutine add_random( Vd, sigma, undef, input_fname )
+  !! Adding random noise of the Gaussian distribution with the standard deviation of sigma
+  use mt_stream  !! Mersenne Twister library
+
+  implicit none
+  double precision, intent(inout) :: Vd(:,:)  !! Doppler velocity (m/s)
+  double precision, intent(in) :: sigma  !! standard deviation of Vd (m/s)
+  double precision, intent(in) :: undef  !! undefined value
+  character(*), intent(in), optional :: input_fname  !! If you have prescribed randam dataset, you can add the noise without producing instantaneous noise data
+
+!-- MT variables
+  type(mt_state) :: mts1, mts2, mts_tmp, mtsn1, mtsn2
+  integer, external :: time
+  double precision :: mtv1, mtv2
+
+!-- internal
+  integer :: ii, jj, ir, jt, nl
+  double precision :: diff
+  character(30), allocatable, dimension(:,:) :: cval
+  logical :: make_random_flag
+
+  ir=size(Vd,1)
+  jt=size(Vd,2)
+
+  make_random_flag=.true.
+
+  if(present(input_fname))then
+
+     nl=line_number_counter( trim(adjustl(input_fname)) )
+
+     if(nl>=ir*jt)then
+        make_random_flag=.false.
+        allocate(cval(2,nl))
+        call read_file_text( trim(adjustl(input_fname)), 2, nl, cval )
+     else
+        call stdout( "Insufficient data number "//trim(adjustl(noise_fname))//'.', "add_random", 1 )
+     end if
+
+  end if
+
+  if(make_random_flag.eqv..true.)then
+
+!-- operating MT-19937
+
+     call set_mt19937
+
+     call new( mts1 )
+     call init( mts1, time() )
+     call new( mts2 )
+     call init( mts2, time()+100 )
+
+     do jj=1,jt
+        do ii=1,ir
+           if(Vd(ii,jj)/=undef)then
+              mts_tmp=mts1
+              call create_stream( mts_tmp, mtsn1, ii*jj)
+              mtv1=genrand_double1( mtsn1 )
+              mts_tmp=mts2
+              call create_stream( mts_tmp, mtsn2, ii*jj)
+              mtv2=genrand_double1( mtsn2 )
+              diff=sigma*dsqrt(2.0d0*dlog(1.0d0/mtv1))  &
+          &             *dcos(2.0d0*pi*mtv2)
+              Vd(ii,jj)=Vd(ii,jj)+diff
+           end if
+        end do
+     end do
+
+  else
+
+     do jj=1,jt
+        do ii=1,ir
+           if(Vd(ii,jj)/=undef)then
+              diff=dble(c2r_convert( trim(adjustl(cval(2,ii+(jj-1)*ir))) ))
+              Vd(ii,jj)=Vd(ii,jj)+diff
+           end if
+        end do
+     end do
+
+  end if
+
+end subroutine add_random
 
 end program

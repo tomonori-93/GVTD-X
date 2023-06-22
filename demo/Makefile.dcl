@@ -1,6 +1,8 @@
 # Makefile
 include ../Mkinclude
 
+MPIFC	= mpif90
+
 DCDIR	= dclaf90
 DCLIB	= dclaf90
 
@@ -16,6 +18,10 @@ TMWDIR	= ../src
 TMWINC	= ${TMWDIR}
 TMWLIB	= GVTDX
 
+# You must independently build the following library 
+MTDIR	= ./mt_mod
+MTOBJ	= $(MTDIR)/f_get_coeff.o $(MTDIR)/gf2xe.o $(MTDIR)/mt_stream.o
+
 SRC	= calc_vtg2p.f90 #\
 	  conv_himawari8_ceres.f90
 TARGET	= calc_vtg2p #\
@@ -26,8 +32,7 @@ SRCD	=  \
 	  test_Rankine2_dcl.f90 \
 	  test_Rankine3_dcl.f90 \
 	  test_Rankine4_dcl.f90 \
-	  test_Rankine6_dcl.f90 \
-	  test_Rankine7_dcl.f90
+	  test_Rankine6_dcl.f90
 #SRCN	=  \
 #	  test_Rankine1_nc.f90 \
 #	  test_Rankine2_nc.f90 \
@@ -36,6 +41,7 @@ SRCD	=  \
 #	  test_Rankine6_nc.f90
 
 TGSRC7	=  \
+	  test_Rankine7_dclmt.f90 \
 	  test_draw.f90
 
 TARGETD	=  \
@@ -43,8 +49,7 @@ TARGETD	=  \
 	  test_Rankine2_dcl \
 	  test_Rankine3_dcl \
 	  test_Rankine4_dcl \
-	  test_Rankine6_dcl \
-	  test_Rankine7_dcl
+	  test_Rankine6_dcl
 #TARGETN	=  \
 #	  test_Rankine1_nc \
 #	  test_Rankine2_nc \
@@ -52,6 +57,7 @@ TARGETD	=  \
 #	  test_Rankine4_nc \
 #	  test_Rankine6_nc
 TARGET7	=  \
+	  test_Rankine7_dclmt \
 	  test_draw
 
 all: $(TARGETD) $(TARGETN) $(TARGET7) $(TARGET)
@@ -61,6 +67,13 @@ $(TARGETD): %:%.f90
 	$(MAKE) ; \
 	cd ../ ; \
 	$(DCLFC) $(FFLAGS) -I${DCDIR} -I${TMWINC} $< -o $@ -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB}
+
+use_dclmt: $(TARGET7)
+$(TARGET7): %:%.f90
+	@cd $(DCDIR) ; \
+	$(MAKE) ; \
+	cd ../ ; \
+	$(DCLFC) $(FFLAGS) -I${DCDIR} -I${TMWINC} -I${MTDIR} $< -o $@ -L${DCDIR} -l${DCLIB} -L${TMWDIR} -l${TMWLIB} ${MTOBJ}
 
 #use_nc: $(TARGETN)
 #$(TARGETN): %:%.f90

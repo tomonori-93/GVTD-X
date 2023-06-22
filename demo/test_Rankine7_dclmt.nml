@@ -61,11 +61,15 @@
  ra_yd = 0.0
 /
 &missing_info
-nmiss = 1
-irmin_miss = 5
-irmax_miss = 10
-itmin_miss = 10
-itmax_miss = 60
+ nmiss = 1
+ irmin_miss = 5
+ irmax_miss = 10
+ itmin_miss = 10
+ itmax_miss = 60
+/
+&random_info
+ random_flag = .true.
+ sig_Vd = 3.0d0
 /
 &draw_info
  IWS = 2
