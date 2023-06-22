@@ -298,9 +298,11 @@ program test_Rankine7
 write(*,*) "val check", Vra1d
 
 !-- Setting missing regions
-  call make_miss( nmiss, irmin_miss(1:nmiss), irmax_miss(1:nmiss),  &
-  &               itmin_miss(1:nmiss), itmax_miss(1:nmiss),  &
-  &               Vra_rt_t, undef=undef )
+  if(nmiss>0)then
+     call make_miss( nmiss, irmin_miss(1:nmiss), irmax_miss(1:nmiss),  &
+  &                  itmin_miss(1:nmiss), itmax_miss(1:nmiss),  &
+  &                  Vra_rt_t, undef=undef )
+  end if
 
   nr_in=check_data_fulfill( Vra_rt_t(1:nr_t,1:nt_t), undef,  &
   &                         nt_count=nthres_undef(1), dir="i2o" )
@@ -351,8 +353,8 @@ write(*,*) "val check", Vra1d
   &                                VDR0_rt_t(nr_in:nr_out,1:nt_t),  &
   &                                VRTn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
   &                                VRRn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
-  &                                VDTm_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
-  &                                VDRm_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
+  &                                VDTm_rt_t(ndivmin:ndiv,nr_in:nr_out,1:nt_t),  &
+  &                                VDRm_rt_t(ndivmin:ndiv,nr_in:nr_out,1:nt_t),  &
   &                                undef=undef,  &
   &                                phin=phin_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
   &                                zetan=zetan_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt_t),  &
@@ -409,7 +411,7 @@ write(*,*) "val check", Vra1d
   &                          dummy_kr(nrotmin:nrot,nr_in:nr_out_skp),  &
   &                          dummy_kr(nrotmin:nrot,nr_in:nr_out_skp),  &
   &                          dummy_kr(nrotmin:nrot,nr_in:nr_out_skp),  &
-  &                          dummy_kr(nr_in:nr_out_skp,1:nt_t),  &
+  &                          dummy_rt(nr_in:nr_out_skp,1:nt_t),  &
   &                          phin_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt_t),  &
   &                          zetan_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt_t),  &
   &                          dummy_kr(nrotmin:nrot,nr_in:nr_out_skp),  &
