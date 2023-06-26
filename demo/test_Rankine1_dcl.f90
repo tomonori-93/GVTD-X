@@ -61,7 +61,7 @@ program test_Rankine1
 
   real :: dundef
   real, allocatable, dimension(:) :: draw_xd, draw_yd
-  real, allocatable, dimension(:,:) :: draw_Vt, draw_Vr, draw_Vt_ret, draw_Vr_ret
+  real, allocatable, dimension(:,:) :: draw_Vt, draw_Vr, draw_Vt_ret, draw_Vr_ret, draw_dummy
   real, allocatable, dimension(:,:) :: draw_Vra, draw_Vra_ret, draw_rot, draw_div
   real, allocatable, dimension(:,:) :: draw_dVt, draw_dVr, draw_dVra, draw_zeta
   real, allocatable, dimension(:,:,:) :: draw_phin
@@ -153,6 +153,7 @@ program test_Rankine1
   allocate(draw_yd(nyd),stat=cstat)
   allocate(draw_Vt(nxd,nyd),stat=cstat)
   allocate(draw_Vr(nxd,nyd),stat=cstat)
+  allocate(draw_dummy(nxd,nyd),stat=cstat)
   allocate(draw_Vt_ret(nxd,nyd),stat=cstat)
   allocate(draw_Vr_ret(nxd,nyd),stat=cstat)
   allocate(draw_dVt(nxd,nyd),stat=cstat)
@@ -164,6 +165,8 @@ program test_Rankine1
   allocate(draw_rot(nxd,nyd),stat=cstat)
   allocate(draw_phin(nrot,nxd,nyd),stat=cstat)
   allocate(draw_zeta(nxd,nyd),stat=cstat)
+
+  draw_dummy=0.0
 
   if(cstat/=0)then
      call stdout( "Failed to allocate variables. stop.", "main", -1 )
@@ -383,7 +386,7 @@ write(*,*) "val check", Vra1d
   call Dcl_2D_cont_shade( 'True V',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vt(1:nxd,1:nyd),  &
-  &       draw_Vt(1:nxd,1:nyd),  &
+  &       draw_dummy(1:nxd,1:nyd),  &
   &       (/0.0, 1.0/), (/0.0, 1.0/),  &
   &       (/'X (km)', 'Y (km)'/),  &
   &       (/form_typec, form_types/), viewx_int=(/0.2, 0.8/),  &
@@ -457,7 +460,7 @@ write(*,*) "val check", Vra1d
   call Dcl_2D_cont_shade( 'True U',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vr(1:nxd,1:nyd),  &
-  &       draw_Vr(1:nxd,1:nyd),  &
+  &       draw_dummy(1:nxd,1:nyd),  &
   &       (/0.0, 1.0/), (/0.0, 1.0/),  &
   &       (/'X (km)', 'Y (km)'/),  &
   &       (/form_typec2, form_types/), (/0.2, 0.8/),  &
@@ -531,7 +534,7 @@ write(*,*) "val check", Vra1d
   call Dcl_2D_cont_shade( 'True velocity along beam',  &
   &       draw_xd(1:nxd), draw_yd(1:nyd),  &
   &       draw_Vra(1:nxd,1:nyd),  &
-  &       draw_Vra(1:nxd,1:nyd),  &
+  &       draw_dummy(1:nxd,1:nyd),  &
   &       (/0.0, 1.0/), (/0.0, 1.0/),  &
   &       (/'X (km)', 'Y (km)'/),  &
   &       (/form_typec3, form_types/), (/0.2, 0.8/),  &
