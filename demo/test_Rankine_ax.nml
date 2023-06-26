@@ -22,6 +22,7 @@
  ndiv = 0  ! the maximum wavenumber for divergent winds (0 or 1)
  ropt = .true.  ! For GVTDX
 ! ropt = .false.  ! For GVTD/GBVTD
+ dopt = .false. ! For GVTDX
  nrdiv = 1  ! radial grid points for divergence
  rdiv = 80.0e3  ! radii for divergence
  flag_GVTDX = 1  ! GVTDX
