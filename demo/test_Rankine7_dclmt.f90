@@ -42,7 +42,7 @@ program test_Rankine7
   integer, dimension(nmiss_max) :: irmin_miss, irmax_miss, itmin_miss, itmax_miss
   character(20) :: form_typec, form_typec2, form_typec3, form_types
   character(1000) :: noise_fname
-  logical :: col_rev, ropt, random_flag
+  logical :: col_rev, ropt, dopt, random_flag
 
 !-- internal
   integer :: i, j, k, cstat
@@ -85,7 +85,7 @@ program test_Rankine7
   logical, allocatable, dimension(:,:) :: undef_grid
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
-  &                us, vs, nrot, ndiv, ropt, nrdiv, rdiv, flag_GVTDX
+  &                us, vs, nrot, ndiv, ropt, dopt, nrdiv, rdiv, flag_GVTDX
   namelist /domain /nxd, nyd, nr_d, nr_t, nt_d, nt_t,  &
   &                 xdmin, xdmax, ydmin, ydmax,  &
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
@@ -255,7 +255,7 @@ program test_Rankine7
 !-- producing vortex profiles at vector points
   call prod_vortex_structure( rh_t, t_ref_t, rvmax, vmax, c1u, c2u,  &
   &                           Vt_rht_t, Ut_rht_t, vp(1:nvp), up(1:nup),  &
-  &                           vpa(1:nvp)*d2r, upa(1:nup)*d2r, ropt=ropt,  &
+  &                           vpa(1:nvp)*d2r, upa(1:nup)*d2r, ropt=ropt, dopt=dopt,  &
   &                           Uxm=Usrn, Vym=Vsrn, flag_disp=.true. )
 
 !-- Environmental wind (Us, Vs) -> Vra(r_t,t_t), Vrn(r_t,t_t)
@@ -684,7 +684,7 @@ write(*,*) "val check", Vra1d
   call color_setting( 1, (/0.0, 1.0/), min_tab=10999,  &
   &                   max_tab=89999, col_min=10999, col_max=89999,  &
   &                   col_tab=14, reverse=col_rev,  &
-  &                   val_spec=(/-1000.0,1000.0/),  &
+  &                   val_spec=(/-100.0,100.0/),  &
   &                   col_spec=(/999/) )
 
   call Dcl_2D_cont_shade( 'True velocity along beam',  &

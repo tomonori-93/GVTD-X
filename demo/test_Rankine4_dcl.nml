@@ -22,6 +22,7 @@
  nrot = 3
  ndiv = 1
  ropt = .false.
+ dopt = .false. ! For GVTDX
  nrdiv = 1
  rdiv = 80.0e3
  flag_GVTDX = 1

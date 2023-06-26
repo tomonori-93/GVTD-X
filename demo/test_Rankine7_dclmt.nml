@@ -23,6 +23,7 @@
  ndiv = 1
  ropt = .true.  ! For GVTDX
 ! ropt = .false.  ! For GVTD/GBVTD
+ dopt = .false. ! For GVTDX
  nrdiv = 1
  rdiv = 60.0e3
  flag_GVTDX = 1  ! GVTDX

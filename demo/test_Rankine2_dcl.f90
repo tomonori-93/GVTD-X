@@ -34,7 +34,7 @@ program test_Rankine
   double precision :: vp(nvp_max), up(nvp_max), vpa(nvp_max), upa(nvp_max)
   double precision, dimension(nrdiv_max) :: rdiv
   character(20) :: form_typec, form_typec2, form_typec3, form_types
-  logical :: col_rev, ropt
+  logical :: col_rev, ropt, dopt
 
 !-- internal
   integer :: i, j, k, cstat
@@ -59,7 +59,7 @@ program test_Rankine
   character(20) :: cvtmax, cvrmax, cvamax
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
-  &                us, vs, nrot, ndiv, ropt, nrdiv, rdiv, flag_GVTDX
+  &                us, vs, nrot, ndiv, ropt, dopt, nrdiv, rdiv, flag_GVTDX
   namelist /domain /nxd, nyd, nr_d, nr_t, nt_d, nt_t,  &
   &                 xdmin, xdmax, ydmin, ydmax,  &
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
@@ -174,7 +174,7 @@ program test_Rankine
      call prod_vortex_structure( rh_t, t_ref_t, rvmax, vmax, c1u, c2u,  &
   &                              Vt_rht_t, Ut_rht_t, vp(1:nvp), up(1:nup),  &
   &                              vpa(1:nvp)*d2r+t_t(k),  &
-  &                              upa(1:nup)*d2r+t_t(k), ropt=ropt,  &
+  &                              upa(1:nup)*d2r+t_t(k), ropt=ropt, dopt=dopt,  &
   &                              Vt_0=Vt_0(1:nr_t,1), Vr_0=Vr_0(1:nr_t,1) )
 
 !-- Environmental wind

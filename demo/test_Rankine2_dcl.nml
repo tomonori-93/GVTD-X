@@ -24,6 +24,7 @@
  nrdiv = 1  ! radial grid points for divergence
  rdiv = 80.0e3  ! radial grid points for divergence
  ropt = .true.  ! radii for divergence
+ dopt = .false. ! For GVTDX
 /
 &domain
  nxd = 400   ! grid number in x-direction for drawing

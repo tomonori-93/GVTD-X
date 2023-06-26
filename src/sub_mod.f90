@@ -45,6 +45,7 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
   double precision, allocatable, dimension(:) :: Vtp_omax, Vrp_omax
   double precision, allocatable, dimension(:,:) :: zetap, divp
   double precision, allocatable, dimension(:,:,:) :: gkrr, dgkrr
+  double precision, allocatable, dimension(:,:,:) :: gkrr_d, dgkrr_d
   logical rad_opt
 
   nr=size(r)
@@ -69,7 +70,6 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
         allocate(gkrr(nvpmax,nr+1,nr+1))
         allocate(dgkrr(nvpmax,nr+1,nr+1))
         allocate(zetap(nvpmax,nr+1))
-        allocate(divp(nvpmax,nr+1))
         gkrr=0.0d0
         dgkrr=0.0d0
         zetap=0.0d0
@@ -100,8 +100,44 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
               if(r(i)>=0.1d0*rmax.and.r(i)<2.0d0*rmax)then
                  zetap(k,i)=abs(Vt_pert(k))/rmax
               end if
-              if(r(i)>=rmax.and.r(i)<1.5d0*rmax)then
-                 divp(k,i)=-abs(Vr_pert(k))/rmax
+           end do
+        end do
+     end if
+  end if
+
+  if(present(dopt))then
+     if(nvpmax>0)then
+        allocate(gkrr_d(nvpmax,nr+1,nr+1))
+        allocate(dgkrr_d(nvpmax,nr+1,nr+1))
+        allocate(divp(nvpmax,nr+1))
+        gkrr_d=0.0d0
+        dgkrr_d=0.0d0
+        divp=0.0d0
+        do k=1,nvpmax
+           do j=1,nr
+              do i=1,nr
+                 if(r(i)-0.5d0*dr<0.0d0)then
+                    gkrr_d(k,i,j)=green_func( 0.0d0, r(j), k )
+                 else
+                    gkrr_d(k,i,j)=green_func( r(i)-0.5d0*dr, r(j), k )
+                 end if
+              end do
+           end do
+           do j=1,nr
+              gkrr_d(k,nr+1,j)=green_func( r(nr)+0.5d0*dr, r(j), k )
+           end do
+           do i=1,nr
+              gkrr_d(k,i,nr+1)=green_func( r(i)+0.5d0*dr, r(nr)+dr, k )
+           end do
+           do j=1,nr
+              do i=1,nr+1
+                 dgkrr_d(k,i,j)=(gkrr_d(k,i,j+1)-gkrr_d(k,i,j))/dr
+              end do
+           end do
+           do i=1,nr
+              !ORGif(r(i)>=0.1d0*rmax.and.r(i)<2.0d0*rmax)then
+              if(r(i)>=0.9d0*rmax.and.r(i)<2.0d0*rmax)then
+                 divp(k,i)=abs(Vr_pert(k))/rmax
               end if
            end do
         end do
@@ -138,7 +174,15 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
                  tmp_vtp1=tmp_vtp1+Vt_pert(k)*dcos(dble(k)*(t(j)+Vt_pert_ang(k)))
               end do
            end if
+           if(dopt.eqv..true.)then
+              if(nvtp>1)then
+                 k=1  ! only WN-1
+                 lin_coef=line_integral( nr-1, r, gkrr_d(k,1:nr,i), divp(k,1:nr) )*dr
+                 tmp_vtp2n=tmp_vtp2n+lin_coef*dsin(dble(k)*(t(j)+Vt_pert_ang(k)))*r_inv(i)
+              end if
+           end if
         end if
+
         if(present(Vr_pert))then
            if(rad_opt.eqv..true.)then
               if(nvrp>1)then
@@ -153,7 +197,15 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
                  tmp_vrp1=tmp_vrp1+Vr_pert(k)*dcos(dble(k)*(t(j)+Vr_pert_ang(k)))
               end do
            end if
-        end if
+
+           if(dopt.eqv..true.)then
+              if(nvrp>1)then
+                 k=1  ! only WN-1
+                 lin_coef=line_integral( nr-1, r, dgkrr_d(k,1:nr,i), divp(k,1:nr) )*dr
+                 tmp_vrp2n=tmp_vrp2n+(-dble(k)*lin_coef*dcos(dble(k)*(t(j)+Vt_pert_ang(k))))  ! same as Vt_pert_ang
+              end if
+           end if
+         end if
 
         if(r(i)<=rmax)then
            rad_coef=r(i)/rmax
@@ -261,6 +313,14 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
         deallocate(gkrr)
         deallocate(dgkrr)
         deallocate(zetap)
+     end if
+  end if
+
+  if(present(ropt))then
+     if(nvpmax>0)then
+        deallocate(gkrr_d)
+        deallocate(dgkrr_d)
+        deallocate(divp)
      end if
   end if
 
