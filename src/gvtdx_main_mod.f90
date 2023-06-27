@@ -73,6 +73,7 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
 
   !-- internal variables
   integer :: i, j, k, p, irad, cstat  ! dummy indexes
+  integer :: icounter_div  ! Index for nrdiv
   integer :: nr, nt  ! array numbers for r and t, respectively
   integer :: nk      ! array number of a_k
   integer :: nrdiv   ! array number for rdiv
@@ -101,8 +102,8 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
 
   nr=size(r)
   nt=size(t)
-  nrdiv=size(rdiv)
-  nrdiv2=size(rdiv)*2
+  nrdiv=size(rdiv)  ! Changeable to icounter_div
+  nrdiv2=size(rdiv)*2  ! Changeable to icounter_div*2
   vmax=50.0d0
 
   if(present(undef))then
@@ -160,20 +161,34 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
   rtc_n=RadTC/rh(nr+1)
 
 !-- Check and search divergent radii
+  icounter_div=0
   do i=1,nrdiv
      call interpo_search_1d( rh, rdiv(i), irad )
      if((irad==nr+1).and.(rh(nr+1)<rdiv(i)))then
-        if(ndiv>0)then
-           call stdout( "Detect out of range. stop.", "Retrieve_velocity_GVTDX", -1 )
-           stop
-        else  ! Not use of rdiv
-           call stdout( "Detect out of range.", "Retrieve_velocity_GVTDX", 1 )
-           irad=nr
+!        if(ndiv>0)then
+!           call stdout( "Detect out of range. stop.", "Retrieve_velocity_GVTDX", 1 )
+!           stop
+!        else  ! Not use of rdiv
+           call stdout( "Detect out of range (out).", "Retrieve_velocity_GVTDX", 1 )
+!           irad=nr
+!        end if
+        cycle
+     else if(irad==0)then
+        call stdout( "Detect out of range (in).", "Retrieve_velocity_GVTDX", 1 )
+        cycle
+     else if(icounter_div>0)then  ! Check previously asigned grid and currently determined irad
+        if(rdiv_n(2*icounter_div)==rh(irad+1)/rh(nr+1))then
+           call stdout( "Detect assigned grid. skip.", "Retrieve_velocity_GVTDX", 1 )
+           cycle
         end if
      end if
-     rdiv_n(2*i-1)=rh(irad)/rh(nr+1)
-     rdiv_n(2*i)=rh(irad+1)/rh(nr+1)
+     icounter_div=icounter_div+1
+     rdiv_n(2*icounter_div-1)=rh(irad)/rh(nr+1)
+     rdiv_n(2*icounter_div)=rh(irad+1)/rh(nr+1)
   end do
+
+  nrdiv=icounter_div
+  nrdiv2=icounter_div*2
 
 !-- Calculate delta_ij
 !$omp parallel default(shared)
@@ -234,7 +249,8 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
 
 !-- Calculate f_kij
 !-- ** normalized radius is used in r_n **
-  call calc_fkij( nrot, ndiv, nk, Vn, rtc_n, r_n, t, rh_n, td, rdiv_n, f_kij, Vd, undeflag )
+  call calc_fkij( nrot, ndiv, nk, Vn, rtc_n, r_n, t, rh_n, td,  &
+  &               rdiv_n(1:nrdiv2), f_kij, Vd, undeflag )
 
 !-- Calculate b_k
   call calc_fkijVd2bk( vmax, f_kij, Vd, delta, b_k(1:nk), undeflag )
@@ -267,7 +283,7 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
   &                   undef=dundef )
 
 !-- Calculate Vr and Vt components of divergent wind
-  call calc_D2Vdiv( ndiv, vmax, r_n, rh_n, t, rdiv_n, Vdivr_r,  &
+  call calc_D2Vdiv( ndiv, vmax, r_n, rh_n, t, rdiv_n(1:nrdiv2), Vdivr_r,  &
   &                 VDR0, VDTm, VDRm, divc_mr, undef=dundef )
 
 !-- Calculate total retrieved Vr and Vt

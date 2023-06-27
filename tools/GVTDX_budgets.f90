@@ -14,9 +14,6 @@ program GVTDX_budgets
 
   implicit none
 
-  !-- parameters
-  integer, parameter :: nrdivmax=1000  !! the maximum number of radial grids for the divergent
-
   !-- namelist variables
   integer :: nr_org            !! the radial grid number of the original data
   integer :: nt_org            !! the azimuthal grid number of the original data
@@ -46,36 +43,19 @@ program GVTDX_budgets
   integer :: i, j, k, id, it, m, stat, nr, ntz, nt, nl, irec, tccol
   integer :: nrotmin, ndivmin
   integer :: nr_in, nr_out, ntin_c, ntout_c
-  double precision :: usp, vsp, thetad_tc, thetaM, thetaS
-  double precision :: x_tc, y_tc, d2r, r_tmp, RdTc
-  double precision :: vdm, vds, dvm
   double precision, parameter :: undef=-999.0d0
   real, allocatable, dimension(:) :: ttime
   real, allocatable, dimension(:,:,:) :: rval, rval_org
-  double precision, allocatable, dimension(:) :: umd, vmd
-  double precision, allocatable, dimension(:) :: theta_ref_t
-  double precision, allocatable, dimension(:) :: theta_ref_t_org, r_t_org
   double precision, allocatable, dimension(:) :: theta_t, r_t, rh_t
   double precision, allocatable, dimension(:,:) :: dval
-  double precision, allocatable, dimension(:,:) :: thetad_t
-  double precision, allocatable, dimension(:,:) :: lonr, latr
-  double precision, allocatable, dimension(:,:) :: projVs, projVm
   double precision, allocatable, dimension(:,:,:) :: VTtot, VRtot, VRT0, VDR0
   double precision, allocatable, dimension(:,:,:,:) :: VRTn, VRRn, VDTm, VDRm, phin, zetan
-  double precision, allocatable, dimension(:,:,:) :: Vra, Vra_ret
   double precision, allocatable, dimension(:,:,:) :: VRT0_GVTD, VDR0_GVTD, Vn_0
   double precision, allocatable, dimension(:,:,:,:) :: VRTns, VRTnc, VRRns, VRRnc
   double precision, allocatable, dimension(:,:) :: VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t
-  double precision, allocatable, dimension(:,:) :: VRT0_GVTD_rt_t, VDR0_GVTD_rt_t, Vn_0_rt_t
   double precision, allocatable, dimension(:,:,:) :: VRTns_rt_t, VRTnc_rt_t, VRRns_rt_t, VRRnc_rt_t
-  double precision, allocatable, dimension(:,:) :: Vra_rt_t
   double precision, allocatable, dimension(:,:,:) :: VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t
   double precision, allocatable, dimension(:,:,:) :: phin_rt_t, zetan_rt_t
-
-  integer :: nr_out_skp
-  integer, allocatable, dimension(:) :: nr_grid_skp
-  double precision, allocatable, dimension(:) :: r_skp_t, rh_skp_t
-  double precision, allocatable, dimension(:,:) :: thetad_skp_t, Vra_skp_rt_t
 
   character(200) :: input_fname, output_fname
 !  character(1), dimension(3) :: dimname, unitname
@@ -258,15 +238,14 @@ program GVTDX_budgets
      VDRm=undef
      phin=undef
      zetan=undef
-     Vra=undef
-     Vra_ret=undef
-     VRT0_GVTD=undef
-     VDR0_GVTD=undef
      VRTns=undef
      VRTnc=undef
      VRRns=undef
      VRRnc=undef
-     Vn_0=undef
+
+     !-- Read the vortex center position on lon-lat
+     y_tc=dble( c2r_convert( trim(adjustl(cval(4,i))) ) )
+     fc=2.0d0*omega_dp*dsin(d2r*y_tc)
 
      !-- Read GVTD-X-retrieved variables
      call read_file( trim(adjustl(input_fname)), nr, nz, iord_VRT0, rval )
@@ -307,346 +286,46 @@ program GVTDX_budgets
         end do
      end if
 
+     !-- 0. Calculate axisymmetric components of vorticity and divergence
+     call calc_rotdiv( nrot, r_t, z, VDR0, VRT0, undef, DIV0, VORT0 )
+
      !-- 1. Calculate AAM budget (ここから作成)
-     call calc_AAM( nrot, r_t, rh_t, )
+     call calc_AAM_bud( nrot, fc, r_t, rh_t, z_v, VDR0, VRT0, w0, VORT0,  & ! in
+  &                     VRRns, VRRnc, zetans, zetanc, undef, undeflag,  & ! in
+  &                     dVRT0dt, HADVAX_AAM, HADVAS_AAM, VADVAX_AAM )  ! out
 
      !-- 2. Calculate vorticity budget
-     call calc_vort( nrot, r_t, rh_t, )
+     call calc_vort_bud( nrot, fc, r_t, rh_t, z_v, VDR0, VRT0, w0,  & ! in
+  &                      DIV0, VORT0, VRRns, VRRnc, VRTns, VRTnc,  & ! in
+  &                      zetans, zetanc, undef, undeflag,  & ! in
+  &                      dVORT0dt, HADVAX_vort, HADVAS_vort,  & !out
+  &                      VADVAX_vort, STRAX_vort, TILAX_vort )  ! out
 
-!     !-- 3. Calculate enstrophy budget
-!     call calc_enst()
-
-     !-- Read the vortex center position on lon-lat
-     x_tc=dble( c2r_convert( trim(adjustl(cval(3,i))) ) )
-     y_tc=dble( c2r_convert( trim(adjustl(cval(4,i))) ) )
-
-     !-- Read the motion vector of the vortex
-     usp=dble(c2r_convert( trim(adjustl(cval(5,i))) ))
-     vsp=dble(c2r_convert( trim(adjustl(cval(6,i))) ))
-
-     !-- Read the mean wind at each height
-     do k=1,nz
-        umd(k)=dble(c2r_convert( trim(adjustl(cval(6+2*(k-1)+1,i))) ))
-        vmd(k)=dble(c2r_convert( trim(adjustl(cval(6+2*k,i))) ))
-     end do
-
-     !-- Define thetad
-     !-- 1. calculate thetad from the radar's lat-lon (dpoint_x,dpoint_y)
-     !--    (i.e., the east direction is thetad = 0 at the radar's lat-lon)
-     !-- 1.1 calculate lat-lon at each Doppler-velocity point from radius-azimuth and vortex center in the original data
-     !-- 1.2 calculate thetad from the radar's lat-lon and the Doppler-velocity lat-lon
-
-     do j=1,nt
-        do id=1,nr
-           call rt2ll( r_t(id), theta_ref_t(j), x_tc*d2r, y_tc*d2r,  &
-  &                    lonr(id,j), latr(id,j) )
-           call ll2rt( dpoint_x*d2r, dpoint_y*d2r, lonr(id,j), latr(id,j),  &
-  &                    r_tmp, thetad_t(id,j) )
-        end do
-     end do
-
-     !-- 2. subtract thetad_tc from each thetad_t.
-
-     call ll2rt( dpoint_x*d2r, dpoint_y*d2r, x_tc*d2r, y_tc*d2r, r_tmp, thetad_tc )
-     do j=1,nt
-        do id=1,nr
-           thetad_t(id,j)=thetad_t(id,j)-thetad_tc
-        end do
-     end do
-
-     !-- 3. calculate the distance from the radar to the vortex center
-     RdTc=ll2radi( dpoint_x*d2r, dpoint_y*d2r, x_tc*d2r, y_tc*d2r )
-
-     !-- 4. subtract thetad_tc from theta_t
-     theta_t=theta_ref_t-thetad_tc
-
-     !-- 5.1. project the storm motion to the line-of-sight direction of each radar beam
-     call proj_Vs( dpoint_x*d2r, dpoint_y*d2r, lonr, latr, usp, vsp, projVs, undef )
-
-     !-- Loop for altitude
-     do k=nnz(1),nnz(2)
-        !-- 5.2. project the mean wind to the line-of-sight direction of each radar beam
-        call proj_Vs( dpoint_x*d2r, dpoint_y*d2r, lonr, latr, umd(k), vmd(k), projVm, undef )
-        !-- A. convert real to double
-        call conv_r2d_2d( rval_org(1:nr_org,1:nt_org,k), dval(1:nr_org,1:nt_org) )
-        call replace_val_2d( dval(1:nr_org,1:nt_org), dble(undefobs), undef )
-        undef_grid=.false.
-        VTtot_rt_t(1:nr,1:nt)=undef
-        VRtot_rt_t(1:nr,1:nt)=undef
-        VRT0_rt_t(1:nr,1:nt)=undef
-        VDR0_rt_t(1:nr,1:nt)=undef
-        VRTn_rt_t(nrotmin:nrot,1:nr,1:nt)=undef
-        VRRn_rt_t(nrotmin:nrot,1:nr,1:nt)=undef
-        VDTm_rt_t(ndivmin:ndiv,1:nr,1:nt)=undef
-        VDRm_rt_t(ndivmin:ndiv,1:nr,1:nt)=undef
-        phin_rt_t(nrotmin:nrot,1:nr,1:nt)=undef
-        zetan_rt_t(nrotmin:nrot,1:nr,1:nt)=undef
-        VRT0_GVTD_rt_t(1:nr,1:nt)=undef
-        VDR0_GVTD_rt_t(1:nr,1:nt)=undef
-        VRTns_rt_t(nrotmin:nrot,1:nr,1:nt)=undef
-        VRTnc_rt_t(nrotmin:nrot,1:nr,1:nt)=undef
-        VRRns_rt_t(nrotmin:nrot,1:nr,1:nt)=undef
-        VRRnc_rt_t(nrotmin:nrot,1:nr,1:nt)=undef
-        Vn_0_rt_t(1:nr,1:nt)=undef
-
-        !-- B. do interpolation from nr_org, nt_org to smooth_r, smooth_t = (nr,nt)
-        call auto_interpolation_2d( r_t_org, theta_ref_t_org,  &
-  &                                 r_t, theta_ref_t, dval, Vra_rt_t,  &
-  &                                 undef=undef, stdopt=stdflag )
-
-        !-- C. VD - projVs
-        select case(flag_GVTDX)
-        case (1)  ! GVTDX
-           call sub_2dd( Vra_rt_t(1:nr,1:nt), projVs(1:nr,1:nt), undef )
-           call sub_2dd( projVm(1:nr,1:nt), projVs(1:nr,1:nt), undef )
-        case (2)  ! GVTD
-           call sub_2dd( Vra_rt_t(1:nr,1:nt), projVm(1:nr,1:nt), undef )
-        end select
-
-        !-- D. determine the innermost and outermost radii for retrieval using nthres_undef
-        !-- D.1. check the innermost radius index
-        nr_in=check_data_fulfill( Vra_rt_t(1:nr,1:nt), undef,  &
-  &                               nt_count=nthres_undef(1), dir="i2o",  &
-  &                               ncount=ntin_c )
-        if(nr_in/=0)then  ! if there is no radius with sufficient sampling, the retrieval is not performed.
-
-           !-- check the positive value of r_t(nr_in)
-           nr_in=inner_radius_check( nr_in, nr, r_t(nr_in:nr) )
-!write(*,*) "nr", nr_in, ntin_c
-           !-- D.2. check the outermost radius index
-           nr_out=check_data_fulfill( Vra_rt_t(1:nr,1:nt), undef, &
-  &                                   nt_count=nthres_undef(2), dir="o2i",  &
-  &                                   ncount=ntout_c )
-!write(*,*) "nr", nr_out, ntout_c
-
-           !-- (opt): activate the undef flag for each grid with undef
-           call check_undef_grid( Vra_rt_t, undef, undef_grid )
-!        call replace_undef( Vra_rt_t, undef_grid, undef )
-!write(*,*) "Vra check", Vra_rt_t(nr_in:nr_out,1:nt)
-
-           !-- D.3. rearrange radial grids with skipping unused radii
-           if(skip_min_t>0)then
-              !-- _skp_: the original variables before the rearrangement
-              nr_out_skp=nr_out
-              r_skp_t(1:nr)=r_t(1:nr)
-              rh_skp_t(1:nr+1)=rh_t(1:nr+1)
-              thetad_skp_t(1:nr,1:nt)=thetad_t(1:nr,1:nt)
-              Vra_skp_rt_t(1:nr,1:nt)=Vra_rt_t(1:nr,1:nt)
-              call rearrange_undef_rad( skip_min_t, nr_in, nr_out_skp, nt,  &
-  &                                     undef_grid(nr_in:nr_out_skp,1:nt),  &
-  &                                     r_skp_t(nr_in:nr_out_skp),  &
-  &                                     rh_skp_t(nr_in:nr_out_skp+1),  &
-  &                                     thetad_skp_t(nr_in:nr_out_skp,1:nt),  &
-  &                                     Vra_skp_rt_t(nr_in:nr_out_skp,1:nt),  &
-  &                                     nr_out, nr_grid_skp(nr_in:nr_out_skp),  &  ! 調整後
-  &                                     r_t(nr_in:nr_out_skp),  &
-  &                                     rh_t(nr_in:nr_out_skp+1),  &
-  &                                     thetad_t(nr_in:nr_out_skp,1:nt),  &
-  &                                     Vra_rt_t(nr_in:nr_out_skp,1:nt) )
-             write(*,*) "rearrange (nr_out): ", nr_out_skp, nr_out, nr_grid_skp
-           end if
-
-           select case (flag_GVTDX)
-           !-- E. Retrieval (for storm relative azimuth)
-           case (1)  ! Run GVTDX
-              thetaS=datan2( vsp, usp )
-              vds=dsqrt(usp**2+vsp**2)*dsin(thetaS-thetad_tc)  ! Vs x sin(thetaS-thetaT)
-              thetaM=datan2( vmd(k), umd(k) )
-              vdm=dsqrt(umd(k)**2+vmd(k)**2)*dsin(thetaM-thetad_tc)  ! VM x sin(thetaM-thetaS)
-              dvm=vdm-vds
-              write(100,'(1P2E16.8)') real(i), dvm  ! Output storm-relative mean wind
-
-              if(nr_in<nr_out)then
-              call Retrieve_velocity_GVTDX( nrot, ndiv, r_t(nr_in:nr_out), theta_t,  &
-  &                                         rh_t(nr_in:nr_out+1),  &
-  &                                         thetad_t(nr_in:nr_out,1:nt), rdiv_t(1:nrdiv),  &
-  &                                         Vra_rt_t(nr_in:nr_out,1:nt), dvm, RdTc,  &
-  &                                         VTtot_rt_t(nr_in:nr_out,1:nt),  &
-  &                                         VRtot_rt_t(nr_in:nr_out,1:nt),  &
-!  &                                         Vra_rt_t, (/Vsrn,0.0d0/), VTtot_rt_t, VRtot_rt_t,  &
-  &                                         VRT0_rt_t(nr_in:nr_out,1:nt),  &
-  &                                         VDR0_rt_t(nr_in:nr_out,1:nt),  &
-  &                                         VRTn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                         VRRn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                         VDTm_rt_t(ndivmin:ndiv,nr_in:nr_out,1:nt),  &
-  &                                         VDRm_rt_t(ndivmin:ndiv,nr_in:nr_out,1:nt),  &
-  &                                         undef,  &
-  &                                         phin=phin_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                         zetan=zetan_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                         VRT0_GVTD=VRT0_GVTD_rt_t(nr_in:nr_out,1:nt),  &
-  &                                         VDR0_GVTD=VDR0_GVTD_rt_t(nr_in:nr_out,1:nt),  &
-  &                                         VRTns=VRTns_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                         VRTnc=VRTnc_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                         VRRns=VRRns_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                         VRRnc=VRRnc_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                         Vn_0=Vn_0_rt_t(nr_in:nr_out,1:nt) )
-              end if
-
-           case (2)  ! Run GVTD
-              call Retrieve_velocity_GVTD( nrot, r_t(nr_in:nr_out), theta_t,  &
-  &                                        thetad_t(nr_in:nr_out,1:nt),  &
-  &                                        Vra_rt_t(nr_in:nr_out,1:nt),  &
-  &                                        RdTc,  &
-  &                                        VTtot_rt_t(nr_in:nr_out,1:nt),  &
-  &                                        VRtot_rt_t(nr_in:nr_out,1:nt),  &
-  &                                        VRT0_rt_t(nr_in:nr_out,1:nt),  &
-  &                                        VDR0_rt_t(nr_in:nr_out,1:nt),  &
-  &                                        VRTn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                        VRRn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                        undef )
-           case (3)  ! Run GBVTD
-              thetaM=datan2( vsp, usp )
-              call Retrieve_velocity_GBVTD( nrot, r_t(nr_in:nr_out), theta_t,  &
-  &                                         thetad_t(nr_in:nr_out,1:nt),  &
-  &                                         Vra_rt_t(nr_in:nr_out,1:nt),  &
-  &                                         RdTc,  &
-  &                                         VTtot_rt_t(nr_in:nr_out,1:nt),  &
-  &                                         VRtot_rt_t(nr_in:nr_out,1:nt),  &
-  &                                         VRT0_rt_t(nr_in:nr_out,1:nt),  &
-  &                                         VDR0_rt_t(nr_in:nr_out,1:nt),  &
-  &                                         VRTn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                         VRRn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                         undef )
-           end select
-
-           !-- F. recover retrieved data on the rearranged radii to the original radii
-           if(skip_min_t>0)then
-              !-- _skp_: the original variables before the rearrangement
-              !-- _rt_t, intent(inout): replace the index in the rearranged with the original index
-              !-- From the above reasons, the element numbers are given from nr_in to nr_out_skp (not nr_out)
-              call recover_undef_rad( nrotmin, nrot, ndivmin, ndiv,  &
-  &                                   nr_in, nr_out, nr_out_skp, nt,  &
-  &                                   undef, undef_grid(nr_in:nr_out_skp,1:nt),  &
-  &                                   nr_grid_skp(nr_in:nr_out_skp),  &
-  &                                   VTtot_rt_t(nr_in:nr_out_skp,1:nt),  &
-  &                                   VRtot_rt_t(nr_in:nr_out_skp,1:nt),  &
-  &                                   VRT0_rt_t(nr_in:nr_out_skp,1:nt),  &
-  &                                   VDR0_rt_t(nr_in:nr_out_skp,1:nt),  &
-  &                                   VRTn_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt),  &
-  &                                   VRRn_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt),  &
-  &                                   VDTm_rt_t(ndivmin:ndiv,nr_in:nr_out_skp,1:nt),  &
-  &                                   VDRm_rt_t(ndivmin:ndiv,nr_in:nr_out_skp,1:nt),  &
-  &                                   VRT0_GVTD_rt_t(nr_in:nr_out_skp,1:nt),  &
-  &                                   VDR0_GVTD_rt_t(nr_in:nr_out_skp,1:nt),  &
-  &                                   VRTns_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt),  &
-  &                                   VRTnc_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt),  &
-  &                                   VRRns_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt),  &
-  &                                   VRRnc_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt),  &
-  &                                   Vn_0_rt_t(nr_in:nr_out_skp,1:nt),  &
-  &                                   phin_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt),  &
-  &                                   zetan_rt_t(nrotmin:nrot,nr_in:nr_out_skp,1:nt) )
-              nr_out=nr_out_skp
-              r_t(nr_in:nr_out_skp)=r_skp_t(nr_in:nr_out_skp)
-              rh_t(nr_in:nr_out_skp+1)=rh_skp_t(nr_in:nr_out_skp+1)
-              thetad_t(nr_in:nr_out_skp,1:nt)=thetad_skp_t(nr_in:nr_out_skp,1:nt)
-              Vra_rt_t(nr_in:nr_out_skp,1:nt)=Vra_skp_rt_t(nr_in:nr_out_skp,1:nt)
-           end if
-
-        end if
-
-        !-- F. set the retrieval results to output variables
-        VTtot(1:nr,1:nt,k)=VTtot_rt_t(1:nr,1:nt)
-        VRtot(1:nr,1:nt,k)=VRtot_rt_t(1:nr,1:nt)
-        VRT0(1:nr,1:nt,k)=VRT0_rt_t(1:nr,1:nt)
-        VDR0(1:nr,1:nt,k)=VDR0_rt_t(1:nr,1:nt)
-        VRT0_GVTD(1:nr,1:nt,k)=VRT0_GVTD_rt_t(1:nr,1:nt)
-        VDR0_GVTD(1:nr,1:nt,k)=VDR0_GVTD_rt_t(1:nr,1:nt)
-        VRTns(nrotmin:nrot,1:nr,1:nt,k)=VRTns_rt_t(nrotmin:nrot,1:nr,1:nt)
-        VRTnc(nrotmin:nrot,1:nr,1:nt,k)=VRTnc_rt_t(nrotmin:nrot,1:nr,1:nt)
-        VRRns(nrotmin:nrot,1:nr,1:nt,k)=VRRns_rt_t(nrotmin:nrot,1:nr,1:nt)
-        VRRnc(nrotmin:nrot,1:nr,1:nt,k)=VRRnc_rt_t(nrotmin:nrot,1:nr,1:nt)
-        Vn_0(1:nr,1:nt,k)=Vn_0_rt_t(1:nr,1:nt)
-        VRTn(nrotmin:nrot,1:nr,1:nt,k)=VRTn_rt_t(nrotmin:nrot,1:nr,1:nt)
-        VRRn(nrotmin:nrot,1:nr,1:nt,k)=VRRn_rt_t(nrotmin:nrot,1:nr,1:nt)
-        VDTm(ndivmin:ndiv,1:nr,1:nt,k)=VDTm_rt_t(ndivmin:ndiv,1:nr,1:nt)
-        VDRm(ndivmin:ndiv,1:nr,1:nt,k)=VDRm_rt_t(ndivmin:ndiv,1:nr,1:nt)
-        phin(nrotmin:nrot,1:nr,1:nt,k)=phin_rt_t(nrotmin:nrot,1:nr,1:nt)
-        zetan(nrotmin:nrot,1:nr,1:nt,k)=zetan_rt_t(nrotmin:nrot,1:nr,1:nt)
-        Vra(1:nr,1:nt,k)=Vra_rt_t(1:nr,1:nt)
-
-        !-- calculate storm-relative Doppler velocity from retrieved winds
-        call proj_VtVr2Vrart( r_t, theta_t, thetad_t, VTtot_rt_t, VRtot_rt_t,  &
-  &                           Vra_ret(1:nr,1:nt,k), undef )
-
-     end do
+     call calc_vortn_bud( nrot, r_t, z_v, VDR0, VRT0, w0, DIV0, VORT0,  & ! in
+  &                       VRRns, VRRnc, VRTns, VRTnc,  & !in
+  &                       zetans, zetanc, undef, undeflag,  & ! in
+  &                       dzetancdt, HADVAXnc_vort, HADVASnc_vort,  & ! in
+  &                       VADVAXnc_vort, STRAXnc_vort, TILAXnc_vort,  &  ! out
+  &                       dzetansdt, HADVAXns_vort, HADVASns_vort,  & ! in
+  &                       VADVAXns_vort, STRAXns_vort, TILAXns_vort )  ! out
 
      !-- 5. output to binary file (float)
      irec=1
-     call conv_d2r_3d( VTtot(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='replace' )
-     irec=irec+ntz
-     call conv_d2r_3d( VRtot(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
-     irec=irec+ntz
-     call conv_d2r_3d( VRT0(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
-     irec=irec+ntz
-     call conv_d2r_3d( VDR0(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
-     irec=irec+ntz
-     call conv_d2r_3d( Vra(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
-     irec=irec+ntz
-     call conv_d2r_3d( Vra_ret(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
-     irec=irec+ntz
-     call conv_d2r_3d( VRT0_GVTD(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
-     irec=irec+ntz
-     call conv_d2r_3d( VDR0_GVTD(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     call conv_d2r_3d( dVRT0dt(1:nr,1:nz), rval(1:nr,1:nz) )
+     call write_file( trim(adjustl(output_fname)), nr, nz, irec, rval(1:nr,1:nz), mode='replace' )
 
-     if(nrot>0)then
-        do k=1,nrot
-           irec=irec+ntz
-           call conv_d2r_3d( VRTn(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-           call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+1
+     call conv_d2r_3d( HADVAX_AAM(1:nr,1:nz), rval(1:nr,1:nz) )
+     call write_file( trim(adjustl(output_fname)), nr, nz, irec, rval(1:nr,1:nz), mode='old' )
 
-           irec=irec+ntz
-           call conv_d2r_3d( VRRn(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-           call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+1
+     call conv_d2r_3d( HADVAS_AAM(1:nr,1:nz), rval(1:nr,1:nz) )
+     call write_file( trim(adjustl(output_fname)), nr, nz, irec, rval(1:nr,1:nz), mode='old' )
 
-           irec=irec+ntz
-           call conv_d2r_3d( VRTns(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-           call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+1
+     call conv_d2r_3d( VADVAX_AAM(1:nr,1:nz), rval(1:nr,1:nz) )
+     call write_file( trim(adjustl(output_fname)), nr, nz, irec, rval(1:nr,1:nz), mode='old' )
 
-           irec=irec+ntz
-           call conv_d2r_3d( VRTnc(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-           call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
-
-           irec=irec+ntz
-           call conv_d2r_3d( VRRns(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-           call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
-
-           irec=irec+ntz
-           call conv_d2r_3d( VRRnc(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-           call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
-
-           irec=irec+ntz
-           call conv_d2r_3d( phin(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-           call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
-
-           irec=irec+ntz
-           call conv_d2r_3d( zetan(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
-           call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
-  &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
-        end do
-     end if
 
      if(ndiv>0)then
         do k=1,ndiv
@@ -682,8 +361,68 @@ program GVTDX_budgets
 
 contains
 
-subroutine calc_AAM( nw, f0, r, rh, z, UD0, VR0, w0, Uns, Unc, Vns, Vnc, undef,  & ! in
-  &                  dVR0dt, HADVAX, HADVAS, VADVAX )  ! out
+subroutine calc_rotdiv( r, z, UD0, VR0, undef, undeflag,  &  ! in
+  &                     DIV0, VORT0 )  ! out
+!! Calculate axisymmetric components of vorticity and divergence
+  double precision, intent(in) :: r(:)  !! Radius at which velocity is defined (m)
+  double precision, intent(in) :: z(:)  !! Height at which velocity is defined (m)
+  double precision, intent(in) :: UD0(size(r),size(z))   !! Divergent zero wind component (m/s)
+  double precision, intent(in) :: VR0(size(r),size(z))   !! Rotating zero wind component (m/s)
+  double precision, intent(in) :: undef  !! Undefined value
+  logical, intent(inout) :: undeflag(size(r),size(z))  ! Undefined grid flag (true)
+  double precision, intent(out) :: DIV0(size(r),size(z))   !! Axisymmetric divergence (1/s)
+  double precision, intent(out) :: VORT0(size(r),size(z))   !! Axisymmetric vorticity (1/s)
+
+  !-- internal variables
+  integer :: ii, jj, kk, nnr, nnz
+  double precision :: r_inv(size(r))
+  double precision :: dV0dr(size(r),size(z)), dU0dr(size(r),size(z))
+
+  nnr=size(r)
+  nnz=size(z)
+
+  r_inv=0.0d0
+  do ii=1,nnr
+     if(r(ii)/=0.0d0)then
+        r_inv(ii)=1.0d0/r(ii)
+     else
+        undeflag(ii,1:nnz)=.true.
+     end if
+  end do
+
+!$omp parallel default(shared)
+!$omp do schedule(runtime) private(kk)
+
+  !-- calculate dV0/dr, dU0/dr
+  do kk=1,nnz
+     call grad_1d( r, VR0(1:nnr,kk), dV0dr(1:nnr,kk), undeflag=undeflag(1:nnr,kk) )
+     call grad_1d( r, UD0(1:nnr,kk), dU0dr(1:nnr,kk), undeflag=undeflag(1:nnr,kk) )
+  end do
+
+!$omp end do
+!$omp barrier
+!$omp do schedule(dynamic) private(ii,kk)
+
+  do kk=1,nnz
+     do ii=1,nnr
+        if(undeflag(ii,kk).eqv..false.)then
+           VORT0(ii,kk)=dV0dr(ii,kk)+VR0(ii,kk)*r_inv(ii)
+           DIV0(ii,kk)=dU0dr(ii,kk)+UD0(ii,kk)*r_inv(ii)
+        end if
+     end do
+  end do
+
+!$omp end do
+!$omp end parallel
+
+end subroutine calc_rotdiv
+
+!--------------------------------
+!--------------------------------
+
+subroutine calc_AAM_bud( nw, f0, r, rh, z, UD0, VR0, w0, VORT0,  & ! in
+  &                      Uns, Unc, zetans, zetanc, undef, undeflag,  & ! in
+  &                      dVR0dt, HADVAX, HADVAS, VADVAX )  ! out
 !! Perform budget analysis of V0
   integer, intent(in) :: nw  ! wavenumber for rotating component
   double precision, intent(in) :: f0    !! Coriolis parameter (1/s)
@@ -693,22 +432,23 @@ subroutine calc_AAM( nw, f0, r, rh, z, UD0, VR0, w0, Uns, Unc, Vns, Vnc, undef, 
   double precision, intent(in) :: UD0(size(r),size(z))   !! Divergent zero wind component (m/s)
   double precision, intent(in) :: VR0(size(r),size(z))   !! Rotating zero wind component (m/s)
   double precision, intent(in) :: w0(size(r),size(z))    !! Vertical zero wind component (m/s)
-  double precision, intent(in) :: Uns(nw,size(r),size(z))   !! Sine coefficient for asymmetric radial winds (m/s)
-  double precision, intent(in) :: Unc(nw,size(r),size(z))   !! Cosine coefficient for asymmetric radial winds (m/s)
-  double precision, intent(in) :: zetans(nw,size(r),size(z))   !! Sine coefficient for asymmetric vorticity (1/s)
-  double precision, intent(in) :: zetanc(nw,size(r),size(z))   !! Cosine coefficient for asymmetric vorticity (1/s)
+  double precision, intent(in) :: VORT0(size(r),size(z))   !! Axisymmetric vorticity (1/s)
+  double precision, intent(in) :: Uns(size(r),size(z),nw)   !! Sine coefficient for asymmetric radial winds (m/s)
+  double precision, intent(in) :: Unc(size(r),size(z),nw)   !! Cosine coefficient for asymmetric radial winds (m/s)
+  double precision, intent(in) :: zetans(size(r),size(z),nw)   !! Sine coefficient for asymmetric vorticity (1/s)
+  double precision, intent(in) :: zetanc(size(r),size(z),nw)   !! Cosine coefficient for asymmetric vorticity (1/s)
   double precision, intent(in) :: undef  !! Undefined value
+  logical, intent(inout) :: undeflag(size(r),size(z))  ! Undefined grid flag (true)
   double precision, intent(out) :: dVR0dt(size(r),size(z))   !! Sum of the budget equation (m/s2)
   double precision, intent(out) :: HADVAX(size(r),size(z))   !! Horizontal advection for axisymmetric flows (m/s2)
-  double precision, intent(out) :: HADVAS(nw,size(r),size(z))  !! Horizontal advection for asymmetric flows (m/s2)
+  double precision, intent(out) :: HADVAS(size(r),size(z),nw)  !! Horizontal advection for asymmetric flows (m/s2)
   double precision, intent(out) :: VADVAX(size(r),size(z))   !! Vertical advection for axisymmetric flows (m/s2)
 
   !-- internal variables
   integer :: ii, jj, kk, nnr, nnz
-  double precision :: r_inv(size(r))
   double precision, dimension(size(r),size(z)) :: tmp_dVR0dt, tmp_HADVAX, tmp_VADVAX
-  double precision, dimension(size(r),size(z)) :: zeta0, dv0dz
-  double precision :: tmp_HADVAS(nw,size(r),size(z))
+  double precision, dimension(size(r),size(z)) :: dv0dz
+  double precision :: tmp_HADVAS(size(r),size(z),nw)
 
   nnr=size(r)
   nnz=size(z)
@@ -718,57 +458,39 @@ subroutine calc_AAM( nw, f0, r, rh, z, UD0, VR0, w0, Uns, Unc, Vns, Vnc, undef, 
   tmp_HADVAS=undef
   tmp_VADVAX=undef
 
-  r_inv=0.0d0
-  do ii=1,nnr
-     if(r(ii)/=0.0d0)then
-        r_inv(ii)=1.0d0/r(ii)
-     end if
-  end do
-
 !$omp parallel default(shared)
 !$omp do schedule(runtime) private(ii)
 
   !-- calculate dV0/dz
   do ii=1,nnr
-     call grad_1d( z, VR0(ii,1:nnz), dv0dz(ii,1:nnz), undef=undef )
+     call grad_1d( z, VR0(ii,1:nnz), dv0dz(ii,1:nnz), undeflag=undeflag(ii,1:nnz) )
   end do
 
 !$omp end do
 !$omp barrier
-!$omp do schedule(runtime) private(kk)
 
-  !-- calculate dV0/dr
-  do kk=1,nnz
-     call grad_1d( r, VR0(1:nnr,kk), zeta0(1:nnr,kk), undef=undef )
-  end do
+  do jj=1,nw
 
-!$omp end do
-!$omp barrier
-!$omp do schedule(runtime) private(ii,jj,kk)
-
-  do kk=1,nnz
-     do ii=1,nnr
-        do jj=1,nw
-           if(Unc(jj,ii,kk)/=undef.and.zetanc(jj,ii,kk)/=undef.and.  &
-  &           Uns(jj,ii,kk)/=undef.and.zetans(jj,ii,kk)/=undef.and.  &
-              tmp_HADVAS(jj,ii,kk)=-0.5d0*(Unc(jj,ii,kk)*zetanc(jj,ii,kk)  &
-  &                                       +Uns(jj,ii,kk)*zetans(jj,ii,kk))
+!$omp do schedule(runtime) private(ii,kk)
+     do kk=1,nnz
+        do ii=1,nnr
+           if(undeflag(ii,kk).eqv..false.)then
+              tmp_HADVAS(ii,kk,jj)=-0.5d0*(Unc(ii,kk,jj)*zetanc(ii,kk,jj)  &
+  &                                       +Uns(ii,kk,jj)*zetans(ii,kk,jj))
            end if
         end do
      end do
-  end do
-
 !$omp end do
 !$omp barrier
+
+  end do
+
 !$omp do schedule(runtime) private(ii,kk)
 
   do kk=1,nnz
      do ii=1,nnr
-        if(UD0(ii,kk)/=undef.and.zeta0(ii,kk)/=undef.and.  &
-  &        r(ii)/=0.0d0.and.VR0(ii,kk)/=undef)then
-           tmp_HADVAX(ii,kk)=-UD0(ii,kk)*(zeta0(ii,kk)+VR0(ii,kk)*r_inv(ii)+f0)
-        end if
-        if(w0(ii,kk)/=undef.and.dv0dz(ii,kk)/=undef)then
+        if(undeflag(ii,kk).eqv..false.)then
+           tmp_HADVAX(ii,kk)=-UD0(ii,kk)*(VORT0(ii,kk)+f0)
            tmp_VADVAX(ii,kk)=-w0(ii,kk)*dv0dz(ii,kk)
         end if
      end do
@@ -783,25 +505,361 @@ subroutine calc_AAM( nw, f0, r, rh, z, UD0, VR0, w0, Uns, Unc, Vns, Vnc, undef, 
   HADVAS=tmp_HADVAS
   VADVAX=tmp_VADVAX
 
-  tmp_dVT0dt=tmp_HADVAX
+  tmp_dVR0dt=tmp_HADVAX
 
-  call add_2dd( tmp_dVT0dt, tmp_VADVAX, undef=undef )
+  call add_2dd( tmp_dVR0dt, tmp_VADVAX, undef=undef )
   do jj=1,nw
-     call add_2dd( tmp_dVT0dt, tmp_HADVAS(jj,1:nnr,1:nnz), undef=undef )
+     call add_2dd( tmp_dVR0dt, tmp_HADVAS(1:nnr,1:nnz,jj), undef=undef )
   end do
 
-  dVT0dt=tmp_dVT0dt
+  dVR0dt=tmp_dVR0dt
 
-end subroutine calc_AAM
+end subroutine calc_AAM_bud
 
 !--------------------------------
 !--------------------------------
 
-subroutine calc_vort( nw, f0, r, rh, zetans, zetanc, Uns, Unc, Vns, Vnc, undef,  & ! in
-  &                   dzdt,  )  ! out
-!! Perform budget analysis of vorticity
+subroutine calc_vort_bud( nw, f0, r, rh, z, UD0, VR0, w0, DIV0, VORT0,  & ! in
+  &                       Uns, Unc, Vns, Vnc, zetans, zetanc, undef, undeflag,  & ! in
+  &                       dVORT0dt, HADVAX, HADVAS, VADVAX, STRAX, TILAX )  ! out
+!! Perform budget analysis of VORT0
+  integer, intent(in) :: nw  ! wavenumber for rotating component
+  double precision, intent(in) :: f0    !! Coriolis parameter (1/s)
+  double precision, intent(in) :: r(:)  !! Radius at which velocity is defined (m)
+  double precision, intent(in) :: rh(size(r)+1)  !! Staggered radius at which scalar is defined (m)
+  double precision, intent(in) :: z(:)  !! Height at which velocity is defined (m)
+  double precision, intent(in) :: UD0(size(r),size(z))   !! Divergent zero wind component (m/s)
+  double precision, intent(in) :: VR0(size(r),size(z))   !! Rotating zero wind component (m/s)
+  double precision, intent(in) :: w0(size(r),size(z))    !! Vertical zero wind component (m/s)
+  double precision, intent(in) :: DIV0(size(r),size(z))   !! Axisymmetric divergence (1/s)
+  double precision, intent(in) :: VORT0(size(r),size(z))   !! Axisymmetric vorticity (1/s)
+  double precision, intent(in) :: Uns(size(r),size(z),nw)   !! Sine coefficient for asymmetric radial winds (m/s)
+  double precision, intent(in) :: Unc(size(r),size(z),nw)   !! Cosine coefficient for asymmetric radial winds (m/s)
+  double precision, intent(in) :: Vns(size(r),size(z),nw)   !! Sine coefficient for asymmetric tangential winds (m/s)
+  double precision, intent(in) :: Vnc(size(r),size(z),nw)   !! Cosine coefficient for asymmetric tangential winds (m/s)
+  double precision, intent(in) :: zetans(size(r),size(z),nw)   !! Sine coefficient for asymmetric vorticity (1/s)
+  double precision, intent(in) :: zetanc(size(r),size(z),nw)   !! Cosine coefficient for asymmetric vorticity (1/s)
+  double precision, intent(in) :: undef  !! Undefined value
+  logical, intent(inout) :: undeflag(size(r),size(z))  ! Undefined grid flag (true)
+  double precision, intent(out) :: dVORT0dt(size(r),size(z))   !! Sum of the budget equation (1/s2)
+  double precision, intent(out) :: HADVAX(size(r),size(z))   !! Horizontal advection for axisymmetric flows (1/s2)
+  double precision, intent(out) :: HADVAS(size(r),size(z),nw)  !! Horizontal advection for asymmetric flows (1/s2)
+  double precision, intent(out) :: VADVAX(size(r),size(z))   !! Vertical advection for axisymmetric flows (1/s2)
+  double precision, intent(out) :: STRAX(size(r),size(z))   !! Stretching by axisymmetric flows (1/s2)
+  double precision, intent(out) :: TILAX(size(r),size(z))   !! Tilting by axisymmetric flows (1/s2)
 
+  !-- internal variables
+  integer :: ii, jj, kk, nnr, nnz
+  double precision :: r_inv(size(r))
+  double precision, dimension(size(r),size(z)) :: tmp_dVORT0dt, tmp_HADVAX, tmp_VADVAX, tmp_STRAX, tmp_TILAX
+  double precision, dimension(size(r),size(z)) :: dv0dz, dw0dr, dzeta0dz, dzeta0dr
+  double precision, dimension(size(r),size(z),nw) :: dzetancdr, dzetansdr, tmp_HADVAS
 
-end subroutine calc_vort
+  nnr=size(r)
+  nnz=size(z)
+
+  tmp_dVORT0dt=undef
+  tmp_HADVAX=undef
+  tmp_HADVAS=undef
+  tmp_VADVAX=undef
+  tmp_STRAX=undef
+  tmp_TILAX=undef
+
+  r_inv=0.0d0
+  do ii=1,nnr
+     if(r(ii)/=0.0d0)then
+        r_inv(ii)=1.0d0/r(ii)
+     else
+        undeflag(ii,1:nnz)=.true.
+     end if
+  end do
+
+  !-- calculate dVORT0/dr, dVORT0/dz
+  call grad_2d( r, z, VORT0, dzeta0dr, dzeta0dz, undeflag=undeflag )
+
+!$omp parallel default(shared)
+!$omp do schedule(runtime) private(ii)
+
+  !-- calculate dV0/dz
+  do ii=1,nnr
+     call grad_1d( z, VR0(ii,1:nnz), dv0dz(ii,1:nnz), undeflag=undeflag(ii,1:nnz) )
+  end do
+
+!$omp end do
+!$omp barrier
+!$omp do schedule(runtime) private(kk)
+
+  !-- calculate dw0/dr
+  do kk=1,nnz
+     call grad_1d( r, w0(1:nnr,kk), dw0dr(1:nnr,kk), undeflag=undeflag(1:nnr,kk) )
+  end do
+
+!$omp end do
+!$omp barrier
+!$omp do schedule(runtime) private(jj,kk)
+
+  !-- calculate dzetan/dr
+  do jj=1,nw
+     do kk=1,nnz
+        call grad_1d( r, zetans(1:nnr,kk,jj), dzetansdr(1:nnr,kk,jj), undeflag=undef(1:nnr,kk) )
+        call grad_1d( r, zetanc(1:nnr,kk,jj), dzetancdr(1:nnr,kk,jj), undeflag=undef(1:nnr,kk) )
+     end do
+  end do
+
+!$omp end do
+!$omp barrier
+
+  do jj=1,nw
+
+!$omp do schedule(runtime) private(ii,kk)
+     do kk=1,nnz
+        do ii=1,nnr
+           if(undeflag(ii,kk).eqv..false.)then
+              tmp_HADVAS(ii,kk,jj)=-0.5d0*(Unc(ii,kk,jj)*dzetancdr(ii,kk,jj)  &
+  &                                       +Uns(ii,kk,jj)*dzetansdr(ii,kk,jj)  &
+  &                                       +(Vnc(ii,kk,jj)*zetans(ii,kk,jj)  &
+  &                                        +Vns(ii,kk,jj)*zetanc(ii,kk,jj))  &
+  &                                        *dble(jj)*r_inv(ii))
+           end if
+        end do
+     end do
+!$omp end do
+!$omp barrier
+
+  end do
+
+!$omp do schedule(runtime) private(ii,kk)
+
+  do kk=1,nnz
+     do ii=1,nnr
+        if(undeflag(ii,kk).eqv..false.)then
+           tmp_HADVAX(ii,kk)=-UD0(ii,kk)*dzeta0dr(ii,kk)
+           tmp_VADVAX(ii,kk)=-w0(ii,kk)*dzeta0dz(ii,kk)
+           tmp_STRAX(ii,kk)=-(f0+VORT0(ii,kk))*DIV0(ii,kk)
+           tmp_TILAX(ii,kk)=-dw0dr(ii,kk)*dv0dz(ii,kk)
+        end if
+     end do
+  end do
+
+!$omp end do
+!$omp end parallel
+
+!-- Return each argument
+
+  HADVAX=tmp_HADVAX
+  HADVAS=tmp_HADVAS
+  VADVAX=tmp_VADVAX
+  STRAX=tmp_STRAX
+  TILAX=tmp_TILAX
+
+  tmp_dVORT0dt=tmp_HADVAX
+
+  call add_2dd( tmp_dVORT0dt, tmp_VADVAX, undef=undef )
+  call add_2dd( tmp_dVORT0dt, tmp_STRAX, undef=undef )
+  call add_2dd( tmp_dVORT0dt, tmp_TILAX, undef=undef )
+  do jj=1,nw
+     call add_2dd( tmp_dVORT0dt, tmp_HADVAS(1:nnr,1:nnz,jj), undef=undef )
+  end do
+
+  dVORT0dt=tmp_dVORT0dt
+
+end subroutine calc_vort_bud
+
+!--------------------------------
+!--------------------------------
+
+subroutine calc_vortn_bud( nw, r, z, UD0, VR0, w0, DIV0, VORT0,  & ! in
+  &                        Uns, Unc, Vns, Vnc, zetans, zetanc, undef, undeflag,  & ! in
+  &                        dzetancdt, HADVAXnc, HADVASnc, VADVAXnc, STRAXnc, TILAXnc,  &  ! out
+  &                        dzetansdt, HADVAXns, HADVASns, VADVAXns, STRAXns, TILAXns )  ! out
+!! Perform budget analysis of wavenumber-n vorticity
+  integer, intent(in) :: nw  ! wavenumber for rotating component
+  double precision, intent(in) :: r(:)  !! Radius at which velocity is defined (m)
+  double precision, intent(in) :: z(:)  !! Height at which velocity is defined (m)
+  double precision, intent(in) :: UD0(size(r),size(z))   !! Divergent zero wind component (m/s)
+  double precision, intent(in) :: VR0(size(r),size(z))   !! Rotating zero wind component (m/s)
+  double precision, intent(in) :: w0(size(r),size(z))    !! Vertical zero wind component (m/s)
+  double precision, intent(in) :: DIV0(size(r),size(z))   !! Axisymmetric divergence (1/s)
+  double precision, intent(in) :: VORT0(size(r),size(z))   !! Axisymmetric vorticity (1/s)
+  double precision, intent(in) :: Uns(size(r),size(z),nw)   !! Sine coefficient for asymmetric radial winds (m/s)
+  double precision, intent(in) :: Unc(size(r),size(z),nw)   !! Cosine coefficient for asymmetric radial winds (m/s)
+  double precision, intent(in) :: Vns(size(r),size(z),nw)   !! Sine coefficient for asymmetric tangential winds (m/s)
+  double precision, intent(in) :: Vnc(size(r),size(z),nw)   !! Cosine coefficient for asymmetric tangential winds (m/s)
+  double precision, intent(in) :: zetans(size(r),size(z),nw)   !! Sine coefficient for asymmetric vorticity (1/s)
+  double precision, intent(in) :: zetanc(size(r),size(z),nw)   !! Cosine coefficient for asymmetric vorticity (1/s)
+  double precision, intent(in) :: undef  !! Undefined value
+  logical, intent(inout) :: undeflag(size(r),size(z))  ! Undefined grid flag (true)
+  double precision, intent(out) :: dzetansdt(size(r),size(z),nw)   !! Sine amplitude of Sum of the budget equation (1/s2)
+  double precision, intent(out) :: HADVAXns(size(r),size(z),nw)   !! Sine amplitude of horizontal advection for axisymmetric flows (1/s2)
+  double precision, intent(out) :: HADVASns(size(r),size(z),nw)  !! Sine amplitude of horizontal advection for asymmetric flows (1/s2)
+  double precision, intent(out) :: VADVAXns(size(r),size(z),nw)   !! Sine amplitude of vertical advection for axisymmetric flows (1/s2)
+  double precision, intent(out) :: STRAXns(size(r),size(z),nw)   !! Sine amplitude of stretching by axisymmetric flows (1/s2)
+  double precision, intent(out) :: TILAXns(size(r),size(z),nw)   !! Sine amplitude of tilting by axisymmetric flows (1/s2)
+  double precision, intent(out) :: dzetancdt(size(r),size(z),nw)   !! Cosine amplitude of Sum of the budget equation (1/s2)
+  double precision, intent(out) :: HADVAXnc(size(r),size(z),nw)   !! Cosine amplitude of horizontal advection for axisymmetric flows (1/s2)
+  double precision, intent(out) :: HADVASnc(size(r),size(z),nw)  !! Cosine amplitude of horizontal advection for asymmetric flows (1/s2)
+  double precision, intent(out) :: VADVAXnc(size(r),size(z),nw)   !! Cosine amplitude of vertical advection for axisymmetric flows (1/s2)
+  double precision, intent(out) :: STRAXnc(size(r),size(z),nw)   !! Cosine amplitude of stretching by axisymmetric flows (1/s2)
+  double precision, intent(out) :: TILAXnc(size(r),size(z),nw)   !! Cosine amplitude of tilting by axisymmetric flows (1/s2)
+
+  !-- internal variables
+  integer :: ii, jj, kk, nnr, nnz
+  double precision :: r_inv(size(r))
+  double precision, dimension(size(r),size(z),nw) :: tmp_dzetansdt, tmp_HADVAXns, tmp_HADVASns, tmp_VADVAXns, tmp_STRAXns, tmp_TILAXns
+  double precision, dimension(size(r),size(z),nw) :: tmp_dzetancdt, tmp_HADVAXnc, tmp_HADVASnc, tmp_VADVAXnc, tmp_STRAXnc, tmp_TILAXnc
+  double precision, dimension(size(r),size(z)) :: dv0dz, dw0dr, dzeta0dz, dzeta0dr
+  double precision, dimension(size(r),size(z),nw) :: dzetansdr, dzetancdr, dzetansdz, dzetancdz
+  double precision, dimension(size(r),size(z),nw) :: dVnsdz, dVncdz
+
+  nnr=size(r)
+  nnz=size(z)
+
+  tmp_dzetansdt=undef
+  tmp_HADVAXns=undef
+  tmp_HADVASns=undef
+  tmp_VADVAXns=undef
+  tmp_STRAXns=undef
+  tmp_TILAXns=undef
+  tmp_dzetancdt=undef
+  tmp_HADVAXnc=undef
+  tmp_HADVASnc=undef
+  tmp_VADVAXnc=undef
+  tmp_STRAXnc=undef
+  tmp_TILAXnc=undef
+
+  r_inv=0.0d0
+  do ii=1,nnr
+     if(r(ii)/=0.0d0)then
+        r_inv(ii)=1.0d0/r(ii)
+     else
+        undeflag(ii,1:nnz)=.true.
+     end if
+  end do
+
+  call grad_2d( r, z, VORT0, dzeta0dr, dzeta0dz, undeflag=undeflag )
+
+!$omp parallel default(shared)
+!$omp do schedule(runtime) private(jj)
+
+  !-- calculate dzetan{s,c}/dr, dzetan{s,c}/dz
+  do jj=1,nw
+     call grad_2d( r, z, zetans(1:nnr,1:nnz,jj),  &
+  &                dzetansdr(1:nnr,1:nnz,jj),  &
+  &                dzetansdz(1:nnr,1:nnz,jj),  &
+  &                undeflag=undeflag )
+
+     call grad_2d( r, z, zetanc(1:nnr,1:nnz,omppe),  &
+  &                dzetancdr(1:nnr,1:nnz,jj),  &
+  &                dzetancdz(1:nnr,1:nnz,jj),  &
+  &                undeflag=undeflag )
+  end do
+
+!$omp end do
+!$omp barrier
+
+  !-- calculate dVn{s,c}/dz
+  do jj=1,nw
+
+!$omp do schedule(runtime) private(ii)
+     do ii=1,nnr
+        call grad_1d( z, Vns(ii,1:nnz,jj), dVnsdz(ii,1:nnz,jj),  &
+  &                   undeflag=undeflag(ii,1:nnz) )
+
+        call grad_1d( z, Vnc(ii,1:nnz,jj), dVncdz(ii,1:nnz,jj),  &
+  &                   undeflag=undeflag(ii,1:nnz) )
+     end do
+!$omp end do
+!$omp barrier
+
+  end do
+
+!$omp do schedule(runtime) private(kk)
+
+  !-- calculate dw0/dr
+  do kk=1,nnz
+     call grad_1d( r, w0(1:nnr,kk), dw0dr(1:nnr,kk), undeflag=undeflag(1:nnr,kk) )
+  end do
+
+!$omp end do
+!$omp barrier
+!$omp do schedule(runtime) private(jj,kk)
+
+  !-- calculate dzetan/dr
+  do jj=1,nw
+     do kk=1,nnz
+        call grad_1d( r, zetans(1:nnr,kk,jj), dzetansdr(1:nnr,kk,jj),  &
+  &                   undeflag=undeflag(1:nnr,kk) )
+        call grad_1d( r, zetanc(1:nnr,kk,jj), dzetancdr(1:nnr,kk,jj),  &
+  &                   undeflag=undeflag(1:nnr,kk) )
+     end do
+  end do
+
+!$omp end do
+!$omp barrier
+
+  do jj=1,nw
+
+!$omp do schedule(runtime) private(ii,kk)
+     do kk=1,nnz
+        do ii=1,nnr
+           if(undeflag(ii,kk).eqv..false.)then
+              tmp_HADVAS(ii,kk,jj)=-0.5d0*(Unc(ii,kk,jj)*dzetancdr(ii,kk,jj)  &
+  &                                       +Uns(ii,kk,jj)*dzetansdr(ii,kk,jj)  &
+  &                                       +(Vnc(ii,kk,jj)*zetans(ii,kk,jj)  &
+  &                                        +Vns(ii,kk,jj)*zetanc(ii,kk,jj))  &
+  &                                        *dble(jj)*r_inv(ii))
+           end if
+        end do
+     end do
+!$omp end do
+!$omp barrier
+
+  end do
+
+  do jj=1,nw
+
+!$omp do schedule(runtime) private(ii,kk)
+     do kk=1,nnz
+        do ii=1,nnr
+           if(undeflag(ii,kk,jj).eqv..false.)then
+              tmp_HADVAXns(ii,kk,jj)=-UD0(ii,kk)*dzetansdr(ii,kk,jj)  &
+  &                                  +VR0(ii,kk)*zetanc(ii,kk,jj)*dble(jj)*r_inv(ii)
+              tmp_VADVAXns(ii,kk,jj)=-w0(ii,kk)*dzeta0dz(ii,kk,jj)
+              tmp_STRAXns(ii,kk,jj)=-(f0+VORT0(ii,kk))*DIV0(ii,kk,jj)
+              tmp_TILAXns(ii,kk,jj)=-dw0dr(ii,kk)*dv0dz(ii,kk,jj)
+
+           end if
+        end do
+     end do
+!$omp end do
+!$omp barrier
+
+  end do
+
+!$omp end parallel
+
+!-- Return each argument
+
+  HADVAX=tmp_HADVAX
+  HADVAS=tmp_HADVAS
+  VADVAX=tmp_VADVAX
+  STRAX=tmp_STRAX
+  TILAX=tmp_TILAX
+
+  tmp_dVORT0dt=tmp_HADVAX
+
+  call add_2dd( tmp_dVORT0dt, tmp_VADVAX, undef=undef )
+  call add_2dd( tmp_dVORT0dt, tmp_STRAX, undef=undef )
+  call add_2dd( tmp_dVORT0dt, tmp_TILAX, undef=undef )
+  do jj=1,nw
+     call add_2dd( tmp_dVORT0dt, tmp_HADVAS(jj,1:nnr,1:nnz), undef=undef )
+  end do
+
+  dVORT0dt=tmp_dVORT0dt
+
+end subroutine calc_vort_bud
+
+!--------------------------------
+!--------------------------------
 
 end program
