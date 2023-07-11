@@ -4,7 +4,7 @@ You can use the subroutines and functions by linking the build library (`libGVTD
 $ gfortran -IXXX/include main.f90 -LXXX -lGVTDX -o main  # -> The executable file of `main` will be built
 ```
 
-* You can find [example programs](tools/) in `tools/`
+* You can find [example programs](./) in `tools/`
   * There are sample programs with real data from single-Doppler radar observations. 
 
 # Program list 
