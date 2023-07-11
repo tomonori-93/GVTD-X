@@ -15,3 +15,7 @@ $ gfortran -IXXX/include main.f90 -LXXX -lGVTDX -o main  # -> The executable fil
 
 # Compiling
 By running `make`, the programs will be compilied. 
+
+
+# Tips
+* You can use options for OpenMP in `FCFLAGS` to perform multi-threaded parallel processing (e.g., gfortran: `-fopenmp`, ifort: `-qopenmp`). 
