@@ -5,6 +5,7 @@ GVTD-X is a numerical method to retrieve tangential and radial wind components i
 # Features (Updates from previous methods)
 * Introducing asymmetric radial wind components in the closure assumption
   * Accurate wind retrievals for atmospheric vortices with asymmetric tangential and radial wind components
+  * Insensitive of the retrieved axisymmetric winds to errors of the vortex-center estimation, compared with GBVTD and GVTD
 * Simultaneously solving the retrieval equations for entire radii
   * Radial consistency of the asymmetric winds even in potential radial gaps due to insufficient sampling in the azimuth
 
@@ -25,3 +26,9 @@ Paper (submitted, [preprint](https://jxiv.jst.go.jp/index.php/jxiv/preprint/view
 ### [Install](install.md)
 ### [How to use](tools/README.md)
 ### [Demo](demo/sample.md)
+
+# Future works
+* Validation with dual-Doppler analysis
+* Development of objective methods to find the vortex center
+* Application to various vortices and cases
+* Dynamical analyses by using this method
