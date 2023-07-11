@@ -22,6 +22,6 @@ Paper (submitted, [preprint](https://jxiv.jst.go.jp/index.php/jxiv/preprint/view
 
 
 # USAGE
-## [Install](install.md)
-## [How to use](tools/README.md)
-## [Demo](demo/sample.md)
+### [Install](install.md)
+### [How to use](tools/README.md)
+### [Demo](demo/sample.md)
