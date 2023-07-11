@@ -1,5 +1,11 @@
-# About this directory
-There are sample programs with real data from single-Doppler radar observations. 
+# How to use GVTD-X
+You can use the subroutines and functions by linking the build library (`libGVTDX.a`) to your Fortran main programs (ex., `main.f90`) as follows: 
+```
+$ gfortran -IXXX/include main.f90 -LXXX -lGVTDX -o main  # -> The executable file of `main` will be built
+```
+
+* You can find [example programs](tools/) in `tools/`
+  * There are sample programs with real data from single-Doppler radar observations. 
 
 # Program list 
 * [`GVTDX_Dradar`](docs/GVTDX_Dradar.md)
