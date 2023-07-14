@@ -1,5 +1,5 @@
 # Introduction of GVTD-X
-GVTD-X is a numerical method to retrieve tangential and radial wind components in atmospheric vortices from single-Doppler radar observations, which is named from pronounciation of a abbreviation "GVTD-HeCs" (Generalized Velocity Track Display with the Helmholtz-decomposition-based Closure assumption). The method is coded by Fortran. You can use it by linking the static library `libGVTDX.a`. 
+GVTD-X is a numerical method to retrieve tangential and radial wind components in atmospheric vortices from single-Doppler radar observations, which is named from pronounciation of a abbreviation "GVTD-HeCs" (Generalized Velocity Track Display with the Helmholtz-decomposition-based Closure assumption). The retrieval method is implemented by Fortran. You can use it by linking the static library `libGVTDX.a`. 
 
 
 # Features (Updates from previous methods)
