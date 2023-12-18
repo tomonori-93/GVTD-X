@@ -6,6 +6,7 @@ module GVTDX_sub
   complex, parameter :: img=(0.0,1.0)  !! Imaginary unit for real
   double precision, parameter :: pi_dp=3.14159265358979d0  !! Pi for double
   double precision, parameter :: radius_dp=6.371d6   !! polar radius of the Earth (m)
+  double precision, parameter :: omega_dp=7.2918933286303412732d-5    !! rotational angular velocity of Earth (s-1)
   complex(kind(0d0)), parameter :: img_cdp=(0.0d0,1.0d0)   !! Imaginary unit for double
 
 contains
