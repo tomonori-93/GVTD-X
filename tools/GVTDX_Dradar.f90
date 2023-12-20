@@ -289,6 +289,12 @@ program GVTDX_Dradar
      VRT0_GVTD=undef
      VDR0_GVTD=undef
      Vn_0=undef
+     VRTns_2d=undef
+     VRTnc_2d=undef
+     VRRns_2d=undef
+     VRRnc_2d=undef
+     zetans_2d=undef
+     zetanc_2d=undef
 
      !-- Read the vortex center position on lon-lat
      x_tc=dble( c2r_convert( trim(adjustl(cval(3,i))) ) )
@@ -357,10 +363,6 @@ program GVTDX_Dradar
         zetan_rt_t(nrotmin:nrot,1:nr,1:nt)=undef
         VRT0_GVTD_rt_t(1:nr,1:nt)=undef
         VDR0_GVTD_rt_t(1:nr,1:nt)=undef
-        VRTns_2d(nrotmin:nrot,1:nr,1:nz)=undef
-        VRTnc_2d(nrotmin:nrot,1:nr,1:nz)=undef
-        VRRns_2d(nrotmin:nrot,1:nr,1:nz)=undef
-        VRRnc_2d(nrotmin:nrot,1:nr,1:nz)=undef
         Vn_0_rt_t(1:nr,1:nt)=undef
 
         !-- B. do interpolation from nr_org, nt_org to smooth_r, smooth_t = (nr,nt)
@@ -371,10 +373,10 @@ program GVTDX_Dradar
         !-- C. VD - projVs
         select case(flag_GVTDX)
         case (1)  ! GVTDX
-           call sub_2dd( Vra_rt_t(1:nr,1:nt), projVs(1:nr,1:nt), undef )
-           call sub_2dd( projVm(1:nr,1:nt), projVs(1:nr,1:nt), undef )
+           call subst_2d( Vra_rt_t(1:nr,1:nt), projVs(1:nr,1:nt), undef )
+           call subst_2d( projVm(1:nr,1:nt), projVs(1:nr,1:nt), undef )
         case (2)  ! GVTD
-           call sub_2dd( Vra_rt_t(1:nr,1:nt), projVm(1:nr,1:nt), undef )
+           call subst_2d( Vra_rt_t(1:nr,1:nt), projVm(1:nr,1:nt), undef )
         end select
 
         !-- D. determine the innermost and outermost radii for retrieval using nthres_undef
@@ -652,6 +654,10 @@ program GVTDX_Dradar
            do k=1,nrot
               irec=irec+1
               call conv_d2r_2d( zetans_2d(k,1:nr,nnz(1):nnz(2)), rval2d(1:nr,nnz(1):nnz(2)) )
+              call write_file_2d( trim(adjustl(output2d_fname)), nr, ntz, irec,  &
+  &                               rval2d(1:nr,nnz(1):nnz(2)), mode='old' )
+              irec=irec+1
+              call conv_d2r_2d( zetanc_2d(k,1:nr,nnz(1):nnz(2)), rval2d(1:nr,nnz(1):nnz(2)) )
               call write_file_2d( trim(adjustl(output2d_fname)), nr, ntz, irec,  &
   &                               rval2d(1:nr,nnz(1):nnz(2)), mode='old' )
               irec=irec+1

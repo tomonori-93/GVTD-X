@@ -1,102 +1,23 @@
 module tools_sub
 !! Module for rearrangement of the radial grid and some operations for undef data in tools/ programs
 
+  ! under construction
+  type file_ord_3d  !! Setting variable order in read/write file
+     integer :: VT
+     integer :: VR
+     integer :: VTs
+     integer :: VTc
+     integer :: VRs
+     integer :: VRc
+     integer :: phi
+     integer :: phis
+     integer :: phic
+     integer :: zeta
+     integer :: zetas
+     integer :: zetac
+  end type file_ord_3d
+
 contains
-
-subroutine conv_d2r_3d( ival, oval )
-!! convert double to real
-  implicit none
-  double precision, intent(in) :: ival(:,:,:)  !! input array
-  real, intent(out) :: oval(size(ival,1),size(ival,2),size(ival,3))  !! output array
-  integer :: ii, jj, kk, ni, nj, nk  !! internal variables
-
-  ni=size(ival,1)
-  nj=size(ival,2)
-  nk=size(ival,3)
-
-  do kk=1,nk
-     do jj=1,nj
-        do ii=1,ni
-!write(*,*) "checkii", ii, jj, kk, ival(ii,jj,kk)
-if(dabs(ival(ii,jj,kk))>1.0d15)then
-           oval(ii,jj,kk)=-1.0e3
-else
-           oval(ii,jj,kk)=real(ival(ii,jj,kk))
-end if
-        end do
-     end do
-  end do
-
-end subroutine conv_d2r_3d
-
-!--------------------------------------------------
-!--------------------------------------------------
-
-subroutine conv_r2d_2d( ival, oval )
-!! convert real to double
-  implicit none
-  real, intent(in) :: ival(:,:)  !! input array
-  double precision, intent(out) :: oval(size(ival,1),size(ival,2))  !! output array
-  integer :: ii, jj, ni, nj  !! internal variables
-
-  ni=size(ival,1)
-  nj=size(ival,2)
-
-  do jj=1,nj
-     do ii=1,ni
-        oval(ii,jj)=dble(ival(ii,jj))
-     end do
-  end do
-
-end subroutine conv_r2d_2d
-
-!--------------------------------------------------
-!--------------------------------------------------
-
-subroutine add_2dd( ioval, sval, undef )
-!! add sval to ioval
-  implicit none
-  double precision, intent(inout) :: ioval(:,:)  !! base
-  double precision, intent(in) :: sval(size(ioval,1),size(ioval,2))  !! increment
-  double precision, intent(in) :: undef  !! undefined value
-  integer :: ii, jj, ni, nj  !! internal variables
-
-  ni=size(ioval,1)
-  nj=size(ioval,2)
-
-  do jj=1,nj
-     do ii=1,ni
-        if(ioval(ii,jj)/=undef.and.sval(ii,jj)/=undef)then
-           ioval(ii,jj)=ioval(ii,jj)+sval(ii,jj)
-        end if
-     end do
-  end do
-
-end subroutine add_2dd
-
-!--------------------------------------------------
-!--------------------------------------------------
-
-subroutine sub_2dd( ioval, sval, undef )
-!! subtract sval from ioval
-  implicit none
-  double precision, intent(inout) :: ioval(:,:)  !! base
-  double precision, intent(in) :: sval(size(ioval,1),size(ioval,2))  !! increment
-  double precision, intent(in) :: undef  !! undefined value
-  integer :: ii, jj, ni, nj  !! internal variables
-
-  ni=size(ioval,1)
-  nj=size(ioval,2)
-
-  do jj=1,nj
-     do ii=1,ni
-        if(ioval(ii,jj)/=undef.and.sval(ii,jj)/=undef)then
-           ioval(ii,jj)=ioval(ii,jj)-sval(ii,jj)
-        end if
-     end do
-  end do
-
-end subroutine sub_2dd
 
 !--------------------------------------------------
 !--------------------------------------------------
