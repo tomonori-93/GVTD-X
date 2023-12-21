@@ -40,7 +40,7 @@ program GVTDX_budgets
   double precision :: fc, d2r, y_tc
   double precision, allocatable, dimension(:) :: theta_t, r_t, rh_t, z_v
   double precision, allocatable, dimension(:,:) :: dval
-  double precision, allocatable, dimension(:,:) :: VRT0_r, VDR0_r, DIV0_r, ZETA0_r
+  double precision, allocatable, dimension(:,:) :: VRT0_r, VDR0_r, DIV0_r, ZETA0_r, ANGV0_r
   double precision, allocatable, dimension(:,:) :: dVRT0_rdt, dZETA0_rdt
   double precision, allocatable, dimension(:,:) :: w0_r
   double precision, allocatable, dimension(:,:,:,:) :: VRTn, VRRn, VDTm, VDRm
@@ -53,7 +53,7 @@ program GVTDX_budgets
   double precision, allocatable, dimension(:,:,:) :: zetan_rt_t
   !-- Budget terms
   double precision, allocatable, dimension(:,:) :: HADVAX_AAM, VADVAX_AAM, HADVAS_AAM
-  double precision, allocatable, dimension(:,:,:) :: HADVASn_AAM
+  double precision, allocatable, dimension(:,:,:) :: HADVASn_AAM, HADVASn_vort
   double precision, allocatable, dimension(:,:) :: HADVAX_vort, VADVAX_vort, HADVAS_vort, STRAX_vort, TILAX_vort
 
   character(200) :: input_fname, output_fname
@@ -159,6 +159,7 @@ program GVTDX_budgets
   allocate(VDR0_r(nr,nz))
   allocate(DIV0_r(nr,nz))
   allocate(ZETA0_r(nr,nz))
+  allocate(ANGV0_r(nr,nz))
   allocate(w0_r(nr,nz))
   allocate(dVRT0_rdt(nr,nz))
   allocate(dZETA0_rdt(nr,nz))
@@ -193,7 +194,7 @@ program GVTDX_budgets
   allocate(HADVAX_vort(nr,nz))
   allocate(VADVAX_vort(nr,nz))
   allocate(HADVAS_vort(nr,nz))
-!  allocate(HADVASn_vort(nr,nz,nrotmin:nrot))
+  allocate(HADVASn_vort(nr,nz,nrotmin:nrot))
   allocate(STRAX_vort(nr,nz))
   allocate(TILAX_vort(nr,nz))
 
@@ -286,6 +287,7 @@ program GVTDX_budgets
 
      !-- 0. Calculate axisymmetric components of vorticity and divergence
      call calc_rotdiv( nr, nz, r_t, VDR0_r, VRT0_r, undef, DIV0_r, ZETA0_r )
+     call calc_angvel( nr, nz, r_t, VRT0_r, undef, ANGV0_r )
 
      !-- 1. Calculate AAM budget
      call calc_AAM_bud( nrot, fc, r_t, z_v, VDR0_r, VRT0_r, w0_r, ZETA0_r,  & ! in
@@ -296,7 +298,7 @@ program GVTDX_budgets
      call calc_vort_bud( nrot, fc, r_t, z_v, VDR0_r, VRT0_r, w0_r,  & ! in
   &                      DIV0_r, ZETA0_r, VRRns_r, VRRnc_r, VRTns_r, VRTnc_r,  & ! in
   &                      zetans_r, zetanc_r, undef,  & ! in
-  &                      dZETA0_rdt, HADVAX_vort, HADVAS_vort,  & !out
+  &                      dZETA0_rdt, HADVAX_vort, HADVAS_vort, HADVASn_vort,  & !out
   &                      VADVAX_vort, STRAX_vort, TILAX_vort )  ! out
 
 !-- 以下は作成しただけで未チェック
@@ -315,6 +317,10 @@ program GVTDX_budgets
 
      irec=irec+1
      call conv_d2r_2d( DIV0_r(1:nr,1:nz), rval(1:nr,1:nz) )
+     call write_file_2d( trim(adjustl(output_fname)), nr, nz, irec, rval(1:nr,1:nz), mode='old' )
+
+     irec=irec+1
+     call conv_d2r_2d( ANGV0_r(1:nr,1:nz), rval(1:nr,1:nz) )
      call write_file_2d( trim(adjustl(output_fname)), nr, nz, irec, rval(1:nr,1:nz), mode='old' )
 
      irec=irec+1
@@ -429,6 +435,48 @@ end subroutine calc_rotdiv
 !--------------------------------
 !--------------------------------
 
+subroutine calc_angvel( nr, nz, r, VR0, undef,  &  ! in
+  &                     ANGV0 )  ! out
+!! Calculate angular velocity
+  integer, intent(in) :: nr  !! radial grid number
+  integer, intent(in) :: nz  !! vertical grid number
+  double precision, intent(in) :: r(nr)  !! Radius at which velocity is defined (m)
+  double precision, intent(in) :: VR0(nr,nz)   !! Rotating zero wind component (m/s)
+  double precision, intent(in) :: undef  !! Undefined value
+  double precision, intent(out) :: ANGV0(nr,nz)   !! Angular velocity (rad/s)
+
+  !-- internal variables
+  integer :: ii, jj, kk
+  double precision :: r_inv(nr)
+
+  r_inv=undef
+  ANGV0=undef
+
+  do ii=1,nr
+     if(r(ii)/=0.0d0)then
+        r_inv(ii)=1.0d0/r(ii)
+     end if
+  end do
+
+!$omp parallel default(shared)
+!$omp do schedule(dynamic) private(ii,kk)
+
+  do kk=1,nz
+     do ii=1,nr
+        if(VR0(ii,kk)/=undef.and.r_inv(ii)/=undef)then
+           ANGV0(ii,kk)=VR0(ii,kk)*r_inv(ii)
+        end if
+     end do
+  end do
+
+!$omp end do
+!$omp end parallel
+
+end subroutine calc_angvel
+
+!--------------------------------
+!--------------------------------
+
 subroutine calc_AAM_bud( nw, f0, r, z, UD0, VR0, w0, ZETA0,  & ! in
   &                      Uns, Unc, zetans, zetanc, undef,  & ! in
   &                      dVR0dt, HADVAX, HADVAS, HADVASn, VADVAX )  ! out
@@ -499,9 +547,10 @@ subroutine calc_AAM_bud( nw, f0, r, z, UD0, VR0, w0, ZETA0,  & ! in
 
   do kk=1,nnz
      do ii=1,nnr
-        if(UD0(ii,kk)/=undef.and.ZETA0(ii,kk)/=undef.and.  &
-  &        w0(ii,kk)/=undef.and.dv0dz(ii,kk)/=undef)then
+        if(UD0(ii,kk)/=undef.and.ZETA0(ii,kk)/=undef)then
            tmp_HADVAX(ii,kk)=-UD0(ii,kk)*(ZETA0(ii,kk)+f0)
+        end if
+        if(w0(ii,kk)/=undef.and.dv0dz(ii,kk)/=undef)then
            tmp_VADVAX(ii,kk)=-w0(ii,kk)*dv0dz(ii,kk)
         end if
      end do
@@ -538,7 +587,7 @@ end subroutine calc_AAM_bud
 
 subroutine calc_vort_bud( nw, f0, r, z, UD0, VR0, w0, DIV0, ZETA0,  & ! in
   &                       Uns, Unc, Vns, Vnc, zetans, zetanc, undef,  & ! in
-  &                       dZETA0dt, HADVAX, HADVAS, VADVAX, STRAX, TILAX )  ! out
+  &                       dZETA0dt, HADVAX, HADVAS, HADVASn, VADVAX, STRAX, TILAX )  ! out
 !! Perform budget analysis of ZETA0
   integer, intent(in) :: nw  ! wavenumber for rotating component
   double precision, intent(in) :: f0    !! Coriolis parameter (1/s)
@@ -558,7 +607,8 @@ subroutine calc_vort_bud( nw, f0, r, z, UD0, VR0, w0, DIV0, ZETA0,  & ! in
   double precision, intent(in) :: undef  !! Undefined value
   double precision, intent(out) :: dZETA0dt(size(r),size(z))   !! Sum of the budget equation (1/s2)
   double precision, intent(out) :: HADVAX(size(r),size(z))   !! Horizontal advection for axisymmetric flows (1/s2)
-  double precision, intent(out) :: HADVAS(size(r),size(z),nw)  !! Horizontal advection for asymmetric flows (1/s2)
+  double precision, intent(out) :: HADVAS(size(r),size(z))  !! Horizontal advection for asymmetric flows (1/s2)
+  double precision, intent(out) :: HADVASn(size(r),size(z),nw)  !! Horizontal advection for asymmetric flows (1/s2)
   double precision, intent(out) :: VADVAX(size(r),size(z))   !! Vertical advection for axisymmetric flows (1/s2)
   double precision, intent(out) :: STRAX(size(r),size(z))   !! Stretching by axisymmetric flows (1/s2)
   double precision, intent(out) :: TILAX(size(r),size(z))   !! Tilting by axisymmetric flows (1/s2)
@@ -566,9 +616,9 @@ subroutine calc_vort_bud( nw, f0, r, z, UD0, VR0, w0, DIV0, ZETA0,  & ! in
   !-- internal variables
   integer :: ii, jj, kk, nnr, nnz
   double precision :: r_inv(size(r))
-  double precision, dimension(size(r),size(z)) :: tmp_dZETA0dt, tmp_HADVAX, tmp_VADVAX, tmp_STRAX, tmp_TILAX
+  double precision, dimension(size(r),size(z)) :: tmp_dZETA0dt, tmp_HADVAX, tmp_VADVAX, tmp_HADVAS, tmp_STRAX, tmp_TILAX
   double precision, dimension(size(r),size(z)) :: dv0dz, dw0dr, dzeta0dz, dzeta0dr
-  double precision, dimension(size(r),size(z),nw) :: dzetancdr, dzetansdr, tmp_HADVAS
+  double precision, dimension(size(r),size(z),nw) :: dzetancdr, dzetansdr, tmp_HADVASn
 
   nnr=size(r)
   nnz=size(z)
@@ -579,6 +629,7 @@ subroutine calc_vort_bud( nw, f0, r, z, UD0, VR0, w0, DIV0, ZETA0,  & ! in
   tmp_VADVAX=undef
   tmp_STRAX=undef
   tmp_TILAX=undef
+  tmp_HADVASn=undef
 
   r_inv=undef
   do ii=1,nnr
@@ -631,11 +682,11 @@ subroutine calc_vort_bud( nw, f0, r, z, UD0, VR0, w0, DIV0, ZETA0,  & ! in
   &           Vnc(ii,kk,jj)/=undef.and.Vns(ii,kk,jj)/=undef.and.  &
   &           dzetancdr(ii,kk,jj)/=undef.and.dzetansdr(ii,kk,jj)/=undef.and.  &
   &           zetanc(ii,kk,jj)/=undef.and.zetans(ii,kk,jj)/=undef)then
-              tmp_HADVAS(ii,kk,jj)=-0.5d0*(Unc(ii,kk,jj)*dzetancdr(ii,kk,jj)  &
-  &                                       +Uns(ii,kk,jj)*dzetansdr(ii,kk,jj)  &
-  &                                       +(Vnc(ii,kk,jj)*zetans(ii,kk,jj)  &
-  &                                        +Vns(ii,kk,jj)*zetanc(ii,kk,jj))  &
-  &                                        *dble(jj)*r_inv(ii))
+              tmp_HADVASn(ii,kk,jj)=-0.5d0*(Unc(ii,kk,jj)*dzetancdr(ii,kk,jj)  &
+  &                                        +Uns(ii,kk,jj)*dzetansdr(ii,kk,jj)  &
+  &                                        +(Vnc(ii,kk,jj)*zetans(ii,kk,jj)  &
+  &                                         +Vns(ii,kk,jj)*zetanc(ii,kk,jj))  &
+  &                                         *dble(jj)*r_inv(ii))
            end if
         end do
      end do
@@ -665,8 +716,16 @@ subroutine calc_vort_bud( nw, f0, r, z, UD0, VR0, w0, DIV0, ZETA0,  & ! in
 
 !-- Return each argument
 
+  tmp_HADVAS=tmp_HADVASn(1:nnr,1:nnz,1)
+  if(nw>1)then
+     do jj=2,nw
+        call add_2d( tmp_HADVAS, tmp_HADVASn(1:nnr,1:nnz,jj), undef=undef )
+     end do
+  end if
+
   HADVAX=tmp_HADVAX
   HADVAS=tmp_HADVAS
+  HADVASn=tmp_HADVASn
   VADVAX=tmp_VADVAX
   STRAX=tmp_STRAX
   TILAX=tmp_TILAX
@@ -676,9 +735,7 @@ subroutine calc_vort_bud( nw, f0, r, z, UD0, VR0, w0, DIV0, ZETA0,  & ! in
   call add_2d( tmp_dZETA0dt, tmp_VADVAX, undef=undef )
   call add_2d( tmp_dZETA0dt, tmp_STRAX, undef=undef )
   call add_2d( tmp_dZETA0dt, tmp_TILAX, undef=undef )
-  do jj=1,nw
-     call add_2d( tmp_dZETA0dt, tmp_HADVAS(1:nnr,1:nnz,jj), undef=undef )
-  end do
+  call add_2d( tmp_dZETA0dt, tmp_HADVAS, undef=undef )
 
   dZETA0dt=tmp_dZETA0dt
 
