@@ -26,8 +26,9 @@ contains
 
 subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadTC,  &
   &                                 VT, VR, VRT0, VDR0, VRTn, VRRn, VDTm, VDRm,  &
-  &                                 undef, phin, zetan, VRT0_GVTD, VDR0_GVTD,  &
-  &                                 VRTns, VRTnc, VRRns, VRRnc, Vn_0 )
+  &                                 undef, phin, zetan, VRT0_GVTD, VDR0_GVTD, Vn_0,  &
+  &                                 VRTns_r, VRTnc_r, VRRns_r, VRRnc_r,  &
+  &                                 zetans_r, zetanc_r )
 !! Solve unknown variables and return wind velocity on R-T coordinates. <br>
 !!------------------------------------------------------- <br>
 !!-- [relationship between r and rh] -- <br>
@@ -62,14 +63,17 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
   double precision, intent(out), optional :: zetan(nrot,size(r),size(t))  !! retrieved vorticity [s-1]
   double precision, intent(out), optional :: VRT0_GVTD(size(r),size(t))  !! retrieved axisymmetric radial component of pseudo-GVTD tangential wind [m s-1]
   double precision, intent(out), optional :: VDR0_GVTD(size(r),size(t))  !! retrieved axisymmetric tangential component of pseudo-GVTD tangential wind [m s-1]
-  double precision, intent(out), optional :: VRTns(nrot,size(r),size(t))  !! Sine component of retrieved asymmetric radial wind [m s-1]
-  double precision, intent(out), optional :: VRTnc(nrot,size(r),size(t))  !! Cosine component of retrieved asymmetric radial wind [m s-1]
-  double precision, intent(out), optional :: VRRns(nrot,size(r),size(t))  !! Sine component of retrieved asymmetric tangential wind [m s-1]
-  double precision, intent(out), optional :: VRRnc(nrot,size(r),size(t))  !! Cosine component of retrieved asymmetric tangential wind [m s-1]
   double precision, intent(out), optional :: Vn_0(size(r),size(t))  !! Aliased component to asymmetric tangential wind from (storm-relative) mean wind [m s-1]
+  double precision, intent(out), optional :: VRTns_r(nrot,size(r))  !! Sine component of retrieved asymmetric radial wind [m s-1]
+  double precision, intent(out), optional :: VRTnc_r(nrot,size(r))  !! Cosine component of retrieved asymmetric radial wind [m s-1]
+  double precision, intent(out), optional :: VRRns_r(nrot,size(r))  !! Sine component of retrieved asymmetric tangential wind [m s-1]
+  double precision, intent(out), optional :: VRRnc_r(nrot,size(r))  !! Cosine component of retrieved asymmetric tangential wind [m s-1]
+  double precision, intent(out), optional :: zetans_r(nrot,size(r))  !! Sine amplitude of retrieved vorticity [s-1]
+  double precision, intent(out), optional :: zetanc_r(nrot,size(r))  !! Cosine amplitude of retrieved vorticity [s-1]
 
   !-- internal variables
   integer :: i, j, k, p, irad, cstat  ! dummy indexes
+  integer :: icounter_div  ! Index for nrdiv
   integer :: nr, nt  ! array numbers for r and t, respectively
   integer :: nk      ! array number of a_k
   integer :: nrdiv   ! array number for rdiv
@@ -82,10 +86,6 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
   double precision, allocatable, dimension(:,:) :: divc_mr  ! asymmetric (cosine) stream function (D_C(n,r))
   double precision, allocatable, dimension(:) :: GVTDU_r    ! axisymmetric radial wind for pseudo-GVTD
   double precision, allocatable, dimension(:) :: GVTDV_r    ! axisymmetric tangential wind for pseudo-GVTD
-  double precision, allocatable, dimension(:,:) :: VRTns_r  ! sine component of tangential wind
-  double precision, allocatable, dimension(:,:) :: VRTnc_r  ! cosine component of tangential wind
-  double precision, allocatable, dimension(:,:) :: VRRns_r  ! sine component of radial wind
-  double precision, allocatable, dimension(:,:) :: VRRnc_r  ! cosine component of radial wind
   double precision, allocatable, dimension(:) :: x_k        ! unknown vector for retrieved coefficients
   double precision, allocatable, dimension(:) :: b_k        ! known vector given by observed values
   double precision, allocatable, dimension(:,:) :: a_kp     ! coefficient matrix for x_k
@@ -102,8 +102,8 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
 
   nr=size(r)
   nt=size(t)
-  nrdiv=size(rdiv)
-  nrdiv2=size(rdiv)*2
+  nrdiv=size(rdiv)  ! Changeable to icounter_div
+  nrdiv2=size(rdiv)*2  ! Changeable to icounter_div*2
   vmax=50.0d0
 
   if(present(undef))then
@@ -126,6 +126,8 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
      phin=dundef
   end if
   if(present(zetan))then
+     zetans_r=dundef
+     zetanc_r=dundef
      zetan=dundef
   end if
   if(present(VRT0_GVTD))then
@@ -136,15 +138,11 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
      VDR0_GVTD=dundef
      allocate(GVTDU_r(nr),stat=cstat)
   end if
-  if(present(VRTns))then
-     VRTns=dundef
-     VRTnc=dundef
-     VRRns=dundef
-     VRRnc=dundef
-     allocate(VRTns_r(nrot,nr),stat=cstat)
-     allocate(VRTnc_r(nrot,nr),stat=cstat)
-     allocate(VRRns_r(nrot,nr),stat=cstat)
-     allocate(VRRnc_r(nrot,nr),stat=cstat)
+  if(present(VRTns_r))then
+     VRTns_r=dundef
+     VRTnc_r=dundef
+     VRRns_r=dundef
+     VRRnc_r=dundef
   end if
 
 !-- Check retrieved asymmetric wave number
@@ -163,20 +161,34 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
   rtc_n=RadTC/rh(nr+1)
 
 !-- Check and search divergent radii
+  icounter_div=0
   do i=1,nrdiv
      call interpo_search_1d( rh, rdiv(i), irad )
      if((irad==nr+1).and.(rh(nr+1)<rdiv(i)))then
-        if(ndiv>0)then
-           call stdout( "Detect out of range. stop.", "Retrieve_velocity_GVTDX", -1 )
-           stop
-        else  ! Not use of rdiv
-           call stdout( "Detect out of range.", "Retrieve_velocity_GVTDX", 1 )
-           irad=nr
+!        if(ndiv>0)then
+!           call stdout( "Detect out of range. stop.", "Retrieve_velocity_GVTDX", 1 )
+!           stop
+!        else  ! Not use of rdiv
+           call stdout( "Detect out of range (out).", "Retrieve_velocity_GVTDX", 1 )
+!           irad=nr
+!        end if
+        cycle
+     else if(irad==0)then
+        call stdout( "Detect out of range (in).", "Retrieve_velocity_GVTDX", 1 )
+        cycle
+     else if(icounter_div>0)then  ! Check previously asigned grid and currently determined irad
+        if(rdiv_n(2*icounter_div)==rh(irad+1)/rh(nr+1))then
+           call stdout( "Detect assigned grid. skip.", "Retrieve_velocity_GVTDX", 1 )
+           cycle
         end if
      end if
-     rdiv_n(2*i-1)=rh(irad)/rh(nr+1)
-     rdiv_n(2*i)=rh(irad+1)/rh(nr+1)
+     icounter_div=icounter_div+1
+     rdiv_n(2*icounter_div-1)=rh(irad)/rh(nr+1)
+     rdiv_n(2*icounter_div)=rh(irad+1)/rh(nr+1)
   end do
+
+  nrdiv=icounter_div
+  nrdiv2=icounter_div*2
 
 !-- Calculate delta_ij
 !$omp parallel default(shared)
@@ -237,7 +249,8 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
 
 !-- Calculate f_kij
 !-- ** normalized radius is used in r_n **
-  call calc_fkij( nrot, ndiv, nk, Vn, rtc_n, r_n, t, rh_n, td, rdiv_n, f_kij, Vd, undeflag )
+  call calc_fkij( nrot, ndiv, nk, Vn, rtc_n, r_n, t, rh_n, td,  &
+  &               rdiv_n(1:nrdiv2), f_kij, Vd, undeflag )
 
 !-- Calculate b_k
   call calc_fkijVd2bk( vmax, f_kij, Vd, delta, b_k(1:nk), undeflag )
@@ -270,7 +283,7 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
   &                   undef=dundef )
 
 !-- Calculate Vr and Vt components of divergent wind
-  call calc_D2Vdiv( ndiv, vmax, r_n, rh_n, t, rdiv_n, Vdivr_r,  &
+  call calc_D2Vdiv( ndiv, vmax, r_n, rh_n, t, rdiv_n(1:nrdiv2), Vdivr_r,  &
   &                 VDR0, VDTm, VDRm, divc_mr, undef=dundef )
 
 !-- Calculate total retrieved Vr and Vt
@@ -299,7 +312,8 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
   end if
 
   if((present(zetan)).and.(nrot>0))then
-     call calc_Phi2Zetan( nrot, vmax, rh(nr+1), r_n, rh_n, t, phis_nr, phic_nr, zetan )
+     call calc_Phi2Zetan( nrot, vmax, rh(nr+1), r_n, rh_n, t, phis_nr, phic_nr,  &
+  &                       zetans_r, zetanc_r, zetan )
   end if
 
   if(present(VRT0_GVTD).and.(nrot>0))then
@@ -311,18 +325,10 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
      end do
   end if
 
-  if(present(VRTns).and.(nrot>0))then
+  if(present(VRTns_r).and.(nrot>0))then
      call calc_phi2sc( nrot, vmax, r_n, rh_n, phis_nr, phic_nr,  &
   &                    VRTns_r(1:nrot,1:nr), VRTnc_r(1:nrot,1:nr),  &
   &                    VRRns_r(1:nrot,1:nr), VRRnc_r(1:nrot,1:nr) )
-     do k=1,nrot
-        do i=1,nr
-           VRTns(k,i,1:nt)=VRTns_r(k,i)
-           VRTnc(k,i,1:nt)=VRTnc_r(k,i)
-           VRRns(k,i,1:nt)=VRRns_r(k,i)
-           VRRnc(k,i,1:nt)=VRRnc_r(k,i)
-        end do
-     end do
   end if
 
   if(present(Vn_0))then
@@ -1410,7 +1416,8 @@ subroutine calc_Phi2Phin( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr, ph
 end subroutine calc_Phi2Phin
 
 
-subroutine calc_Phi2Zetan( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr, zeta_nr )
+subroutine calc_Phi2Zetan( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr,  &
+  &                        zetas_nr, zetac_nr, zetan )
 !! Calculate vorticity for each wavenumber
   implicit none
   integer, intent(in) :: nrot  !! Maximum wavenumber for stream function
@@ -1421,17 +1428,20 @@ subroutine calc_Phi2Zetan( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr, z
   double precision, intent(in) :: theta(:)  !! Azimuthal angle [rad]
   double precision, intent(in) :: phis_nr(nrot,size(rd)+1)  !! Sine components of stream function [m2/s]
   double precision, intent(in) :: phic_nr(nrot,size(rd)+1)  !! Cosine components of stream function [m2/s]
-  double precision, intent(out) :: zeta_nr(nrot,size(rd),size(theta))  !! Vorticity [1/s]
+  double precision, intent(out) :: zetas_nr(nrot,size(rd))  !! Sine components of vorticity [1/s]
+  double precision, intent(out) :: zetac_nr(nrot,size(rd))  !! Cosine components of vorticity [1/s]
+  double precision, intent(out) :: zetan(nrot,size(rd),size(theta))  !! Vorticity [1/s]
 
   integer :: ii, jj, kk, nnr, nnt, cstat
   double precision, dimension(size(rd)) :: alp
-  double precision, dimension(nrot,size(rd)+1) :: d2psdr2, d2pcdr2, dpsdr, dpcdr, psinv, pcinv
+  double precision, dimension(nrot,size(rd)+1) :: d2psdr2, d2pcdr2, dpsdr, dpcdr
   double precision, dimension(nrot,size(theta)) :: sinen, cosinen
   double precision, dimension(nrot,0:size(rd)+2) :: tmpphis, tmpphic
+  double precision, dimension(nrot,size(rd)) :: tmpzetas, tmpzetac
   double precision, dimension(size(rd)+1) :: drc_inv, drf_inv, drb_inv, rh_inv, rh2_inv
   double precision, dimension(size(rd)) :: r_inv
   double precision :: dpfs, dpfc, dpbs, dpbc, rmax_inv
-  double precision :: d2psdr2i, dpsdri, d2pcdr2i, dpcdri, phisi, phici
+  double precision :: d2psdr2i, dpsdri, d2pcdr2i, dpcdri, phisi, phici, zetasi, zetaci
 
   call stdout( "Enter procedure.", "calc_Phi2Zetan", 0 )
 
@@ -1474,7 +1484,7 @@ subroutine calc_Phi2Zetan( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr, z
   tmpphic(1:nrot,0)=phic_nr(1:nrot,1)          ! dummy
   tmpphic(1:nrot,nnr+2)=phic_nr(1:nrot,nnr+1)  ! dummy
 
-  zeta_nr=0.0d0
+  zetan=0.0d0
 
   do ii=1,nnr
      alp(ii)=(rd(ii)-rdh(ii))/(rdh(ii+1)-rdh(ii))
@@ -1511,24 +1521,33 @@ subroutine calc_Phi2Zetan( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr, z
 
 !$omp end do
 !$omp barrier
-!$omp do schedule(runtime) private(kk,ii,jj,d2psdr2i,dpsdri,d2pcdr2i,dpcdri,phisi,phici)
+!$omp do schedule(runtime) private(kk,ii,d2psdr2i,dpsdri,d2pcdr2i,dpcdri,phisi,phici)
+
+  do ii=1,nnr
+     do kk=1,nrot
+        phisi=alp(ii)*phis_nr(kk,ii+1)+(1.0d0-alp(ii))*phis_nr(kk,ii)
+        phici=alp(ii)*phic_nr(kk,ii+1)+(1.0d0-alp(ii))*phic_nr(kk,ii)
+        d2psdr2i=alp(ii)*d2psdr2(kk,ii+1)+(1.0d0-alp(ii))*d2psdr2(kk,ii)
+        dpsdri=alp(ii)*dpsdr(kk,ii+1)+(1.0d0-alp(ii))*dpsdr(kk,ii)
+        d2pcdr2i=alp(ii)*d2pcdr2(kk,ii+1)+(1.0d0-alp(ii))*d2pcdr2(kk,ii)
+        dpcdri=alp(ii)*dpcdr(kk,ii+1)+(1.0d0-alp(ii))*dpcdr(kk,ii)
+        tmpzetas(kk,ii)=-(d2psdr2i+dpsdri*r_inv(ii)-((dble(kk)*r_inv(ii))**2)*phisi)  &
+  &             *vmax*rmax_inv
+        tmpzetac(kk,ii)=-(d2pcdr2i+dpcdri*r_inv(ii)-((dble(kk)*r_inv(ii))**2)*phici)  &
+  &             *vmax*rmax_inv
+        zetas_nr(kk,ii)=tmpzetas(kk,ii)
+        zetac_nr(kk,ii)=tmpzetac(kk,ii)
+     end do
+  end do
+
+!$omp end do
+!$omp barrier
+!$omp do schedule(runtime) private(kk,ii,jj)
 
   do jj=1,nnt
      do ii=1,nnr
         do kk=1,nrot
-           phisi=alp(ii)*phis_nr(kk,ii+1)+(1.0d0-alp(ii))*phis_nr(kk,ii)
-           phici=alp(ii)*phic_nr(kk,ii+1)+(1.0d0-alp(ii))*phic_nr(kk,ii)
-           d2psdr2i=alp(ii)*d2psdr2(kk,ii+1)+(1.0d0-alp(ii))*d2psdr2(kk,ii)
-           dpsdri=alp(ii)*dpsdr(kk,ii+1)+(1.0d0-alp(ii))*dpsdr(kk,ii)
-           d2pcdr2i=alp(ii)*d2pcdr2(kk,ii+1)+(1.0d0-alp(ii))*d2pcdr2(kk,ii)
-           dpcdri=alp(ii)*dpcdr(kk,ii+1)+(1.0d0-alp(ii))*dpcdr(kk,ii)
-           zeta_nr(kk,ii,jj)=-((d2psdr2i+dpsdri*r_inv(ii)  &
-  &                           -((dble(kk)*r_inv(ii))**2)*phisi)  &
-  &                           *sinen(kk,jj)  &
-  &                           +(d2pcdr2i+dpcdri*r_inv(ii)  &
-  &                           -((dble(kk)*r_inv(ii))**2)*phici)  &
-  &                           *cosinen(kk,jj))  &
-  &                         *vmax*rmax_inv
+           zetan(kk,ii,jj)=tmpzetas(kk,ii)*sinen(kk,jj)+tmpzetac(kk,ii)*cosinen(kk,jj)
         end do
      end do
   end do
