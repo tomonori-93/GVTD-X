@@ -1,31 +1,18 @@
 &iocheck
-listname = 'list_GVTDX.dat'  ! ASCII file name listing file name and other information
-nr_org = 400  ! the radial grid number of the original data
-nt_org = 512  ! the azimuthal grid number of the original data
+listname = 'list_GVTDX_2d.dat'  ! ASCII file name listing file name and other information
+nr = 100  ! the radial grid number of the original data
+nt = 128  ! the azimuthal grid number of the original data
 nz = 10       ! the vertical grid number of the original data
-rmin = 500.0  ! the innermost radius where Doppler velocity is defined in the original data (m)
-dr = 500.0    ! the radial grid spacing where Doppler velocity is defined (m)
+rmin = 0.0    ! the innermost radius where Doppler velocity is defined in the original data (m)
+dr = 2.0e3    ! the radial grid spacing where Doppler velocity is defined (m)
 tmin = 0.0    ! the start of the azimuthal angle where Doppler velocity is defined in the original data (deg)
-dt = 0.703125 ! the azimuthal angle interval where Doppler velocity is defined (deg)
-zmin = 2000.0 ! the bottom height where Doppler velocity is defined in the original data (m)
+dt = 2.8125   ! the azimuthal angle interval where Doppler velocity is defined (deg)
+zmin = 1000.0 ! the bottom height where Doppler velocity is defined in the original data (m)
 dz = 1000.0   ! the vertical grid spacing where Doppler velocity is defined (m)
 /
 
 &ret_opt
 nrot = 3   ! the rotating maximum wavenumber used in the retrieval
 ndiv = 0   ! the divergent maximum wavenumber used in the retrieval
-nrdiv = 1  ! radial grid number where the divergence is defined
-rdiv_t = 80.0d3  ! radial grids where the divergence is defined
 undefobs = -1000.0  ! undefined value for the original Doppler radar data
-nthres_undef = 64, 64  ! thresholds of the azimuthal sampling number to determine the (1) innermost and (2) outermost radii, respectively
-smooth_r = 100  ! resampled radial grid number from the original data
-smooth_t = 128  ! resampled azimuthal grid number from the original data
-nnz = 2,2       ! calculating vertical grid levels
-skip_min_t = 64 ! threshold of the azimuthal sampling number to determine unused radii
-flag_GVTDX = 1  ! 1: GVTDX, 2: GVTD, 3: GBVTD
-/
-
-&rad_opt
-dpoint_x = 129.5520  ! longitudinal position of the radar (degree)
-dpoint_y = 28.3942   ! latitudinal position of the radar (degree)
 /

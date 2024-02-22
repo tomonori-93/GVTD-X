@@ -10,7 +10,7 @@
     <meta name="author" content="Satoki Tsujino" >
     <link rel="icon" href="../favicon.png">
 
-    <title>matrix_sum &ndash; GVTD-X</title>
+    <title>file_ord_3d &ndash; GVTD-X </title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
           integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
@@ -62,8 +62,8 @@
 
     <div class="container">
   <div class="row">
-    <h1>matrix_sum
-      <small>Function</small>
+    <h1>file_ord_3d
+      <small>Derived Type</small>
       
     </h1>
       <div class="container p-2 mb-4 bg-light border rounded-3">
@@ -75,21 +75,21 @@
             <li class="list-inline-item" id="statements"><i class="fa fa-list-ol"></i>
               <a data-bs-toggle="tooltip"
                  data-bs-placement="bottom" data-html="true"
-                 title=" 0.7% of total for procedures.">23 statements</a>
+                 title="<p>100.0% of total for derived types.</p>Including implementation: 14 statements, 100.0% of total for derived types.">14 statements</a>
             </li>
 
             <li class="list-inline-item" id="source-file">
               <i class="fa fa-code"></i>
-              <a href="../src/gbvtd_main_mod.f90"> Source File</a>
+              <a href="../src/tools_sub.f90"> Source File</a>
             </li>
         </ul>
       </div>
       <div class="col">
         <nav aria-label="breadcrumb">
           <ol class="breadcrumb justify-content-end mb-0">
-                <li class="breadcrumb-item"><a href='../sourcefile/gbvtd_main_mod.f90.html'>gbvtd_main_mod.f90</a></li>
-                <li class="breadcrumb-item"><a href='../module/gbvtd_main.html'>GBVTD_main</a></li>
-            <li class="breadcrumb-item active" aria-current="page">matrix_sum</li>
+                <li class="breadcrumb-item"><a href='../sourcefile/tools_sub.f90.html'>tools_sub.f90</a></li>
+                <li class="breadcrumb-item"><a href='../module/tools_sub.html'>tools_sub</a></li>
+            <li class="breadcrumb-item active" aria-current="page">file_ord_3d</li>
           </ol>
         </nav>
       </div>
@@ -108,7 +108,29 @@
       <div id="sidebar">
       <h3>Contents</h3>
   
-  
+      <div class="card mb-4">
+      <a data-bs-toggle="collapse" href="#vars-0"
+         aria-expanded="false" aria-controls="vars-0">
+         <h4 class="card-header bg-primary text-white">Variables</h4>
+      </a>
+      <div id="vars-0" class="collapse">
+        <div class="list-group list-group-flush">
+            <a class="list-group-item" href="../type/file_ord_3d.html#variable-vt~4">VT</a>
+            <a class="list-group-item" href="../type/file_ord_3d.html#variable-vr~4">VR</a>
+            <a class="list-group-item" href="../type/file_ord_3d.html#variable-vts">VTs</a>
+            <a class="list-group-item" href="../type/file_ord_3d.html#variable-vtc">VTc</a>
+            <a class="list-group-item" href="../type/file_ord_3d.html#variable-vrs">VRs</a>
+            <a class="list-group-item" href="../type/file_ord_3d.html#variable-vrc">VRc</a>
+            <a class="list-group-item" href="../type/file_ord_3d.html#variable-phi">phi</a>
+            <a class="list-group-item" href="../type/file_ord_3d.html#variable-phis">phis</a>
+            <a class="list-group-item" href="../type/file_ord_3d.html#variable-phic">phic</a>
+            <a class="list-group-item" href="../type/file_ord_3d.html#variable-zeta">zeta</a>
+            <a class="list-group-item" href="../type/file_ord_3d.html#variable-zetas">zetas</a>
+            <a class="list-group-item" href="../type/file_ord_3d.html#variable-zetac">zetac</a>
+        </div>
+      </div>
+    </div>
+
   
   
   
@@ -134,91 +156,236 @@
     </div>
     
     <div class="col-md-9" id='text'>
-    <h2>public  function matrix_sum(aij, akj, undeflag)  
-</h2>
-    
+      <h2>
+        type, public :: file_ord_3d</h2>
+    <p>Setting variable order in read/write file</p>
+    <br>
 
-    <p>Calculate product for a component in a matrix</p>
-
-
-    <h3>Arguments</h3>
-        <table class="table table-striped varlist">
+    <section>
+    <h2>Components</h2>
+      <table class="table table-striped varlist">
     <thead>
       <tr>
         <th scope="col">Type</th>
-<th scope="col">Intent</th><th scope="col">Optional</th>        <th scope="col">Attributes</th>
+<th scope="col">Visibility</th>        <th scope="col">Attributes</th>
         <th scope="col"></th>
         <th scope="col">Name</th>
-        <th scope="col"></th>
+<th></th><th scope="col">Initial</th>        <th scope="col"></th>
     </thead>
     <tbody>
         <tr>
             <td>
-              <span class="anchor" id="variable-aij~3"></span>
-              double precision,
+              <span class="anchor" id="variable-vt~4"></span>
+              integer,
             </td>
-<td>intent(in)</td>
-              <td></td>            <td>
+              <td>public</td>
+            <td>
               
             </td>
             <td>::</td>
-            <td><strong>aij</strong>(:)</td>
+            <td><strong>VT</strong></td>
+                <td></td>
+                <td></td>
             <td>
-                <p>Matrix A1</p>
+                
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-akj~3"></span>
-              double precision,
+              <span class="anchor" id="variable-vr~4"></span>
+              integer,
             </td>
-<td>intent(in)</td>
-              <td></td>            <td>
+              <td>public</td>
+            <td>
               
             </td>
             <td>::</td>
-            <td><strong>akj</strong>(size(aij))</td>
+            <td><strong>VR</strong></td>
+                <td></td>
+                <td></td>
             <td>
-                <p>Matrix A2</p>
+                
             </td>
         </tr>
         <tr>
             <td>
-              <span class="anchor" id="variable-undeflag~19"></span>
-              logical,
+              <span class="anchor" id="variable-vts"></span>
+              integer,
             </td>
-<td>intent(in),</td>
-              <td>optional</td>            <td>
+              <td>public</td>
+            <td>
               
             </td>
             <td>::</td>
-            <td><strong>undeflag</strong>(size(aij))</td>
+            <td><strong>VTs</strong></td>
+                <td></td>
+                <td></td>
             <td>
-                <p>Undefined flag at each sampling point</p>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vtc"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>VTc</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vrs"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>VRs</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-vrc"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>VRc</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-phi"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>phi</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-phis"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>phis</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-phic"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>phic</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-zeta"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>zeta</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-zetas"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>zetas</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
+            </td>
+        </tr>
+        <tr>
+            <td>
+              <span class="anchor" id="variable-zetac"></span>
+              integer,
+            </td>
+              <td>public</td>
+            <td>
+              
+            </td>
+            <td>::</td>
+            <td><strong>zetac</strong></td>
+                <td></td>
+                <td></td>
+            <td>
+                
             </td>
         </tr>
     </tbody>
   </table>
 
-      <h3>Return Value
-        <small>
-          <span class="anchor" id="variable-matrix_sum~3"></span>
-          doubleprecision
-        </small>
-      </h3>
-      
+    </section>
     <br>
-
-
-    
-    
-
-    
     
 
 
 
-    
     
     </div>
   </div>
