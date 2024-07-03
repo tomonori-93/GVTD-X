@@ -74,7 +74,6 @@ subroutine prod_vortex_structure( r, t, rmax, vmax, c1u, c2u,  &
         gkrr=0.0d0
         dgkrr=0.0d0
         zetap=0.0d0
-        divp=0.0d0
         do k=1,nvpmax
            do j=1,nr
               do i=1,nr
