@@ -2935,6 +2935,22 @@ end subroutine write_file_2d
 !--------------------------------------------------------------
 !--------------------------------------------------------------
 
+subroutine write_file_text_add( iunit, char_in )
+  !! write text in the file with iunit
+  implicit none
+  integer, intent(in) :: iunit  !! unit number for output file
+  character(*), intent(in) :: char_in  !! strings for output
+  character(100) :: forma
+
+  forma='(a'//trim(adjustl(i2c_convert(len_trim(adjustl(char_in)))))//')'
+
+  write(iunit,forma(1:len_trim(adjustl(forma)))) trim(adjustl(char_in))
+
+end subroutine write_file_text_add
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
 subroutine grad_1d( x, u, dudx, undef )
 !! Calculate gradient of "u" in one dimension based on the 2nd order central differential approximation:<br>
 !! \(\frac{\partial u}{\partial x}\approx \frac{u_{i+1}-u_{i-1}}{2dx} \)
@@ -3000,8 +3016,8 @@ end subroutine grad_2d
 character(100) function r2c_convert( rval, forma )
   !! convert float to char
   implicit none
-  real, intent(in) :: rval  ! float
-  character(*), intent(in), optional :: forma  ! optional format
+  real, intent(in) :: rval  !! float
+  character(*), intent(in), optional :: forma  !! format
   character(100) :: tmp
 
   if(present(forma))then
@@ -3011,6 +3027,27 @@ character(100) function r2c_convert( rval, forma )
   end if
 
   r2c_convert=tmp
+
+  return
+end function
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+character(100) function i2c_convert( ival, forma )
+  !! convert int to char
+  implicit none
+  integer, intent(in) :: ival  !! int
+  character(*), intent(in), optional :: forma  !! format
+  character(100) :: tmp
+
+  if(present(forma))then
+     write(tmp,trim(forma)) ival
+  else
+     write(tmp,*) ival
+  end if
+
+  i2c_convert=tmp
 
   return
 end function
