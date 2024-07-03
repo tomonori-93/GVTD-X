@@ -1426,6 +1426,108 @@ subroutine stdout( message, routine_name, mtype )
 
 end subroutine stdout
 
+!--------------------------------------------------
+!--------------------------------------------------
+
+subroutine check_datagap( nr_in, nt_in, undef_in, vra_in, err_nmax_out )
+!! Check the largest data gap at a radius (Lee et al. 1999)
+  implicit none
+  integer, intent(in) :: nr_in     !! Radial data number
+  integer, intent(in) :: nt_in     !! Azimuthal data number
+  double precision, intent(in) :: vra_in(nr_in,nt_in)!! Doppler volociry [ms-1]
+  double precision, intent(in) :: undef_in     !! Missing value
+  integer, intent(out) :: err_nmax_out(nr_in)  !! The largest data gap (azimuthal grid number)
+                                            !! at each radius
+
+  integer :: ii, jj, kk, nr, nt, tmpcount, countmax, countst, counted
+  integer :: icounter(nr_in), icounter_max(nr_in)
+  logical :: err_continu_flag, period_flag
+
+  icounter=0
+  icounter_max=0
+
+  !-- Check the error rate in each radius
+  do jj=1,nt_in
+     do ii=1,nr_in
+        if(vra_in(ii,jj)/=undef_in)then
+           icounter(ii)=icounter(ii)+1
+        end if
+     end do
+  end do
+
+  !-- Check the max number with error in a continuous sector of each radius
+  do ii=1,nr_in
+     !-- In case of the continuous missing at jj=1 and nt_in
+     if(vra_in(ii,1)==undef_in.and.vra_in(ii,nt_in)==undef_in)then
+        period_flag=.true.
+        countst=0
+        counted=0
+     else
+        period_flag=.false.
+     end if
+
+     !-- Initialize variables for error counter
+     err_continu_flag=.false.
+     tmpcount=0
+     countmax=0
+
+     do jj=1,nt_in
+        if(vra_in(ii,jj)==undef_in)then  ! Is the value at jj missing? -> Yes
+           if(err_continu_flag.eqv..true.)then  ! Continuous missing from the previous jj
+              tmpcount=tmpcount+1
+           else  ! Detect a start grid with missing (including jj=1)
+              if(countmax==0)then  ! First or second detection of the missing grid at the radius
+                 countmax=tmpcount  ! In the first detection: tmpcount = countmax = 0
+                                    ! In the second detection: tmpcount = countmax > 0
+              else
+                 countmax=max(countmax,tmpcount)  ! Update the largest data gap
+              end if
+              tmpcount=1
+              err_continu_flag=.true.
+           end if
+        else  ! Is the value at jj missing? -> No
+           ! Check whether it is counting from jj=1 -> Yes
+           if((period_flag.eqv..true.).and.(err_continu_flag.eqv..true.))then
+              if(countst==0)then  ! Save the largest data gap from jj=1
+                 countst=tmpcount
+              end if
+           end if
+           err_continu_flag=.false.  ! Stop counting the countinuous error
+        end if
+     end do
+
+     ! Check no error or all error
+     ! In case of no error: tmpcount = countmax = 0 -> err_nmax_out = 0
+     ! In case of all error: tmpcount = nt_in, countmax = 0 -> err_nmax_out = nt_in
+     err_nmax_out(ii)=max(dble(countmax),dble(tmpcount))
+
+     ! Check the countinuous error between jj=nt_in and jj=1 -> Yes
+     if(period_flag.eqv..true.)then
+        counted=tmpcount  ! counted = the continuous error from jj to nt_in
+                          ! countst = the continuous error from 1 to jj
+        err_nmax_out(ii)=max(dble(countmax),dble(countst+counted))
+     end if
+
+  end do
+
+end subroutine check_datagap
+
+!--------------------------------------------------
+!--------------------------------------------------
+
+subroutine write_file_text_add( iunit, chara )
+!! Add one line at the last in the output of iunit
+  implicit none
+  integer, intent(in) :: iunit     !! Unit number for the output
+  character(*), intent(in) :: chara  !! One line
+
+  character(10) :: forma
+
+  forma='(a'//trim(adjustl(i2c_convert(len_trim(adjustl(chara)))))//')'
+  write(iunit,trim(adjustl(forma))) trim(adjustl(chara))
+
+end subroutine write_file_text_add
+
 !------------------------------------------------------------!
 ! Reuse the subroutine from the STPK library (0.9.20.0)      !
 ! STPK library (LGPL2.1):                                    !
@@ -2895,12 +2997,54 @@ end subroutine grad_2d
 !--------------------------------------------------------------
 !--------------------------------------------------------------
 
+character(100) function r2c_convert( rval, forma )
+  !! convert float to char
+  implicit none
+  real, intent(in) :: rval  ! float
+  character(*), intent(in), optional :: forma  ! optional format
+  character(100) :: tmp
+
+  if(present(forma))then
+     write(tmp,trim(forma)) rval
+  else
+     write(tmp,*) rval
+  end if
+
+  r2c_convert=tmp
+
+  return
+end function
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
 real function c2r_convert( cval )
   !! convert char to float
   implicit none
   character(*), intent(in) :: cval  !! char
 
   read(cval,*) c2r_convert
+
+  return
+end function
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+character(100) function i2c_convert( ival, forma )
+  !! convert int to char
+  implicit none
+  integer, intent(in) :: ival  ! int
+  character(*), intent(in), optional :: forma  ! optional format
+  character(100) :: tmp
+
+  if(present(forma))then
+     write(tmp,trim(forma)) ival
+  else
+     write(tmp,*) ival
+  end if
+
+  i2c_convert=tmp
 
   return
 end function

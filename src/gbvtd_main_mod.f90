@@ -20,7 +20,8 @@ module GBVTD_main
 contains
 
 subroutine Retrieve_velocity_GBVTD( nasym, r, t, td, Vd, RadTC,  &
-  &                                 VT, VR, VT0, VR0, VTSn, VTCn, undef )
+  &                                 VT, VR, VT0, VR0, VTSn, VTCn, undef,  &
+  &                                 flag_datagap )
 !!  Solve unknown variables and return wind velocity on R-T coordinates
 !!  based on the GBVTD technique. <br>
 !!------------------------------------------------------ <br>
@@ -44,12 +45,16 @@ subroutine Retrieve_velocity_GBVTD( nasym, r, t, td, Vd, RadTC,  &
   double precision, intent(out) :: VTSn(nasym,size(r),size(t))  !! retrieved tangential component of rotating wind [m s-1]
   double precision, intent(out) :: VTCn(nasym,size(r),size(t))  !! retrieved radial component of rotating wind [m s-1]
   double precision, intent(in), optional :: undef  !! undefined value for Vd
+  logical, intent(in), optional :: flag_datagap  !! Optimize the truncating wavenumber at each radius,  according to Lee et al. (2000) [Default: .false. (not optimize)]
 
   !-- internal variables
   integer :: i, j, k, p, cstat  ! dummy indexes
   integer :: nr, nt  ! array numbers for r and t, respectively
   integer :: nk      ! array number of a_k
   integer :: nr_out  ! outermost radius for GBVTD limit radius
+  integer :: na      ! optimized nassym at each radius for flag_datagap
+  integer :: nktmp   ! optimized nk at each radius for flag_datagap
+  integer :: gap_nmax(size(r))  ! the continuous data gap for flag_datagap
   double precision, allocatable, dimension(:,:) :: x_k    ! unknown vector for retrieved coefficients
   double precision, allocatable, dimension(:,:) :: b_k    ! known vector given by observed values
   double precision, allocatable, dimension(:,:,:) :: a_kp ! coefficient matrix for x_k
@@ -63,6 +68,7 @@ subroutine Retrieve_velocity_GBVTD( nasym, r, t, td, Vd, RadTC,  &
   double precision, dimension(size(r)) :: r_n             ! Nondimensional r
   double precision :: rtc_n                               ! Nondimensional RadTC
   logical, allocatable, dimension(:,:) :: undeflag ! Flag for Vd grid with undef
+  logical :: gap_flag
 
 !-- OpenMP variables
 !$ integer :: OMP_GET_THREAD_NUM, OMP_GET_MAX_THREADS
@@ -80,12 +86,23 @@ subroutine Retrieve_velocity_GBVTD( nasym, r, t, td, Vd, RadTC,  &
      dundef=-1.0d35
   end if
 
+  if(present(flag_datagap))then
+     gap_flag=flag_datagap
+  else
+     gap_flag=.false.
+  end if
+
   VT=dundef
   VR=dundef
   VT0=dundef
   VR0=dundef
   VTSn=dundef
   VTCn=dundef
+
+!-- Check the largest data gap
+  if(gap_flag.eqv..true.)then
+     call check_datagap( nr, nt, dundef, Vd, gap_nmax )
+  end if
 
 !-- Check retrieved asymmetric wave number
   if(nasym<0)then
@@ -132,54 +149,80 @@ subroutine Retrieve_velocity_GBVTD( nasym, r, t, td, Vd, RadTC,  &
   end if
 
 !$omp parallel default(shared)
-!$omp do schedule(runtime) private(i,omppe)
+!$omp do schedule(runtime) private(i,na,nktmp,omppe)
 
   do i=1,nr_out
 
 !$   omppe=OMP_GET_THREAD_NUM()+1
 
-     x_k(1:nk,omppe)=0.0d0
-     b_k(1:nk,omppe)=0.0d0
-     a_kp(1:nk,1:nk,omppe)=0.0d0
-     f_kj(1:nk,1:nt,omppe)=0.0d0
-     Vd_A0(omppe)=0.0d0
-     Vd_AC(1:nasym+1,omppe)=0.0d0
-     Vd_BS(1:nasym+1,omppe)=0.0d0
-     psid(1:nt,omppe)=0.0d0
+     if(gap_flag.eqv..true.)then
+        if(dble(gap_nmax(i))/dble(nt)<=30.0d0/360.0d0)then
+           na=3
+        else
+           if(dble(gap_nmax(i))/dble(nt)<=60.0d0/360.0d0)then
+              na=2
+           else
+              if(dble(gap_nmax(i))/dble(nt)<=90.0d0/360.0d0)then
+                 na=1
+              else
+                 if(dble(gap_nmax(i))/dble(nt)<=180.0d0/360.0d0)then
+                    na=0
+                 else
+                    na=-1  ! Not retrieval at this radius
+                 end if
+              end if
+           end if
+        end if
+     else
+        na=nasym
+     end if
 
-     call check_max( td(i,1:nt), td_max(omppe) )
+     if(na>=0)then
+        nktmp=1+2*(na+1)
+
+        x_k(1:nktmp,omppe)=0.0d0
+        b_k(1:nktmp,omppe)=0.0d0
+        a_kp(1:nktmp,1:nktmp,omppe)=0.0d0
+        f_kj(1:nktmp,1:nt,omppe)=0.0d0
+        Vd_A0(omppe)=0.0d0
+        Vd_AC(1:na+1,omppe)=0.0d0
+        Vd_BS(1:na+1,omppe)=0.0d0
+        psid(1:nt,omppe)=0.0d0
+
+        call check_max( td(i,1:nt), td_max(omppe) )
 
 !-- Calculate the nonlinear angle psid
-     call calc_psid( rtc_n, r_n(i), t, td(i,1:nt), psid(1:nt,omppe) )
+        call calc_psid( rtc_n, r_n(i), t, td(i,1:nt), psid(1:nt,omppe) )
 
 !-- Calculate f_kj
-     call calc_fkj( nasym, nk, psid(1:nt,omppe),  &
-  &                 f_kj(1:nk,1:nt,omppe), undeflag(i,1:nt) )
+        call calc_fkj( na, nktmp, psid(1:nt,omppe),  &
+  &                    f_kj(1:nktmp,1:nt,omppe), undeflag(i,1:nt) )
 
 !-- Calculate b_k
-     call calc_fkjVd2bk( vmax, f_kj(1:nk,1:nt,omppe), Vd(i,1:nt),  &
-  &                      b_k(1:nk,omppe), undeflag(i,1:nt) )
+        call calc_fkjVd2bk( vmax, f_kj(1:nktmp,1:nt,omppe), Vd(i,1:nt),  &
+  &                         b_k(1:nktmp,omppe), undeflag(i,1:nt) )
 
 !-- Calculate a_kp
-     call calc_fkj2akp( f_kj(1:nk,1:nt,omppe), a_kp(1:nk,1:nk,omppe), undeflag(i,1:nt) )
+        call calc_fkj2akp( f_kj(1:nktmp,1:nt,omppe), a_kp(1:nktmp,1:nktmp,omppe), undeflag(i,1:nt) )
 
-     call check_zero( a_kp(1:nk,1:nk,omppe) )
+        call check_zero( a_kp(1:nktmp,1:nktmp,omppe) )
 
 !-- Solve x_k
-!  call tri_gauss( a_kp, b_k, x_k )
-!  call gausss( a_kp, b_k, x_k )
-     call fp_gauss( a_kp(1:nk,1:nk,omppe), b_k(1:nk,omppe), x_k(1:nk,omppe) )
+!     call tri_gauss( a_kp, b_k, x_k )
+!     call gausss( a_kp, b_k, x_k )
+        call fp_gauss( a_kp(1:nktmp,1:nktmp,omppe), b_k(1:nktmp,omppe), x_k(1:nktmp,omppe) )
 
 !-- Set each unknown variable from x_k
-     call set_xk2variables( nasym, nk, x_k(1:nk,omppe), Vd_A0(omppe),  &
-  &                         Vd_AC(1:nasym+1,omppe), Vd_BS(1:nasym+1,omppe),  &
-  &                         undef=dundef )
+        call set_xk2variables( na, nktmp, x_k(1:nktmp,omppe), Vd_A0(omppe),  &
+  &                            Vd_AC(1:na+1,omppe), Vd_BS(1:na+1,omppe),  &
+  &                            undef=dundef )
 
 !-- Calculate Vr and Vt components of rotating wind
-     call calc_AB2VT( nasym, vmax, r_n(i), td_max(omppe), psid(1:nt,omppe), rtc_n,  &
-  &                   Vd_A0(omppe), Vd_AC(1:nasym+1,omppe), Vd_BS(1:nasym+1,omppe),  &
-  &                   VT0(i,1:nt), VR0(i,1:nt), VTSn(1:nasym,i,1:nt), VTCn(1:nasym,i,1:nt),  &
-  &                   undef=dundef )
+        call calc_AB2VT( na, vmax, r_n(i), td_max(omppe), psid(1:nt,omppe), rtc_n,  &
+  &                      Vd_A0(omppe), Vd_AC(1:na+1,omppe), Vd_BS(1:na+1,omppe),  &
+  &                      VT0(i,1:nt), VR0(i,1:nt), VTSn(1:na,i,1:nt), VTCn(1:na,i,1:nt),  &
+  &                      undef=dundef )
+     end if
   end do
 
 !$omp end do
@@ -361,10 +404,16 @@ subroutine calc_AB2VT( nasym, vmax, rd, thetad_max, psid, rtc, A0, An, Bn,  &
   integer :: jj, kk, nnt, cstat
   double precision, dimension(nasym,size(psid)) :: cosinen, sinen
   double precision, dimension(nasym) :: VTSn_r, VTCn_r
+  double precision :: tmp_VT0, tmp_VR0
 
   call stdout( "Enter procedure.", "calc_AB2VT", 0 )
 
   nnt=size(psid)
+
+  VT0_rt=0.0d0
+  VR0_rt=0.0d0
+  VTSn_rt=0.0d0
+  VTCn_rt=0.0d0
 
   do jj=1,nnt
      do kk=1,nasym
@@ -373,23 +422,33 @@ subroutine calc_AB2VT( nasym, vmax, rd, thetad_max, psid, rtc, A0, An, Bn,  &
      end do
   end do
 
-  VT0_rt(1:nnt)=-(Bn(1)+Bn(3))*vmax
-  VR0_rt(1:nnt)=(An(1)+An(3))*vmax
-
-  VTSn_r(1)=An(2)-A0+An(4)+(A0+An(2)+An(4))*dcos(thetad_max)
-  VTCn_r(1)=-2.0d0*(Bn(2)+Bn(4))
-
-  do kk=2,nasym
-     VTSn_r(kk)=2.0d0*An(kk+1)
-     VTCn_r(kk)=-2.0d0*Bn(kk+1)
+  tmp_VT0=0.0d0
+  tmp_VR0=A0
+  do kk=1,nasym+1
+     if(mod(kk,2)==1)then  ! only odd number
+        tmp_VT0=tmp_VT0-Bn(kk)
+     end if
+     tmp_VR0=tmp_VR0+An(kk)
   end do
+  VT0_rt(1:nnt)=tmp_VT0*vmax
+  VR0_rt(1:nnt)=tmp_VR0/(1.0d0+rd/rtc)*vmax
 
-  do jj=1,nnt
-     do kk=1,nasym
-        VTSn_rt(kk,jj)=VTSn_r(kk)*sinen(kk,jj)*vmax
-        VTCn_rt(kk,jj)=VTCn_r(kk)*cosinen(kk,jj)*vmax
+  if(nasym>=1)then
+     VTSn_r(1)=An(2)-A0+An(4)+(A0+An(2)+An(4))*dcos(thetad_max)
+     VTCn_r(1)=-2.0d0*(Bn(2)+Bn(4))
+
+     do kk=2,nasym
+        VTSn_r(kk)=2.0d0*An(kk+1)
+        VTCn_r(kk)=-2.0d0*Bn(kk+1)
      end do
-  end do
+
+     do jj=1,nnt
+        do kk=1,nasym
+           VTSn_rt(kk,jj)=VTSn_r(kk)*sinen(kk,jj)*vmax
+           VTCn_rt(kk,jj)=VTCn_r(kk)*cosinen(kk,jj)*vmax
+        end do
+     end do
+  end if
 
   call stdout( "Finish procedure.", "calc_AB2VT", 0 )
 
