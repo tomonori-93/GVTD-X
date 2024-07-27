@@ -56,7 +56,7 @@ program GVTDX_Dradar
   integer :: nrotmin, ndivmin
   integer :: nr_in, nr_out, ntin_c, ntout_c
   double precision :: usp, vsp, thetad_tc, thetaM, thetaS
-  double precision :: x_tc, y_tc, d2r, r_tmp, RdTc
+  double precision :: x_tc, y_tc, d2r, r2d, r_tmp, RdTc
   double precision :: vdm, vds, dvm
   double precision, parameter :: undef=-999.0d0
   real, allocatable, dimension(:) :: ttime
@@ -68,7 +68,7 @@ program GVTDX_Dradar
   double precision, allocatable, dimension(:) :: theta_t, r_t, rh_t
   double precision, allocatable, dimension(:,:) :: dval
   double precision, allocatable, dimension(:,:) :: thetad_t
-  double precision, allocatable, dimension(:,:) :: lonr, latr
+  double precision, allocatable, dimension(:,:) :: lonr, latr, lond, latd
   double precision, allocatable, dimension(:,:) :: projVs, projVm
   double precision, allocatable, dimension(:,:,:) :: VTtot, VRtot, VRT0, VDR0
   double precision, allocatable, dimension(:,:,:,:) :: VRTn, VRRn, VDTm, VDRm, phin, zetan
@@ -125,6 +125,7 @@ program GVTDX_Dradar
   vdm=0.0d0
 
   d2r=pi_dp/180.0d0
+  r2d=180.0d0/pi_dp
 
   stdflag=.true.
 
@@ -152,6 +153,8 @@ program GVTDX_Dradar
   allocate(thetad_t(nr,nt))
   allocate(lonr(nr,nt))
   allocate(latr(nr,nt))
+  allocate(lond(nr,nt))
+  allocate(latd(nr,nt))
   allocate(projVs(nr,nt))
   allocate(projVm(nr,nt))
   allocate(dval(nr_org,nt_org))
@@ -347,6 +350,8 @@ program GVTDX_Dradar
   &                    lonr(id,j), latr(id,j) )
            call ll2rt( dpoint_x*d2r, dpoint_y*d2r, lonr(id,j), latr(id,j),  &
   &                    r_tmp, thetad_t(id,j) )
+           lond(id,j)=lonr(id,j)*r2d
+           latd(id,j)=latr(id,j)*r2d
         end do
      end do
 
@@ -725,6 +730,22 @@ program GVTDX_Dradar
      call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
      nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                               "Vn0 "//trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                               //"storm-relative mean wind normal to line of sight [m s-1]" )
+!-- 2d monitor (lat/lon)
+     irec=irec+1
+     call conv_d2r_2d( latd(1:nr,1:nt), rval(1:nr,1:nt,nnz(1)) )
+     call write_file_3d( trim(adjustl(output_fname)), nr, nt, 1, irec,  &
+  &                      rval(1:nr,1:nt,nnz(1):nnz(1)), mode='old' )
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2), "latd 0 99 longitude [degree]" )
+     irec=irec+1
+     call conv_d2r_2d( lond(1:nr,1:nt), rval(1:nr,1:nt,nnz(1)) )
+     call write_file_3d( trim(adjustl(output_fname)), nr, nt, 1, irec,  &
+  &                      rval(1:nr,1:nt,nnz(1):nnz(1)), mode='old' )
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2), "lond 0 99 latitude [degree]" )
 
 !!-- NetCDF output
 !
