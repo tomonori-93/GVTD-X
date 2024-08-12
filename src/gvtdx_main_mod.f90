@@ -144,6 +144,15 @@ subroutine Retrieve_velocity_GVTDX( nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadT
      VRRns_r=dundef
      VRRnc_r=dundef
   end if
+  if(present(Vn_0))then
+     Vn_0=dundef
+  end if
+
+!-- Check radial grid number
+  if(nr==1)then
+     call stdout( "nr is equal to 1. no calculation and return.", "Retrieve_velocity_GVTDX", 0 )
+     return
+  end if
 
 !-- Check retrieved asymmetric wave number
   if(nrot<0)then

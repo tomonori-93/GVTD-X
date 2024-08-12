@@ -1512,22 +1512,6 @@ subroutine check_datagap( nr_in, nt_in, undef_in, vra_in, err_nmax_out )
 
 end subroutine check_datagap
 
-!--------------------------------------------------
-!--------------------------------------------------
-
-subroutine write_file_text_add( iunit, chara )
-!! Add one line at the last in the output of iunit
-  implicit none
-  integer, intent(in) :: iunit     !! Unit number for the output
-  character(*), intent(in) :: chara  !! One line
-
-  character(10) :: forma
-
-  forma='(a'//trim(adjustl(i2c_convert(len_trim(adjustl(chara)))))//')'
-  write(iunit,trim(adjustl(forma))) trim(adjustl(chara))
-
-end subroutine write_file_text_add
-
 !------------------------------------------------------------!
 ! Reuse the subroutine from the STPK library (0.9.20.0)      !
 ! STPK library (LGPL2.1):                                    !
@@ -3061,27 +3045,6 @@ real function c2r_convert( cval )
   character(*), intent(in) :: cval  !! char
 
   read(cval,*) c2r_convert
-
-  return
-end function
-
-!--------------------------------------------------------------
-!--------------------------------------------------------------
-
-character(100) function i2c_convert( ival, forma )
-  !! convert int to char
-  implicit none
-  integer, intent(in) :: ival  ! int
-  character(*), intent(in), optional :: forma  ! optional format
-  character(100) :: tmp
-
-  if(present(forma))then
-     write(tmp,trim(forma)) ival
-  else
-     write(tmp,*) ival
-  end if
-
-  i2c_convert=tmp
 
   return
 end function
