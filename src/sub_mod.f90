@@ -2803,17 +2803,17 @@ subroutine sph_vec_rt2ll( lambda_c, phi_c, r, theta,  &
   cosl=cos(lambda-lambda_c)
 
   ulambda=-vt*(sint*cosl-cost*sinpc*sinl)  &
-  &       -ur*(cosp*cost*cosl+(cosp*sint*sinpc+sinp*cospc)*sinl)  &
+  &       +ur*(cosp*cost*cosl+(cosp*sint*sinpc+sinp*cospc)*sinl)  &
   &       -wz*(-sinp*cost*cosl+(cosp*cospc-sinp*sint*sinpc)*sinl)
 
   vphi=vt*(sint*sinpr*sinl+cost*sinpc*sinpr*cosl+cost*cospc*cospr)  &
-  &   +ur*(cosp*cost*sinpr*sinl-(cosp*sint*sinpc+sinp*cospc)*sinpr*cosl  &
+  &   -ur*(cosp*cost*sinpr*sinl-(cosp*sint*sinpc+sinp*cospc)*sinpr*cosl  &
           +(sinp*sinpc-cosp*sint*cospc)*cospr)  &
   &   -wz*(sinp*cost*sinpr*sinl+(cosp*cospc-sinp*sint*sinpc)*sinpr*cosl  &
   &       -(sinp*sint*cospc+cosp*sinpc)*cospr)
 
   wrho=vt*(-sint*cospr*sinl-cost*sinpc*cospr*cosl+cost*cospc*sinpr)  &
-  &   +ur*(-cosp*cost*cospr*sinl+(cosp*sint*sinpc+sinp*cospc)*cospr*cosl  &
+  &   -ur*(-cosp*cost*cospr*sinl+(cosp*sint*sinpc+sinp*cospc)*cospr*cosl  &
   &       +(sinp*sinpc-cosp*sint*cospc)*sinpr)  &
   &   +wz*(sinp*cost*cospr*sinl+(cosp*cospc-sinp*sint*sinpc)*cospr*cosl  &
   &       +(sinp*sint*cospc+cosp*sinpc)*sinpr)
@@ -2868,17 +2868,17 @@ subroutine sph_vec_ll2rt( lambda_c, phi_c, lambda, phi,  &
   & +vphi*(sinpr*sint*sinl+sinpr*cost*sinpc*cosl+cospr*cospc*cost)  &
   & +wrho*(-cospr*sint*sinl-cospr*cost*sinpc*cosl+sinpr*cospc*cost)
 
-  ur=ulambda*(-cost*cosp*cosl-sinpc*sint*cosp*sinl-cospc*sinp*cosl)  &
-  & +vphi*(sinpr*cost*cosp*sinl-sinpr*sinpc*sint*cosp*cosl  &
-  &        -cospr*cospc*sint*cosp-sinpr*cospc*sinp*cosl+cospr*sinpc*sinp)  &
-  & +wrho*(-cospr*cost*cosp*sinl+cospr*sinpc*sint*cosp*cosl  &
-  &        -sinpr*cospc*sint*cosp+cospr*cospc*sinp*cosl+sinpr*sinpc*sinp)
+  ur=ulambda*(cost*cosp*cosl+sinpc*sint*cosp*sinl+cospc*sinp*sinl)  &
+  & +vphi*(-sinpr*cost*cosp*sinl+sinpr*sinpc*sint*cosp*cosl  &
+  &        +cospr*cospc*sint*cosp+sinpr*cospc*sinp*cosl-cospr*sinpc*sinp)  &
+  & +wrho*(cospr*cost*cosp*sinl-cospr*sinpc*sint*cosp*cosl  &
+  &        +sinpr*cospc*sint*cosp-cospr*cospc*sinp*cosl-sinpr*sinpc*sinp)
 
-  wz=ulambda*(cost*sinp*cosl+sinpc*sint*sinp*sinl+cospc*cosp*sinl)  &
+  wz=ulambda*(cost*sinp*cosl+sinpc*sint*sinp*sinl-cospc*cosp*sinl)  &
   & +vphi*(-sinpr*cost*sinp*sinl+sinpr*sinpc*sint*sinp*cosl  &
-  &        +cospr*cospc*sint*sinp+sinpr*cospc*cosp*cosl-cospr*sinpc*cosp)  &
+  &        +cospr*cospc*sint*sinp-sinpr*cospc*cosp*cosl+cospr*sinpc*cosp)  &
   & +wrho*(cospr*cost*sinp*sinl-cospr*sinpc*sint*sinp*cosl  &
-  &        +sinpr*cospc*sint*sinp-cospr*cospc*cosp*cosl-sinpr*sinpc*cosp)
+  &        +sinpr*cospc*sint*sinp+cospr*cospc*cosp*cosl+sinpr*sinpc*cosp)
 
 end subroutine sph_vec_ll2rt
 
