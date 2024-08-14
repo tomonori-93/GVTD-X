@@ -510,6 +510,50 @@ end subroutine conv_VxVy2VtVr_xy
 !--------------------------------------------------
 !--------------------------------------------------
 
+subroutine conv_V_rt2ll( lonc, latc, radi, thet, lonr, latr, VR, VT, ux, vy, undef )
+  !! convert VR/VT to the zonal/meridional wind components
+  implicit none
+  double precision, intent(in) :: lonc     !! longitude of the center on the spherical coordinate (rad)
+  double precision, intent(in) :: latc     !! latitude of the center on the spherical coordinate (rad)
+  double precision, intent(in) :: radi(:)  !! radial distance from (lonc,latc) (m)
+  double precision, intent(in) :: thet(:)  !! azimuthal angle from (lonc,latc) (rad)
+  double precision, intent(in) :: lonr(size(radi),size(thet))  !! target longitude (rad)
+  double precision, intent(in) :: latr(size(radi),size(thet))  !! target latitude (rad)
+  double precision, intent(in) :: VR(size(radi),size(thet))  !! radial wind (m/s)
+  double precision, intent(in) :: VT(size(radi),size(thet))  !! tangential wind (m/s)
+  double precision, intent(out) :: ux(size(radi),size(thet))  !! zonal wind (m/s)
+  double precision, intent(out) :: vy(size(radi),size(thet))  !! meridional wind (m/s)
+  double precision, intent(in) :: undef
+  integer :: ii, jj, ix, jy
+  double precision :: dummy
+
+  ix=size(radi)
+  jy=size(thet)
+  ux=undef
+  vy=undef
+
+!$omp parallel default(shared)
+!$omp do schedule(runtime) private(ii,jj)
+
+  do jj=1,jy
+     do ii=1,ix
+        if(VR(ii,jj)/=undef.and.VT(ii,jj)/=undef)then
+           call sph_vec_rt2ll( lonc, latc, radi(ii), thet(jj),  &
+  &                            VR(ii,jj), VT(ii,jj), 0.0d0,  &
+  &                            ux(ii,jj), vy(ii,jj), dummy,  &
+  &                            lambda_opt=lonr(ii,jj), phi_opt=latr(ii,jj) )
+        end if
+     end do
+  end do
+
+!$omp end do
+!$omp end parallel
+
+end subroutine conv_V_rt2ll
+
+!--------------------------------------------------
+!--------------------------------------------------
+
 subroutine proj_VxVy2Vraxy( x, y, rax, ray, Vx, Vy, Vraxy, undef )
 !! Calculate Vx and Vy to Vd along with radar beams on X-Y coodinates
   implicit none
@@ -1166,6 +1210,31 @@ subroutine add_3d( ioval, ival, undef )
   end if
 
 end subroutine add_3d
+
+!--------------------------------------------------
+!--------------------------------------------------
+
+subroutine abs_2d( valx, valy, oval, undef )
+  !! calculate abs(valx,valy)
+  implicit none
+  double precision, intent(in) :: valx(:,:)  !! Input val1
+  double precision, intent(in) :: valy(size(valx,1),size(valx,2))  !! Input val2
+  double precision, intent(out) :: oval(size(valx,1),size(valx,2))  !! Absolute value
+  double precision, intent(in) :: undef  !! Undefined value
+  integer :: ii, jj, ni, nj
+
+  ni=size(valx,1)
+  nj=size(valx,2)
+
+  do jj=1,nj
+     do ii=1,ni
+        if(valx(ii,jj)/=undef.and.valy(ii,jj)/=undef)then
+           oval(ii,jj)=dsqrt(valx(ii,jj)**2+valy(ii,jj)**2)
+        end if
+     end do
+  end do
+
+end subroutine abs_2d
 
 !--------------------------------------------------
 !--------------------------------------------------
@@ -2506,8 +2575,8 @@ subroutine ll2rt( lon0, lat0, lon1, lat1, r, theta )
   double precision, intent(in) :: lat0      !! the center latitude (rad)
   double precision, intent(in) :: lon1      !! target longitude (rad)
   double precision, intent(in) :: lat1      !! target latitude (rad)
-  double precision, intent(inout) :: r      !! radial distance (m)
-  double precision, intent(inout) :: theta  !! azimuthal angle (rad)
+  double precision, intent(out) :: r      !! radial distance (m)
+  double precision, intent(out) :: theta  !! azimuthal angle (rad)
   double precision :: tmpcos, tmpsin, tmptan
 
   r=ll2radi( lon0, lat0, lon1, lat1 )
@@ -2557,8 +2626,8 @@ subroutine rt2ll( r, theta, lon0, lat0, lon, lat )
   double precision, intent(in) :: theta   !! azimuthal angle from (lon0,lat0) (rad)
   double precision, intent(in) :: lon0    !! longitude of the center on the polar coordinate (rad)
   double precision, intent(in) :: lat0    !! latitude of the center on the polar coordinate (rad)
-  double precision, intent(inout) :: lon  !! target longitude (rad)
-  double precision, intent(inout) :: lat  !! target latitude (rad)
+  double precision, intent(out) :: lon  !! target longitude (rad)
+  double precision, intent(out) :: lat  !! target latitude (rad)
   double precision :: thetad, lond, latd, tmplon, tmplat, rratio
 
   thetad=180.0d0*theta/pi_dp
@@ -2596,6 +2665,230 @@ subroutine rt2ll( r, theta, lon0, lat0, lon, lat )
   end if
 
 end subroutine rt2ll
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine sph_ll2rt( lonc, latc, lon, lat, r, theta )
+  !! calculate radial and azimuthal location at (lon,lat) on the 
+  !! spherical coordinate with the center of (lonc,latc)
+  implicit none
+  double precision, intent(in) :: lonc      !! the center longitude (rad)
+  double precision, intent(in) :: latc      !! the center latitude (rad)
+  double precision, intent(in) :: lon      !! target longitude (rad)
+  double precision, intent(in) :: lat      !! target latitude (rad)
+  double precision, intent(out) :: r      !! radial distance (m)
+  double precision, intent(out) :: theta  !! azimuthal angle (rad)
+  double precision :: tmpcos, tmpsin, tmptan
+
+  r=radius_dp*dsqrt(1.0d0-(dcos(lon-lonc)*dcos(latc)*dcos(lat)+dsin(latc)*dsin(lat))**2)
+
+  if(r>0.0d0)then
+     tmpcos=dcos(lat)*dsin(lon-lonc)
+     tmpsin=dsin(lat)*dcos(latc)-dcos(lat)*dsin(latc)*dcos(lon-lonc)
+     if(tmpcos==0.0d0.and.tmpsin==0.0d0)then
+        theta=0.0d0
+     else if(tmpcos==0.0d0.and.tmpsin>0.0d0)then
+        theta=0.5d0*pi_dp
+     else if(tmpcos==0.0d0.and.tmpsin<0.0d0)then
+        theta=1.5d0*pi_dp
+     else if(tmpcos>0.0d0.and.tmpsin==0.0d0)then
+        theta=0.0d0
+     else if(tmpcos<0.0d0.and.tmpsin==0.0d0)then
+        theta=pi_dp
+     else
+        if(tmpcos>0.0d0.and.tmpsin>0.0d0)then
+           tmptan=tmpsin/tmpcos
+           theta=datan(tmptan)
+        else if(tmpcos<0.0d0.and.tmpsin>0.0d0)then
+           tmptan=tmpsin/dabs(tmpcos)
+           theta=pi_dp-datan(tmptan)
+        else if(tmpcos>0.0d0.and.tmpsin<0.0d0)then
+           tmptan=dabs(tmpsin)/tmpcos
+           theta=2.0d0*pi_dp-datan(tmptan)
+        else if(tmpcos<0.0d0.and.tmpsin<0.0d0)then
+           tmptan=tmpsin/tmpcos
+           theta=pi_dp+datan(tmptan)
+        end if
+     end if
+  else
+     theta=0.0d0
+  end if
+
+end subroutine sph_ll2rt
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine sph_rt2ll( r, theta, lonc, latc, lon, lat )
+  !! calculate (lon,lat) from radial and azimuthal grid (r,theta) 
+  !! on the spherical coordinate with the origin of (lonc,latc)
+  implicit none
+  double precision, intent(in) :: r       !! radial distance from (lonc,latc) (m)
+  double precision, intent(in) :: theta   !! azimuthal angle from (lonc,latc) (rad)
+  double precision, intent(in) :: lonc    !! longitude of the center on the polar coordinate (rad)
+  double precision, intent(in) :: latc    !! latitude of the center on the polar coordinate (rad)
+  double precision, intent(out) :: lon  !! target longitude (rad)
+  double precision, intent(out) :: lat  !! target latitude (rad)
+  double precision :: tmplons, tmplonc, loncos, lonsin, rratio
+
+  rratio=r/radius_dp
+
+  lat=dasin(rratio*dcos(latc)*dsin(theta)+dsin(latc)*sqrt(1.0-rratio**2))
+
+  if(dabs(dcos(lat))/=0.0)then
+     ! y=asin(x): -pi_dp/2<=y<=pi_dp/2
+     tmplons=rratio*(dcos(lonc)*dcos(theta)-dsin(lonc)*dsin(latc)*dsin(theta))+dsin(lonc)*dcos(latc)*dsqrt(1.0-rratio**2)
+     lonsin=dasin(tmplons/dcos(lat))
+     ! y=acos(x): 0<=y<=pi_dp
+     tmplonc=rratio*(-dsin(lonc)*dcos(theta)-dcos(lonc)*dsin(latc)*dsin(theta))+dcos(lonc)*dcos(latc)*dsqrt(1.0-rratio**2)
+     loncos=dacos(tmplonc/dcos(lat))
+     if(tmplonc>=0.0.and.tmplons>=0.0)then
+        lon=lonsin  ! 0<=lon<=pi_dp/2
+     else if(tmplonc>=0.0.and.tmplons<0.0)then
+        lon=lonsin  ! -pi_dp/2<=lon<0
+     else if(tmplonc<0.0.and.tmplons>=0.0)then
+        lon=loncos  ! pi_dp/2<lon<=pi_dp
+     else
+        lon=2.0*pi_dp-loncos  ! pi_dp<lon<=3pi_dp/2
+     end if
+  else
+     lon=0.0
+  end if
+
+end subroutine sph_rt2ll
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine sph_vec_rt2ll( lambda_c, phi_c, r, theta,  &
+  &                       ur, vt, wz, ulambda, vphi, wrho,  &
+  &                       lambda_opt, phi_opt )
+  !! convert components of a vector from radial and azimuthal grid (r,theta) 
+  !! on the spherical coordinate with the origin of (lonc,latc) to
+  !! components on the spherical coordinate with the origin of the North.
+  implicit none
+  double precision, intent(in) :: lambda_c    !! longitude of the center on the spherical coordinate (rad)
+  double precision, intent(in) :: phi_c       !! latitude of the center on the spherical coordinate (rad)
+  double precision, intent(in) :: r           !! radial distance from (lonc,latc) (m)
+  double precision, intent(in) :: theta       !! azimuthal angle from (lonc,latc) (rad)
+  double precision, intent(in) :: ur          !! vector component to the r-direction
+  double precision, intent(in) :: vt          !! vector component to the theta-direction
+  double precision, intent(in) :: wz          !! vector component to the z-direction
+  double precision, intent(out) :: ulambda    !! zonal component of vector
+  double precision, intent(out) :: vphi       !! meridional component of vector
+  double precision, intent(out) :: wrho       !! vertical component of vector
+  double precision, intent(in), optional :: lambda_opt  !! target longitude (rad)
+  double precision, intent(in), optional :: phi_opt  !! target latitude (rad)
+
+  double precision :: phi, lambda
+  double precision :: sinpc, cospc, sint, cost, sinl, cosl, sinp, cosp, sinpr, cospr
+
+  if(present(phi_opt).and.present(lambda_opt))then
+     phi=phi_opt
+     lambda=lambda_opt
+  else
+     call sph_rt2ll( r, theta, lambda_c, phi_c, lambda, phi )
+  end if
+
+  sinpc=dsin(phi_c)
+  cospc=dcos(phi_c)
+  sint=dsin(theta)
+  cost=dcos(theta)
+  sinp=r/radius_dp
+  cosp=dsqrt(1.0-sinp**2)
+  sinpr=dsin(phi)
+  cospr=dcos(phi)
+  sinl=dsin(lambda-lambda_c)
+  cosl=cos(lambda-lambda_c)
+
+  ulambda=-vt*(sint*cosl-cost*sinpc*sinl)  &
+  &       -ur*(cosp*cost*cosl+(cosp*sint*sinpc+sinp*cospc)*sinl)  &
+  &       -wz*(-sinp*cost*cosl+(cosp*cospc-sinp*sint*sinpc)*sinl)
+
+  vphi=vt*(sint*sinpr*sinl+cost*sinpc*sinpr*cosl+cost*cospc*cospr)  &
+  &   +ur*(cosp*cost*sinpr*sinl-(cosp*sint*sinpc+sinp*cospc)*sinpr*cosl  &
+          +(sinp*sinpc-cosp*sint*cospc)*cospr)  &
+  &   -wz*(sinp*cost*sinpr*sinl+(cosp*cospc-sinp*sint*sinpc)*sinpr*cosl  &
+  &       -(sinp*sint*cospc+cosp*sinpc)*cospr)
+
+  wrho=vt*(-sint*cospr*sinl-cost*sinpc*cospr*cosl+cost*cospc*sinpr)  &
+  &   +ur*(-cosp*cost*cospr*sinl+(cosp*sint*sinpc+sinp*cospc)*cospr*cosl  &
+  &       +(sinp*sinpc-cosp*sint*cospc)*sinpr)  &
+  &   +wz*(sinp*cost*cospr*sinl+(cosp*cospc-sinp*sint*sinpc)*cospr*cosl  &
+  &       +(sinp*sint*cospc+cosp*sinpc)*sinpr)
+
+end subroutine sph_vec_rt2ll
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+subroutine sph_vec_ll2rt( lambda_c, phi_c, lambda, phi,  &
+  &                       ulambda, vphi, wrho, ur, vt, wz,  &
+  &                       r_opt, theta_opt )
+  !! convert components of a vector on the spherical coordinate to
+  !! the components at a radial and azimuthal grid (r,theta) 
+  !! on the spherical coordinate with the origin of (lonc,latc).
+  implicit none
+  double precision, intent(in) :: lambda_c   !! longitude of the center on the spherical coordinate (rad)
+  double precision, intent(in) :: phi_c      !! latitude of the center on the spherical coordinate (rad)
+  double precision, intent(in) :: lambda     !! target longitude (rad)
+  double precision, intent(in) :: phi        !! target latitude (rad)
+  double precision, intent(in) :: ulambda    !! zonal component of vector
+  double precision, intent(in) :: vphi       !! meridional component of vector
+  double precision, intent(in) :: wrho       !! vertical component of vector
+  double precision, intent(out) :: ur          !! vector component to the r-direction
+  double precision, intent(out) :: vt          !! vector component to the theta-direction
+  double precision, intent(out) :: wz          !! vector component to the z-direction
+  double precision, intent(in), optional :: r_opt     !! radial distance from (lonc,latc) (m)
+  double precision, intent(in), optional :: theta_opt !! azimuthal angle from (lonc,latc) (rad)
+
+  double precision :: r, theta
+  double precision :: sinpc, cospc, sint, cost, sinl, cosl, sinp, cosp, sinpr, cospr
+
+  if(present(r_opt).and.present(theta_opt))then
+     r=r_opt
+     theta=theta_opt
+  else
+     call sph_ll2rt( lambda_c, phi_c, lambda, phi, r, theta )
+  end if
+
+  sinpc=dsin(phi_c)
+  cospc=dcos(phi_c)
+  sint=dsin(theta)
+  cost=dcos(theta)
+  sinp=r/radius_dp
+  cosp=dsqrt(1.0-sinp**2)
+  sinpr=dsin(phi)
+  cospr=dcos(phi)
+  sinl=dsin(lambda-lambda_c)
+  cosl=dcos(lambda-lambda_c)
+
+  vt=ulambda*(-sint*cosl+cost*sinpc*sinl)  &
+  & +vphi*(sinpr*sint*sinl+sinpr*cost*sinpc*cosl+cospr*cospc*cost)  &
+  & +wrho*(-cospr*sint*sinl-cospr*cost*sinpc*cosl+sinpr*cospc*cost)
+
+  ur=ulambda*(-cost*cosp*cosl-sinpc*sint*cosp*sinl-cospc*sinp*cosl)  &
+  & +vphi*(sinpr*cost*cosp*sinl-sinpr*sinpc*sint*cosp*cosl  &
+  &        -cospr*cospc*sint*cosp-sinpr*cospc*sinp*cosl+cospr*sinpc*sinp)  &
+  & +wrho*(-cospr*cost*cosp*sinl+cospr*sinpc*sint*cosp*cosl  &
+  &        -sinpr*cospc*sint*cosp+cospr*cospc*sinp*cosl+sinpr*sinpc*sinp)
+
+  wz=ulambda*(cost*sinp*cosl+sinpc*sint*sinp*sinl+cospc*cosp*sinl)  &
+  & +vphi*(-sinpr*cost*sinp*sinl+sinpr*sinpc*sint*sinp*cosl  &
+  &        +cospr*cospc*sint*sinp+sinpr*cospc*cosp*cosl-cospr*sinpc*cosp)  &
+  & +wrho*(cospr*cost*sinp*sinl-cospr*sinpc*sint*sinp*cosl  &
+  &        +sinpr*cospc*sint*sinp-cospr*cospc*cosp*cosl-sinpr*sinpc*cosp)
+
+end subroutine sph_vec_ll2rt
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
+
+!--------------------------------------------------------------
+!--------------------------------------------------------------
+
 
 !--------------------------------------------------------------
 !--------------------------------------------------------------
