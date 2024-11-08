@@ -74,6 +74,7 @@ program GVTDX_Dradar
   double precision, allocatable, dimension(:,:) :: projVRs_rt_t, projVTs_rt_t
   double precision, allocatable, dimension(:,:) :: projVRm_rt_t, projVTm_rt_t
   double precision, allocatable, dimension(:,:,:) :: VTtot, VRtot, VRT0, VDR0
+  double precision, allocatable, dimension(:,:,:) :: zeta0, zetatot
   double precision, allocatable, dimension(:,:,:,:) :: VRTn, VRRn, VDTm, VDRm, phin, zetan
   double precision, allocatable, dimension(:,:,:) :: VTtot_Er, VRtot_Er
   double precision, allocatable, dimension(:,:,:) :: Uxtot_Er, Vytot_Er
@@ -222,6 +223,8 @@ program GVTDX_Dradar
   allocate(Wstot_Er(nr,nt,nnz(1):nnz(2)))
   allocate(VRT0(nr,nt,nnz(1):nnz(2)))
   allocate(VDR0(nr,nt,nnz(1):nnz(2)))
+  allocate(zetatot(nr,nt,nnz(1):nnz(2)))
+  allocate(zeta0(nr,nt,nnz(1):nnz(2)))
   allocate(VRTn(nrotmin:nrot,nr,nt,nnz(1):nnz(2)))
   allocate(VRRn(nrotmin:nrot,nr,nt,nnz(1):nnz(2)))
   allocate(VDTm(ndivmin:ndiv,nr,nt,nnz(1):nnz(2)))
@@ -302,10 +305,10 @@ program GVTDX_Dradar
   call write_file_text_add( out_fnum(2), "options big_endian template" )
   call write_file_text_add( out_fnum(2), "xdef "//trim(adjustl(i2c_convert(nr)))  &
   &                         //" LINEAR "//trim(adjustl(r2c_convert(real(rmin))))//" "  &
-  &                         //trim(adjustl(r2c_convert(real(dr)))) )
+  &                         //trim(adjustl(r2c_convert(real(dr)*real(nr_org)/real(smooth_r)))) )
   call write_file_text_add( out_fnum(2), "ydef "//trim(adjustl(i2c_convert(nt)))  &
   &                         //" LINEAR "//trim(adjustl(r2c_convert(real(tmin))))//" "  &
-  &                         //trim(adjustl(r2c_convert(real(dt)))) )
+  &                         //trim(adjustl(r2c_convert(real(dt)*real(nt_org)/real(smooth_t)))) )
   call write_file_text_add( out_fnum(2), "zdef "//trim(adjustl(i2c_convert(ntz)))  &
   &                         //" LINEAR "//trim(adjustl(r2c_convert(real(zmin+dz*real(nnz(1)-1)))))//" "  &
   &                         //trim(adjustl(r2c_convert(real(dz)))) )
@@ -331,6 +334,8 @@ program GVTDX_Dradar
      Uxtot_Er=undef
      Vytot_Er=undef
      Wstot_Er=undef
+     zetatot=undef
+     zeta0=undef
      VRT0=undef
      VDR0=undef
      VRTn=undef
@@ -625,8 +630,13 @@ program GVTDX_Dradar
   &                        VRtot_Er(1:nr,1:nt,k), VTtot_Er(1:nr,1:nt,k),  &
   &                        Uxtot_Er(1:nr,1:nt,k), Vytot_Er(1:nr,1:nt,k), undef )
 
-        call abs_2dd( VRtot_Er(1:nr,1:nt,k), VTtot_Er(1:nr,1:nt,k),  &
-  &                   Wstot_Er(1:nr,1:nt,k), undef )
+        call abs_2d( VRtot_Er(1:nr,1:nt,k), VTtot_Er(1:nr,1:nt,k),  &
+  &                  Wstot_Er(1:nr,1:nt,k), undef )
+
+        !-- calculate additional variables for analyses
+        call calc_zeta_ax( nrot, r_t(1:nr), theta_t(1:nt), VRT0(1:nr,1:nt,k),  &
+  &                        zeta0(1:nr,1:nt,k), zetan(nrotmin:nrot,1:nr,1:nt,k),  &
+  &                        zetatot(1:nr,1:nt,k), undef )
 
      end do
 
@@ -857,6 +867,24 @@ program GVTDX_Dradar
      irec=irec+1
      nval=nval+1
      if(i==1) call write_file_text_add( out_fnum(2), "lond 0 99 latitude [degree]" )
+
+!-- additional output variables for analyses
+     call conv_d2r_3d( zeta0(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
+     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
+  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                               "Zeta0 "//trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                               //"retrieved axisymmetric vorticity [s-1]" )
+     call conv_d2r_3d( zetatot(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
+     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
+  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                               "Zetatot "//trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                               //"retrieved total vorticity [s-1]" )
 
 !!-- NetCDF output
 !

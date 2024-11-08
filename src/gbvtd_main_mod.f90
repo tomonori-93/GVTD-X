@@ -173,6 +173,10 @@ subroutine Retrieve_velocity_GBVTD( nasym, r, t, td, Vd, RadTC,  &
               end if
            end if
         end if
+        if(na<nasym)then
+           VTSn(na+1:nasym,i,1:nt)=0.0d0
+           VTCn(na+1:nasym,i,1:nt)=0.0d0
+        end if
      else
         na=nasym
      end if

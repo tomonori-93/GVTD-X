@@ -630,6 +630,50 @@ end subroutine proj_VtVr2Vrart
 !--------------------------------------------------
 !--------------------------------------------------
 
+subroutine calc_zeta_ax( nasym, radi, thet, VT0, vort0, vortn, vorttot, undef )
+  !! calculate axisymmetric vorticity from axisymmetric tangential wind.
+  !! If nasym > 0, also output total vorticity (i.e., vorttot = vort0(out) + vortn(in)).
+  implicit none
+  integer, intent(in) :: nasym    !! number of asymmetric components for rotating vorticity
+  double precision, intent(in) :: radi(:)   !! radial distance from vortex center (m)
+  double precision, intent(in) :: thet(:)  !! azimuthal angle from (lonc,latc) (rad)
+  double precision, intent(in) :: VT0(size(radi),size(thet))  !! axisymmetric tangential wind (m/s)
+  double precision, intent(out) :: vort0(size(radi),size(thet))  !! axisymmetric vorticity (s-1)
+  double precision, intent(in) :: vortn(nasym,size(radi),size(thet))  !! axisymmetric vorticity (s-1)
+  double precision, intent(out) :: vorttot(size(radi),size(thet))  !! total vorticity (s-1)
+  double precision, intent(in) :: undef
+  integer :: ii, jj, ix, jy
+  double precision :: dummy
+
+  ix=size(radi)
+  jy=size(thet)
+  vort0=undef
+  vorttot=undef
+
+  call grad_1d( radi, VT0(1:ix,1), vort0(1:ix,1), undef=undef )
+  do ii=1,ix
+     if(vort0(ii,1)/=undef.and.VT0(ii,1)/=undef.and.radi(ii)/=0.0d0)then
+        vort0(ii,1)=vort0(ii,1)+VT0(ii,1)/radi(ii)
+     end if
+  end do
+
+  do jj=2,jy
+     vort0(1:ix,jj)=vort0(1:ix,1)
+  end do
+
+  vorttot=vort0
+
+  if(nasym>0)then
+     do ii=1,nasym
+        call add_2d( vorttot(1:ix,1:jy), vortn(ii,1:ix,1:jy), undef )
+     end do
+  end if
+
+end subroutine calc_zeta_ax
+
+!--------------------------------------------------
+!--------------------------------------------------
+
 double precision function line_integral( nr, rdh, gkrr, div_r, undef )
 !! Calculate a line integral (actually, sum for arguments)
   implicit none
