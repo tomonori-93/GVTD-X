@@ -860,13 +860,13 @@ program GVTDX_Dradar
   &                      rval(1:nr,1:nt,nnz(1):nnz(1)), mode='old' )
      irec=irec+1
      nval=nval+1
-     if(i==1) call write_file_text_add( out_fnum(2), "latd 0 99 longitude [degree]" )
+     if(i==1) call write_file_text_add( out_fnum(2), "latd 0 99 latitude [degree]" )
      call conv_d2r_2d( lond_sph(1:nr,1:nt), rval(1:nr,1:nt,nnz(1)) )
      call write_file_3d( trim(adjustl(output_fname)), nr, nt, 1, irec,  &
   &                      rval(1:nr,1:nt,nnz(1):nnz(1)), mode='old' )
      irec=irec+1
      nval=nval+1
-     if(i==1) call write_file_text_add( out_fnum(2), "lond 0 99 latitude [degree]" )
+     if(i==1) call write_file_text_add( out_fnum(2), "lond 0 99 longitude [degree]" )
 
 !-- additional output variables for analyses
      call conv_d2r_3d( zeta0(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
