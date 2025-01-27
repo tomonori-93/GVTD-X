@@ -10,12 +10,12 @@ GVTD-X is a numerical method to retrieve tangential and radial wind components i
   * Radial consistency of the asymmetric winds even in potential radial gaps due to insufficient sampling in the azimuth
 
 
-# Methods
-[Paper](https://doi.org/10.1175/MWR-D-23-0043.1) ([preprint](https://jxiv.jst.go.jp/index.php/jxiv/preprint/view/299))
+# References
+* Tsujino, S., T. Horinouchi, and U. Shimada, 2024: A New Closure Assumption and Formulation Based on the Helmholtz Decomposition for Improving Retrievals for Vortex Circulations from Single-Doppler Radar Observations. Mon. Wea. Rev., 152, 145–168, [https://doi.org/10.1175/MWR-D-23-0043.1](https://doi.org/10.1175/MWR-D-23-0043.1) ([preprint](https://jxiv.jst.go.jp/index.php/jxiv/preprint/view/299))
 
-[Method descriptions](https://tomonori-93.github.io/GVTD-X/ford-doc/index.html)
+* [Method descriptions](https://tomonori-93.github.io/GVTD-X/ford-doc/index.html)
 
-[日本語による手法の定式化とその導出: Formulation and derivation (Japanese document)](https://github.com/tomonori-93/GVTD-X/blob/document/tex/document.pdf)
+* [日本語による手法の定式化とその導出: Formulation and derivation (Japanese document)](https://github.com/tomonori-93/GVTD-X/blob/document/tex/document.pdf)
 
 # Images
 ![Test Image 1](image/image1.png)
