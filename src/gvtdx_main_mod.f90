@@ -1443,6 +1443,7 @@ subroutine calc_Phi2Zetan( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr,  
 
   integer :: ii, jj, kk, nnr, nnt, cstat
   double precision, dimension(size(rd)) :: alp
+  double precision, dimension(size(rd)+1) :: coef_a
   double precision, dimension(nrot,size(rd)+1) :: d2psdr2, d2pcdr2, dpsdr, dpcdr
   double precision, dimension(nrot,size(theta)) :: sinen, cosinen
   double precision, dimension(nrot,0:size(rd)+2) :: tmpphis, tmpphic
@@ -1499,6 +1500,11 @@ subroutine calc_Phi2Zetan( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr,  
      alp(ii)=(rd(ii)-rdh(ii))/(rdh(ii+1)-rdh(ii))
   end do
 
+  coef_a=0.0d0
+  do ii=2,nnr
+     coef_a(ii)=(rdh(ii)-rdh(ii-1))/(rdh(ii+1)-rdh(ii))
+  end do
+
 !$omp parallel default(shared)
 !$omp do schedule(runtime) private(kk,ii)
 
@@ -1515,16 +1521,28 @@ subroutine calc_Phi2Zetan( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr,  
 
   do ii=1,nnr+1
      do kk=1,nrot
-        d2psdr2(kk,ii)=2.0d0*drc_inv(ii)  &
-  &                         *((tmpphis(kk,ii+1)-tmpphis(kk,ii))*drf_inv(ii)  &
-  &                          +(tmpphis(kk,ii-1)-tmpphis(kk,ii))*drb_inv(ii))
-        d2pcdr2(kk,ii)=2.0d0*drc_inv(ii)  &
-  &                         *((tmpphic(kk,ii+1)-tmpphic(kk,ii))*drf_inv(ii)  &
-  &                          +(tmpphic(kk,ii-1)-tmpphic(kk,ii))*drb_inv(ii))
-        dpsdr(kk,ii)=0.5d0*((tmpphis(kk,ii+1)-tmpphis(kk,ii))*drf_inv(ii)  &
-  &                        -(tmpphis(kk,ii-1)-tmpphis(kk,ii))*drb_inv(ii))
-        dpcdr(kk,ii)=0.5d0*((tmpphic(kk,ii+1)-tmpphic(kk,ii))*drf_inv(ii)  &
-  &                        -(tmpphic(kk,ii-1)-tmpphic(kk,ii))*drb_inv(ii))
+        d2psdr2(kk,ii)=(2.0d0/(1.0d0+coef_a(ii)**2))*(drf_inv(ii)**2)  &
+  &                    *(coef_a(ii)*tmpphis(kk,ii+1)+tmpphis(kk,ii-1)  &
+  &                     +(1.0d0+coef_a(ii))*tmpphis(kk,ii))
+        d2pcdr2(kk,ii)=(2.0d0/(1.0d0+coef_a(ii)**2))*(drf_inv(ii)**2)  &
+  &                    *(coef_a(ii)*tmpphic(kk,ii+1)+tmpphic(kk,ii-1)  &
+  &                     +(1.0d0+coef_a(ii))*tmpphic(kk,ii))
+        dpsdr(kk,ii)=(1.0d0/(1.0d0+coef_a(ii)))*drb_inv(ii)  & ! [NOTE] drb_inv = drf_inv / coef_a
+  &                  *((coef_a(ii)**2)*tmpphis(kk,ii+1)-tmpphis(kk,ii-1)  &
+  &                    -(coef_a(ii)**2-1.0d0)*tmpphis(kk,ii))
+        dpcdr(kk,ii)=(1.0d0/(1.0d0+coef_a(ii)))*drb_inv(ii)  &
+  &                  *((coef_a(ii)**2)*tmpphic(kk,ii+1)-tmpphic(kk,ii-1)  &
+  &                    -(coef_a(ii)**2-1.0d0)*tmpphic(kk,ii))
+!        d2psdr2(kk,ii)=2.0d0*drc_inv(ii)  &
+!  &                         *((tmpphis(kk,ii+1)-tmpphis(kk,ii))*drf_inv(ii)  &
+!  &                          +(tmpphis(kk,ii-1)-tmpphis(kk,ii))*drb_inv(ii))
+!        d2pcdr2(kk,ii)=2.0d0*drc_inv(ii)  &
+!  &                         *((tmpphic(kk,ii+1)-tmpphic(kk,ii))*drf_inv(ii)  &
+!  &                          +(tmpphic(kk,ii-1)-tmpphic(kk,ii))*drb_inv(ii))
+!        dpsdr(kk,ii)=0.5d0*((tmpphis(kk,ii+1)-tmpphis(kk,ii))*drf_inv(ii)  &
+!  &                        -(tmpphis(kk,ii-1)-tmpphis(kk,ii))*drb_inv(ii))
+!        dpcdr(kk,ii)=0.5d0*((tmpphic(kk,ii+1)-tmpphic(kk,ii))*drf_inv(ii)  &
+!  &                        -(tmpphic(kk,ii-1)-tmpphic(kk,ii))*drb_inv(ii))
      end do
   end do
 
