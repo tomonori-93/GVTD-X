@@ -1521,13 +1521,14 @@ subroutine calc_Phi2Zetan( nrot, vmax, rmax, rd, rdh, theta, phis_nr, phic_nr,  
 
   do ii=1,nnr+1
      do kk=1,nrot
-        d2psdr2(kk,ii)=(2.0d0/(1.0d0+coef_a(ii)**2))*(drf_inv(ii)**2)  &
+        ! [NOTE] drb_inv = drf_inv / coef_a
+        d2psdr2(kk,ii)=(2.0d0/(1.0d0+coef_a(ii)))*drb_inv(ii)*drf_inv(ii)  &
   &                    *(coef_a(ii)*tmpphis(kk,ii+1)+tmpphis(kk,ii-1)  &
-  &                     +(1.0d0+coef_a(ii))*tmpphis(kk,ii))
-        d2pcdr2(kk,ii)=(2.0d0/(1.0d0+coef_a(ii)**2))*(drf_inv(ii)**2)  &
+  &                     -(1.0d0+coef_a(ii))*tmpphis(kk,ii))
+        d2pcdr2(kk,ii)=(2.0d0/(1.0d0+coef_a(ii)))*drb_inv(ii)*drf_inv(ii)  &
   &                    *(coef_a(ii)*tmpphic(kk,ii+1)+tmpphic(kk,ii-1)  &
-  &                     +(1.0d0+coef_a(ii))*tmpphic(kk,ii))
-        dpsdr(kk,ii)=(1.0d0/(1.0d0+coef_a(ii)))*drb_inv(ii)  & ! [NOTE] drb_inv = drf_inv / coef_a
+  &                     -(1.0d0+coef_a(ii))*tmpphic(kk,ii))
+        dpsdr(kk,ii)=(1.0d0/(1.0d0+coef_a(ii)))*drb_inv(ii)  &
   &                  *((coef_a(ii)**2)*tmpphis(kk,ii+1)-tmpphis(kk,ii-1)  &
   &                    -(coef_a(ii)**2-1.0d0)*tmpphis(kk,ii))
         dpcdr(kk,ii)=(1.0d0/(1.0d0+coef_a(ii)))*drb_inv(ii)  &
