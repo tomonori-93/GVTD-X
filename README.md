@@ -1,4 +1,4 @@
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10435858.svg)](https://doi.org/10.5281/zenodo.10435858)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17490992.svg)](https://doi.org/10.5281/zenodo.17490992)
 
 # Introduction of GVTD-X
 GVTD-X is a numerical method to retrieve tangential and radial wind components in atmospheric vortices from single-Doppler radar observations, which is named from pronounciation of a abbreviation "GVTD-HeCs" (Generalized Velocity Track Display with the Helmholtz-decomposition-based Closure assumption). The retrieval method is implemented by Fortran. You can use it by linking the static library `libGVTDX.a`. 
@@ -36,6 +36,6 @@ GVTD-X is a numerical method to retrieve tangential and radial wind components i
 * Dynamical analyses by using this method
 
 # Cite as
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.10435858.svg)](https://doi.org/10.5281/zenodo.10435858)
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.17490992.svg)](https://doi.org/10.5281/zenodo.17490992)
 
-The above DOI corresponds to the latest versioned release as published to Zenodo, where you will find all earlier releases. To cite ro-crate-py independent of version, use https://doi.org/10.5281/zenodo.10435858, which will always redirect to the latest release.
+The above DOI corresponds to the latest versioned release as published to Zenodo, where you will find all earlier releases. To cite ro-crate-py independent of version, use https://doi.org/10.5281/zenodo.17490992, which will always redirect to the latest release.
