@@ -28,7 +28,7 @@ program test_Rankine_ax
   double precision :: rvmax, vmax, c1u, c2u
   double precision :: vp(nvp_max), up(nvp_max), vpa(nvp_max), upa(nvp_max)
   double precision, dimension(nrdiv_max) :: rdiv
-  logical :: col_rev, ropt
+  logical :: col_rev, ropt, dopt
 
 !-- internal
   integer :: i, j, k, cstat
@@ -49,6 +49,7 @@ program test_Rankine_ax
   double precision, allocatable, dimension(:,:) :: us0, vs0, us0_rht_t, vs0_rht_t
   double precision, allocatable, dimension(:,:) :: div_rht_t, rot_rht_t, div_xyd, rot_xyd
   double precision, allocatable, dimension(:,:) :: zeta0_rt_t, zeta_xyd, dummy_rt_t
+  double precision, allocatable, dimension(:,:) :: zetans_r, zetanc_r
   double precision, allocatable, dimension(:,:,:) :: phin_rt_t, phin_xyd, zetan_rt_t
   double precision, allocatable, dimension(:,:,:) :: VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t
 
@@ -57,7 +58,7 @@ program test_Rankine_ax
   character(1) :: tmpk
 
   namelist /input /nvp, nup, undef, rvmax, vmax, c1u, c2u, vp, up, vpa, upa,  &
-  &                us, vs, nrot, ndiv, ropt, nrdiv, rdiv, flag_GVTDX
+  &                us, vs, nrot, ndiv, ropt, dopt, nrdiv, rdiv, flag_GVTDX
   namelist /domain /nxd, nyd, nr_d, nr_t, nt_d, nt_t,  &
   &                 xdmin, xdmax, ydmin, ydmax,  &
   &                 r_dmin, r_dmax, t_dmin, t_dmax,  &
@@ -121,6 +122,8 @@ program test_Rankine_ax
   allocate(phin_rt_t(nrot,nr_t,nt_t),stat=cstat)  ! phin on R-T coordinate
   allocate(zeta0_rt_t(nr_t,nt_t),stat=cstat)  ! zeta0 on R-T coordinate
   allocate(dummy_rt_t(nr_t,nt_t),stat=cstat)  ! dummy array
+  allocate(zetans_r(nrot,nr_t),stat=cstat)  ! sine zetan on R coordinate
+  allocate(zetanc_r(nrot,nr_t),stat=cstat)  ! cosine zetan on R coordinate
   allocate(zetan_rt_t(nrot,nr_t,nt_t),stat=cstat)  ! zetan on R-T coordinate
   allocate(div_xyd(nxd,nyd),stat=cstat)  ! divergence on X-Y coordinate
   allocate(rot_xyd(nxd,nyd),stat=cstat)  ! rotation on X-Y coordinate
@@ -173,7 +176,7 @@ program test_Rankine_ax
 !-- producing vortex profiles at vector points
   call prod_vortex_structure( rh_t, t_ref_t, rvmax, vmax, c1u, c2u,  &
   &                           Vt_rht_t, Ut_rht_t, vp(1:nvp), up(1:nup),  &
-  &                           vpa(1:nvp)*d2r, upa(1:nup)*d2r, ropt=ropt,  &
+  &                           vpa(1:nvp)*d2r, upa(1:nup)*d2r, ropt=ropt, dopt=dopt,  &
   &                           Uxm=Usrn, Vym=Vsrn, flag_disp=.true. )
 
 !-- Environmental wind (Us, Vs) -> Vra(r_t,t_t), Vrn(r_t,t_t)
@@ -228,7 +231,8 @@ write(*,*) "val check", Vra1d
   &                                Vra_rt_t, Vsrn(2), rad_tc,  &
   &                                VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t,  &
   &                                VRTn_rt_t, VRRn_rt_t, VDTm_rt_t, VDRm_rt_t,  &
-  &                                undef, phin=phin_rt_t, zetan=zetan_rt_t )
+  &                                undef=undef, phin=phin_rt_t, zetan=zetan_rt_t,  &
+  &                                zetans_r=zetans_r, zetanc_r=zetanc_r )
   case (2)  ! GVTD
      call Retrieve_velocity_GVTD( nrot, rh_t, t_t, tdr_t, Vra_rt_t,  &
   &                               rad_tc,  &

@@ -26,7 +26,7 @@ GVTD-X is a numerical method to retrieve tangential and radial wind components i
 
 # USAGE
 ### [Install](install.md)
-### [How to use](tools/README.md)
+### [How to use and examples](tools/README.md)
 ### [Demo](demo/sample.md)
 
 # Future works
