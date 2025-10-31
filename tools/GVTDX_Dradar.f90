@@ -19,6 +19,10 @@ program GVTDX_Dradar
 
   !-- parameters
   integer, parameter :: nrdivmax=1000  !! the maximum number of radial grids for the divergent
+  integer, parameter :: out_fnum(2)=(/100, 101/)
+                        !! unit numbers for output files <br>
+                        !! 1: .srVM file (storm-relative mean wind)
+                        !! 2: GVTDX.ctl file (GrADS control file)
 
   !-- namelist variables
   integer :: nr_org            !! the radial grid number of the original data
@@ -45,13 +49,14 @@ program GVTDX_Dradar
   double precision :: dz       !! the vertical grid spacing where Doppler velocity is defined (m)
   character(1000) :: listname  !! ASCII file name listing file name and other information
   logical :: out2d_flag        !! Flag for output of 2d (r-z) data
+  logical :: flag_datagap=.false. !! Flag for use of optimal wavenumber from data gap (Lee et al. 2000)
 
   !-- internal variables
-  integer :: i, j, k, id, it, m, stat, nr, ntz, nt, nl, irec, tccol
+  integer :: i, j, k, id, it, m, stat, nr, ntz, nt, nl, irec, tccol, nval
   integer :: nrotmin, ndivmin
   integer :: nr_in, nr_out, ntin_c, ntout_c
   double precision :: usp, vsp, thetad_tc, thetaM, thetaS
-  double precision :: x_tc, y_tc, d2r, r_tmp, RdTc
+  double precision :: x_tc, y_tc, d2r, r2d, r_tmp, RdTc
   double precision :: vdm, vds, dvm
   double precision, parameter :: undef=-999.0d0
   real, allocatable, dimension(:) :: ttime
@@ -63,11 +68,19 @@ program GVTDX_Dradar
   double precision, allocatable, dimension(:) :: theta_t, r_t, rh_t
   double precision, allocatable, dimension(:,:) :: dval
   double precision, allocatable, dimension(:,:) :: thetad_t
-  double precision, allocatable, dimension(:,:) :: lonr, latr
+  double precision, allocatable, dimension(:,:) :: lonr, latr, lond, latd
+  double precision, allocatable, dimension(:,:) :: lonr_sph, latr_sph, lond_sph, latd_sph
   double precision, allocatable, dimension(:,:) :: projVs, projVm
+  double precision, allocatable, dimension(:,:) :: projVRs_rt_t, projVTs_rt_t
+  double precision, allocatable, dimension(:,:) :: projVRm_rt_t, projVTm_rt_t
   double precision, allocatable, dimension(:,:,:) :: VTtot, VRtot, VRT0, VDR0
+  double precision, allocatable, dimension(:,:,:) :: zeta0, zetatot
   double precision, allocatable, dimension(:,:,:,:) :: VRTn, VRRn, VDTm, VDRm, phin, zetan
+  double precision, allocatable, dimension(:,:,:) :: VTtot_Er, VRtot_Er
+  double precision, allocatable, dimension(:,:,:) :: Uxtot_Er, Vytot_Er
+  double precision, allocatable, dimension(:,:,:) :: Wstot_Er
   double precision, allocatable, dimension(:,:,:) :: Vra, Vra_ret
+  double precision, allocatable, dimension(:,:,:) :: Vra_Er, Vra_Er_ret
   double precision, allocatable, dimension(:,:,:) :: VRT0_GVTD, VDR0_GVTD, Vn_0
   double precision, allocatable, dimension(:,:) :: VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t
   double precision, allocatable, dimension(:,:) :: VRT0_GVTD_rt_t, VDR0_GVTD_rt_t, Vn_0_rt_t
@@ -91,6 +104,7 @@ program GVTDX_Dradar
 !  character(1), dimension(3) :: dimname, unitname
 !  character(12), dimension(3) :: lname
   character(200), allocatable, dimension(:,:) :: cval
+  character(10000) :: tmpchar
 !  character(50) :: valc, vall, valu
 !  character(50), dimension(2) :: vecc, vecl, vecu
   logical :: stdflag
@@ -102,7 +116,8 @@ program GVTDX_Dradar
   namelist /iocheck /listname, out2d_flag, nr_org, nt_org, nz,  &
   &                  rmin, dr, tmin, dt, zmin, dz
   namelist /ret_opt /nrot, ndiv, nrdiv, rdiv_t, undefobs, nthres_undef,  &
-  &                  smooth_r, smooth_t, nnz, skip_min_t, flag_GVTDX
+  &                  smooth_r, smooth_t, nnz, skip_min_t, flag_GVTDX,  &
+  &                  flag_datagap
   namelist /rad_opt /dpoint_x, dpoint_y
   read(5,nml=iocheck)
   read(5,nml=ret_opt)
@@ -118,6 +133,7 @@ program GVTDX_Dradar
   vdm=0.0d0
 
   d2r=pi_dp/180.0d0
+  r2d=180.0d0/pi_dp
 
   stdflag=.true.
 
@@ -145,6 +161,12 @@ program GVTDX_Dradar
   allocate(thetad_t(nr,nt))
   allocate(lonr(nr,nt))
   allocate(latr(nr,nt))
+  allocate(lond(nr,nt))
+  allocate(latd(nr,nt))
+  allocate(lond_sph(nr,nt))
+  allocate(latd_sph(nr,nt))
+  allocate(lonr_sph(nr,nt))
+  allocate(latr_sph(nr,nt))
   allocate(projVs(nr,nt))
   allocate(projVm(nr,nt))
   allocate(dval(nr_org,nt_org))
@@ -194,8 +216,15 @@ program GVTDX_Dradar
   allocate(vmd(nz))
   allocate(VTtot(nr,nt,nnz(1):nnz(2)))
   allocate(VRtot(nr,nt,nnz(1):nnz(2)))
+  allocate(VTtot_Er(nr,nt,nnz(1):nnz(2)))
+  allocate(VRtot_Er(nr,nt,nnz(1):nnz(2)))
+  allocate(Uxtot_Er(nr,nt,nnz(1):nnz(2)))
+  allocate(Vytot_Er(nr,nt,nnz(1):nnz(2)))
+  allocate(Wstot_Er(nr,nt,nnz(1):nnz(2)))
   allocate(VRT0(nr,nt,nnz(1):nnz(2)))
   allocate(VDR0(nr,nt,nnz(1):nnz(2)))
+  allocate(zetatot(nr,nt,nnz(1):nnz(2)))
+  allocate(zeta0(nr,nt,nnz(1):nnz(2)))
   allocate(VRTn(nrotmin:nrot,nr,nt,nnz(1):nnz(2)))
   allocate(VRRn(nrotmin:nrot,nr,nt,nnz(1):nnz(2)))
   allocate(VDTm(ndivmin:ndiv,nr,nt,nnz(1):nnz(2)))
@@ -208,6 +237,12 @@ program GVTDX_Dradar
   allocate(Vra(nr,nt,nnz(1):nnz(2)))
   allocate(Vra_ret(nr,nt,nnz(1):nnz(2)))
   allocate(Vra_rt_t(nr,nt))
+  allocate(Vra_Er(nr,nt,nnz(1):nnz(2)))
+  allocate(Vra_Er_ret(nr,nt,nnz(1):nnz(2)))
+  allocate(projVRs_rt_t(nr,nt))
+  allocate(projVTs_rt_t(nr,nt))
+  allocate(projVRm_rt_t(nr,nt))
+  allocate(projVTm_rt_t(nr,nt))
   allocate(VTtot_rt_t(nr,nt))
   allocate(VRtot_rt_t(nr,nt))
   allocate(VRT0_rt_t(nr,nt))
@@ -259,9 +294,27 @@ program GVTDX_Dradar
   end do
 
 !-- ASCII output for normal component to the direction of the radar to the vortex center of storm-relative mean wind
-  open(unit=100,file=trim(adjustl(listname))//'.srVM',status='unknown')
-  write(100,'(a32)') "'Time'          'Vm-SR'         "
-  write(100,'(a32)') "'s'             'ms-1'          "
+  open(unit=out_fnum(1),file=trim(adjustl(listname))//'.srVM',status='unknown')
+  write(out_fnum(1),'(a32)') "'Time'          'Vm-SR'         "
+  write(out_fnum(1),'(a32)') "'s'             'ms-1'          "
+
+!-- Output GrADS control file for *.GVTDX files
+  open(unit=out_fnum(2),file='GVTDX.ctl',status='unknown')
+  call write_file_text_add( out_fnum(2), "title GVTDX output file (please edit filenames and time)" )
+  call write_file_text_add( out_fnum(2), "undef "//trim(adjustl(r2c_convert(real(undef)))) )
+  call write_file_text_add( out_fnum(2), "options big_endian template" )
+  call write_file_text_add( out_fnum(2), "xdef "//trim(adjustl(i2c_convert(nr)))  &
+  &                         //" LINEAR "//trim(adjustl(r2c_convert(real(rmin))))//" "  &
+  &                         //trim(adjustl(r2c_convert(real(dr)*real(nr_org)/real(smooth_r)))) )
+  call write_file_text_add( out_fnum(2), "ydef "//trim(adjustl(i2c_convert(nt)))  &
+  &                         //" LINEAR "//trim(adjustl(r2c_convert(real(tmin))))//" "  &
+  &                         //trim(adjustl(r2c_convert(real(dt)*real(nt_org)/real(smooth_t)))) )
+  call write_file_text_add( out_fnum(2), "zdef "//trim(adjustl(i2c_convert(ntz)))  &
+  &                         //" LINEAR "//trim(adjustl(r2c_convert(real(zmin+dz*real(nnz(1)-1)))))//" "  &
+  &                         //trim(adjustl(r2c_convert(real(dz)))) )
+  call write_file_text_add( out_fnum(2), "tdef "//trim(adjustl(i2c_convert(nl)))  &
+  &                         //" LINEAR 00Z00JAN0000 10mn" )
+  call write_file_text_add( out_fnum(2), "* vars XX (replace XX with the line after 'endvars'" )
 
 !-- Loop for time
 
@@ -276,6 +329,13 @@ program GVTDX_Dradar
      !-- Set temporary variables
      VTtot=undef
      VRtot=undef
+     VTtot_Er=undef
+     VRtot_Er=undef
+     Uxtot_Er=undef
+     Vytot_Er=undef
+     Wstot_Er=undef
+     zetatot=undef
+     zeta0=undef
      VRT0=undef
      VDR0=undef
      VRTn=undef
@@ -286,6 +346,8 @@ program GVTDX_Dradar
      zetan=undef
      Vra=undef
      Vra_ret=undef
+     Vra_Er=undef
+     Vra_Er_ret=undef
      VRT0_GVTD=undef
      VDR0_GVTD=undef
      Vn_0=undef
@@ -322,6 +384,12 @@ program GVTDX_Dradar
   &                    lonr(id,j), latr(id,j) )
            call ll2rt( dpoint_x*d2r, dpoint_y*d2r, lonr(id,j), latr(id,j),  &
   &                    r_tmp, thetad_t(id,j) )
+           lond(id,j)=lonr(id,j)*r2d
+           latd(id,j)=latr(id,j)*r2d
+           call sph_rt2ll( r_t(id), theta_ref_t(j), x_tc*d2r, y_tc*d2r,  &
+  &                        lonr_sph(id,j), latr_sph(id,j) )
+           lond_sph(id,j)=lonr_sph(id,j)*r2d
+           latd_sph(id,j)=latr_sph(id,j)*r2d
         end do
      end do
 
@@ -342,11 +410,15 @@ program GVTDX_Dradar
 
      !-- 5.1. project the storm motion to the line-of-sight direction of each radar beam
      call proj_Vs( dpoint_x*d2r, dpoint_y*d2r, lonr, latr, usp, vsp, projVs, undef )
+     !-- (opt) project the storm motion to the R-T coordinate
+     call proj_rtVs( r_t, theta_ref_t, usp, vsp, projVRs_rt_t, projVTs_rt_t, undef )
 
      !-- Loop for altitude
      do k=nnz(1),nnz(2)
         !-- 5.2. project the mean wind to the line-of-sight direction of each radar beam
         call proj_Vs( dpoint_x*d2r, dpoint_y*d2r, lonr, latr, umd(k), vmd(k), projVm, undef )
+        !-- (opt) project the mean wind to the R-T coordinate
+        call proj_rtVs( r_t, theta_ref_t, umd(k), vmd(k), projVRm_rt_t, projVTm_rt_t, undef )
         !-- A. convert real to double
         call conv_r2d_2d( rval_org(1:nr_org,1:nt_org,k), dval(1:nr_org,1:nt_org) )
         call replace_val_2d( dval(1:nr_org,1:nt_org), dble(undefobs), undef )
@@ -430,7 +502,7 @@ program GVTDX_Dradar
               thetaM=datan2( vmd(k), umd(k) )
               vdm=dsqrt(umd(k)**2+vmd(k)**2)*dsin(thetaM-thetad_tc)  ! VM x sin(thetaM-thetaS)
               dvm=vdm-vds
-              write(100,'(1P2E16.8)') real(i), dvm  ! Output storm-relative mean wind
+              write(out_fnum(1),'(1P2E16.8)') real(i), dvm  ! Output storm-relative mean wind
 
               if(nr_in<nr_out)then
               call Retrieve_velocity_GVTDX( nrot, ndiv, r_t(nr_in:nr_out), theta_t,  &
@@ -471,7 +543,7 @@ program GVTDX_Dradar
   &                                        VDR0_rt_t(nr_in:nr_out,1:nt),  &
   &                                        VRTn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
   &                                        VRRn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                        undef )
+  &                                        undef, flag_datagap=flag_datagap )
            case (3)  ! Run GBVTD
               thetaM=datan2( vsp, usp )
               call Retrieve_velocity_GBVTD( nrot, r_t(nr_in:nr_out), theta_t,  &
@@ -484,7 +556,7 @@ program GVTDX_Dradar
   &                                         VDR0_rt_t(nr_in:nr_out,1:nt),  &
   &                                         VRTn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
   &                                         VRRn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                         undef )
+  &                                         undef, flag_datagap=flag_datagap )
            end select
 
            !-- F. recover retrieved data on the rearranged radii to the original radii
@@ -544,85 +616,275 @@ program GVTDX_Dradar
         call proj_VtVr2Vrart( r_t, theta_t, thetad_t, VTtot_rt_t, VRtot_rt_t,  &
   &                           Vra_ret(1:nr,1:nt,k), undef )
 
+        Vra_Er(1:nr,1:nt,k)=Vra(1:nr,1:nt,k)
+        Vra_Er_ret(1:nr,1:nt,k)=Vra_ret(1:nr,1:nt,k)
+        call add_2d( Vra_Er(1:nr,1:nt,k), projVs(1:nr,1:nt), undef )
+        call add_2d( Vra_Er_ret(1:nr,1:nt,k), projVs(1:nr,1:nt), undef )
+        VTtot_Er(1:nr,1:nt,k)=VTtot(1:nr,1:nt,k)
+        VRtot_Er(1:nr,1:nt,k)=VRtot(1:nr,1:nt,k)
+        call add_2d( VTtot_Er(1:nr,1:nt,k), projVTs_rt_t(1:nr,1:nt), undef )
+        call add_2d( VRtot_Er(1:nr,1:nt,k), projVRs_rt_t(1:nr,1:nt), undef )
+
+        call conv_V_rt2ll( x_tc*d2r, y_tc*d2r, r_t(1:nr), theta_ref_t(1:nt),  &
+  &                        lonr_sph(1:nr,1:nt), latr_sph(1:nr,1:nt),  &
+  &                        VRtot_Er(1:nr,1:nt,k), VTtot_Er(1:nr,1:nt,k),  &
+  &                        Uxtot_Er(1:nr,1:nt,k), Vytot_Er(1:nr,1:nt,k), undef )
+
+        call abs_2d( VRtot_Er(1:nr,1:nt,k), VTtot_Er(1:nr,1:nt,k),  &
+  &                  Wstot_Er(1:nr,1:nt,k), undef )
+
+        !-- calculate additional variables for analyses
+        call calc_zeta_ax( nrot, r_t(1:nr), theta_t(1:nt), VRT0(1:nr,1:nt,k),  &
+  &                        zeta0(1:nr,1:nt,k), zetan(nrotmin:nrot,1:nr,1:nt,k),  &
+  &                        zetatot(1:nr,1:nt,k), undef )
+
      end do
 
      !-- 5. output to binary file (float)
      irec=1
+     nval=0
      call conv_d2r_3d( VTtot(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
      call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='replace' )
      irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2), "VTtot "  &
+  &                                     //trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                                     //"retrieved total tangential wind [m s-1]" )
+     
      call conv_d2r_3d( VRtot(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
      call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
      irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2), "VRtot "  &
+  &                                     //trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                                     //"retrieved total radial wind [m s-1]" )
+
      call conv_d2r_3d( VRT0(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
      call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
      irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2), "VRT0 "  &
+  &                                     //trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                                     //"retrieved axisymmetric tangential wind [m s-1]" )
+
      call conv_d2r_3d( VDR0(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
      call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
      irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2), "VDR0 "  &
+  &                                     //trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                                     //"retrieved axisymmetric radial wind [m s-1]" )
+
      call conv_d2r_3d( Vra(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
      call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
      irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2), "Vra "  &
+  &                                     //trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                                     //"input Doppler velocity [m s-1]" )
+
      call conv_d2r_3d( Vra_ret(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
      call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
      irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2), "Vrar "  &
+  &                                     //trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                                     //"retrieved Doppler velocity [m s-1]" )
+
      call conv_d2r_3d( VRT0_GVTD(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
      call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
      irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2), "VRT0g "  &
+  &                                     //trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                                     //"axisymmetric tangential wind reconstructed from GVTD [m s-1]" )
+
      call conv_d2r_3d( VDR0_GVTD(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
      call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2), "VDR0g "  &
+  &                                     //trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                                     //"axisymmetric radial wind reconstructed from GVTD [m s-1]" )
 
      if(nrot>0)then
         do k=1,nrot
-           irec=irec+ntz
            call conv_d2r_3d( VRTn(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
            call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
-
            irec=irec+ntz
+           nval=nval+1
+           if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                                     "VRT"//trim(adjustl(i2c_convert(k)))//" "  &
+  &                                     //trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                                     //"retrieved wavenumber-"//trim(adjustl(i2c_convert(k)))  &
+  &                                     //" rotational-tangential wind [m s-1]" )
+
            call conv_d2r_3d( VRRn(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
            call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
-
            irec=irec+ntz
+           nval=nval+1
+           if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                                     "VRR"//trim(adjustl(i2c_convert(k)))//" "  &
+  &                                     //trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                                     //"retrieved wavenumber-"//trim(adjustl(i2c_convert(k)))  &
+  &                                     //" rotational-radial wind [m s-1]" )
+
            call conv_d2r_3d( phin(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
            call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
-
            irec=irec+ntz
+           nval=nval+1
+           if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                                     "phi"//trim(adjustl(i2c_convert(k)))//" "  &
+  &                                     //trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                                     //"retrieved wavenumber-"//trim(adjustl(i2c_convert(k)))  &
+  &                                     //" streamfunction [m2 s-1]" )
+
            call conv_d2r_3d( zetan(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
            call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+           irec=irec+ntz
+           nval=nval+1
+           if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                                     "zeta"//trim(adjustl(i2c_convert(k)))//" "  &
+  &                                     //trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                                     //"retrieved wavenumber-"//trim(adjustl(i2c_convert(k)))  &
+  &                                     //" vorticity [s-1]" )
         end do
      end if
 
      if(ndiv>0)then
         do k=1,ndiv
-           irec=irec+ntz
            call conv_d2r_3d( VDTm(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
            call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
-
            irec=irec+ntz
+           nval=nval+1
+           if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                                     "VDT"//trim(adjustl(i2c_convert(k)))//" "  &
+  &                                     //trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                                     //"retrieved wavenumber-"//trim(adjustl(i2c_convert(k)))  &
+  &                                     //" divergent-tangential wind [m s-1]" )
+
            call conv_d2r_3d( VDRm(k,1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
            call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                            rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+           irec=irec+ntz
+           nval=nval+1
+           if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                                     "VDR"//trim(adjustl(i2c_convert(k)))//" "  &
+  &                                     //trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                                     //"retrieved wavenumber-"//trim(adjustl(i2c_convert(k)))  &
+  &                                     //" divergent-radial wind [m s-1]" )
         end do
      end if
 
 !-- optional output variables
-     irec=irec+ntz
      call conv_d2r_3d( Vn_0(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
      call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
   &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                               "Vn0 "//trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                               //"storm-relative mean wind normal to line of sight [m s-1]" )
+     call conv_d2r_3d( Vra_Er(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
+     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
+  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                               "Vrae "//trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                               //"earth-relative Doppler velocity [m s-1]" )
+     call conv_d2r_3d( Vra_Er_ret(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
+     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
+  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                               "Vrare "//trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                               //"earth-relative retrieved Doppler velocity [m s-1]" )
+     call conv_d2r_3d( VTtot_Er(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
+     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
+  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                               "VTtote "//trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                               //"earth-relative retrieved total tangential wind [m s-1]" )
+     call conv_d2r_3d( VRtot_Er(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
+     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
+  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                               "VRtote "//trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                               //"earth-relative retrieved total radial wind [m s-1]" )
+     call conv_d2r_3d( Uxtot_Er(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
+     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
+  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                               "Uxtote "//trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                               //"earth-relative retrieved total zonal wind [m s-1]" )
+     call conv_d2r_3d( Vytot_Er(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
+     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
+  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                               "Vytote "//trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                               //"earth-relative retrieved total meridional wind [m s-1]" )
+     call conv_d2r_3d( Wstot_Er(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
+     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
+  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                               "Wstote "//trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                               //"earth-relative retrieved total wind speed [m s-1]" )
+!-- 2d monitor (lat/lon)
+     call conv_d2r_2d( latd_sph(1:nr,1:nt), rval(1:nr,1:nt,nnz(1)) )
+     call write_file_3d( trim(adjustl(output_fname)), nr, nt, 1, irec,  &
+  &                      rval(1:nr,1:nt,nnz(1):nnz(1)), mode='old' )
+     irec=irec+1
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2), "latd 0 99 latitude [degree]" )
+     call conv_d2r_2d( lond_sph(1:nr,1:nt), rval(1:nr,1:nt,nnz(1)) )
+     call write_file_3d( trim(adjustl(output_fname)), nr, nt, 1, irec,  &
+  &                      rval(1:nr,1:nt,nnz(1):nnz(1)), mode='old' )
+     irec=irec+1
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2), "lond 0 99 longitude [degree]" )
+
+!-- additional output variables for analyses
+     call conv_d2r_3d( zeta0(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
+     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
+  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                               "Zeta0 "//trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                               //"retrieved axisymmetric vorticity [s-1]" )
+     call conv_d2r_3d( zetatot(1:nr,1:nt,nnz(1):nnz(2)), rval(1:nr,1:nt,nnz(1):nnz(2)) )
+     call write_file_3d( trim(adjustl(output_fname)), nr, nt, ntz, irec,  &
+  &                      rval(1:nr,1:nt,nnz(1):nnz(2)), mode='old' )
+     irec=irec+ntz
+     nval=nval+1
+     if(i==1) call write_file_text_add( out_fnum(2),  &
+  &                               "Zetatot "//trim(adjustl(i2c_convert(ntz)))//" 99 "  &
+  &                               //"retrieved total vorticity [s-1]" )
 
 !!-- NetCDF output
 !
@@ -649,10 +911,10 @@ program GVTDX_Dradar
         call conv_d2r_2d( VDR0_GVTD(1:nr,1,nnz(1):nnz(2)), rval2d(1:nr,nnz(1):nnz(2)) )
         call write_file_2d( trim(adjustl(output2d_fname)), nr, ntz, irec,  &
   &                         rval2d(1:nr,nnz(1):nnz(2)), mode='old' )
+        irec=irec+1
 
         if(nrot>0)then
            do k=1,nrot
-              irec=irec+1
               call conv_d2r_2d( zetans_2d(k,1:nr,nnz(1):nnz(2)), rval2d(1:nr,nnz(1):nnz(2)) )
               call write_file_2d( trim(adjustl(output2d_fname)), nr, ntz, irec,  &
   &                               rval2d(1:nr,nnz(1):nnz(2)), mode='old' )
@@ -676,15 +938,22 @@ program GVTDX_Dradar
               call conv_d2r_2d( VRRnc_2d(k,1:nr,nnz(1):nnz(2)), rval2d(1:nr,nnz(1):nnz(2)) )
               call write_file_2d( trim(adjustl(output2d_fname)), nr, ntz, irec,  &
   &                               rval2d(1:nr,nnz(1):nnz(2)), mode='old' )
+              irec=irec+1
            end do
         end if
-     end if
 
-     write(*,*) "Writing the data at "//trim(adjustl(output2d_fname))
+        write(*,*) "Writing the data at "//trim(adjustl(output2d_fname))
+
+     end if
 
   end do
 
-  close(unit=100)
+  call write_file_text_add( out_fnum(2), "vars "//trim(adjustl(i2c_convert(nval))))
+
+  write(*,*) "Output CTL file: GVTDX.ctl"
+
+  close(unit=out_fnum(1))
+  close(unit=out_fnum(2))
 
 !  call HistoryClose
 

@@ -24,6 +24,7 @@ smooth_t = 128  ! resampled azimuthal grid number from the original data
 nnz = 2,2       ! calculating vertical grid levels
 skip_min_t = 64 ! threshold of the azimuthal sampling number to determine unused radii
 flag_GVTDX = 1  ! 1: GVTDX, 2: GVTD, 3: GBVTD
+flag_datagap = .false.  ! Optimize wavenumber from data gap (Lee et al. 2000)
 /
 
 &rad_opt

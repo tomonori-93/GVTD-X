@@ -7,7 +7,7 @@ $ gfortran -IXXX/include main.f90 -LXXX -lGVTDX -o main  # -> The executable fil
 * You can find [example programs](./) in `tools/`
   * There are sample programs with real data from single-Doppler radar observations. 
 
-# Program list 
+# Example programs
 * [`GVTDX_Dradar`](docs/GVTDX_Dradar.md)
   * To retrieve TC circulations from single-Doppler radar observations by using GVTD-X (or GBVTD/GVTD). 
 * [`GVTDX_budgets`](docs/GVTDX_budgets.md)
