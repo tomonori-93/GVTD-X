@@ -305,7 +305,7 @@ program GVTDX_Dradar
   call write_file_text_add( out_fnum(2), "options big_endian template" )
   call write_file_text_add( out_fnum(2), "xdef "//trim(adjustl(i2c_convert(nr)))  &
   &                         //" LINEAR "//trim(adjustl(r2c_convert(real(rmin))))//" "  &
-  &                         //trim(adjustl(r2c_convert(real(dr)*real(nr_org)/real(smooth_r)))) )
+  &                         //trim(adjustl(r2c_convert(real(r_t(2)-r_t(1))))) )
   call write_file_text_add( out_fnum(2), "ydef "//trim(adjustl(i2c_convert(nt)))  &
   &                         //" LINEAR "//trim(adjustl(r2c_convert(real(tmin))))//" "  &
   &                         //trim(adjustl(r2c_convert(real(dt)*real(nt_org)/real(smooth_t)))) )
