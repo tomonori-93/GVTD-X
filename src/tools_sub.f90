@@ -1,3 +1,7 @@
+!-----------------------------------------------------------------------
+!     Copyright (C) 2024-2024 Satoki Tsujino. All rights reserved.
+!-----------------------------------------------------------------------
+
 module tools_sub
 !! Module for rearrangement of the radial grid and some operations for undef data in tools/ programs
 
