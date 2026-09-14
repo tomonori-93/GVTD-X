@@ -5,32 +5,63 @@
 
 module c_interface
   use iso_c_binding
-  use parallax_core
+  use GVTDX_sub
+  use GVTDX_main
+  use GVTD_main
+  use GBVTD_main
+
   implicit none
 
 contains
 
-  subroutine c_parallax_correct(n, m, lon_pix, lat_pix, h_pix,  &
+  subroutine c_Retrieve_velocity_GVTDX(n, m, lon_pix, lat_pix, h_pix,  &
   &              lon_cor, lat_cor, re, rp, hsat, psat, lsat, missing_value)  &
-  &          bind(C, name="c_parallax_correct")
-    integer(c_int), value :: n, m
+  &          bind(C, name="c_Retrieve_velocity_GVTDX")
+subroutine Retrieve_velocity_GVTDX( n, m, nrot, ndiv, r, t, rh, td, rdiv, Vd, Vn, RadTC,  &
+  &                                 VT, VR, VRT0, VDR0, VRTn, VRRn, VDTm, VDRm,  &
+  &                                 missing_value, phin, zetan, VRT0_GVTD, VDR0_GVTD, Vn_0,  &
+  &                                 VRTns_r, VRTnc_r, VRRns_r, VRRnc_r,  &
+  &                                 zetans_r, zetanc_r )
+    integer(c_int), value :: n, m, nrot, ndiv
     real(c_double)        :: lon_pix(n, m)
     real(c_double)        :: lat_pix(n, m)
     real(c_double)        :: h_pix(n, m)
     real(c_double)        :: lon_cor(n, m)
     real(c_double)        :: lat_cor(n, m)
-    real(c_double), value :: re
-    real(c_double), value :: rp
-    real(c_double), value :: hsat
-    real(c_double), value :: psat
-    real(c_double), value :: lsat
     real(c_double), value :: missing_value
+    real(c_double)        :: r(:)   !! radial coordinate on which Vd is defined [m]
+    real(c_double)        :: t(:)   !! azimuthal coordinate on which Vd is defined [rad]
+    real(c_double)        :: rh(size(r)+1)  !! radial coordinate on which Phi (staggered for Vd) is defined [m]
+    real(c_double)        :: td(size(r),size(t))  !! radar azimuthal angle defined at Vd(r,t) [rad]
+    real(c_double)        :: rdiv(:)  !! radial coordinate on which Dc (staggered for Vd) is defined [m]
+    real(c_double)        :: Vd(size(r),size(t))  !! Doppler velocity defined on r-t [m s-1]
+    real(c_double)        :: Vn                   !! y component of storm-relative mean wind on Cartesian coordinate (x,y) which is defined in the direction of the radar to TC ccenter [m s-1]
+    real(c_double)        :: RadTC                !! Distance from radar to TC center [m]
+    real(c_double)        :: VT(size(r),size(t))  !! retrieved total tangential wind [m s-1]
+    real(c_double)        :: VR(size(r),size(t))  !! retrieved total radial wind [m s-1]
+    real(c_double)        :: VRT0(size(r),size(t))  !! retrieved axisymmetric radial component of rotating wind [m s-1]
+    real(c_double)        :: VDR0(size(r),size(t))  !! retrieved axisymmetric tangential component of divergent wind [m s-1]
+    real(c_double)        :: VRTn(nrot,size(r),size(t))  !! retrieved tangential component of rotating wind [m s-1]
+    real(c_double)        :: VRRn(nrot,size(r),size(t))  !! retrieved radial component of rotating wind [m s-1]
+    real(c_double)        :: VDTm(ndiv,size(r),size(t))  !! retrieved tangential component of divergent wind [m s-1]
+    real(c_double)        :: VDRm(ndiv,size(r),size(t))  !! retrieved radial component of divergent wind [m s-1]
+    real(c_double)       , optional :: undef  !! undefined value for Vd
+    real(c_double)       , optional :: phin(nrot,size(r),size(t))   !! retrieved stream function [m2 s-1]
+    real(c_double)       , optional :: zetan(nrot,size(r),size(t))  !! retrieved vorticity [s-1]
+    real(c_double)       , optional :: VRT0_GVTD(size(r),size(t))  !! retrieved axisymmetric radial component of pseudo-GVTD tangential wind [m s-1]
+    real(c_double)       , optional :: VDR0_GVTD(size(r),size(t))  !! retrieved axisymmetric tangential component of pseudo-GVTD tangential wind [m s-1]
+    real(c_double)       , optional :: Vn_0(size(r),size(t))  !! Aliased component to asymmetric tangential wind from (storm-relative) mean wind [m s-1]
+    real(c_double)       , optional :: VRTns_r(nrot,size(r))  !! Sine component of retrieved asymmetric radial wind [m s-1]
+    real(c_double)       , optional :: VRTnc_r(nrot,size(r))  !! Cosine component of retrieved asymmetric radial wind [m s-1]
+    real(c_double)       , optional :: VRRns_r(nrot,size(r))  !! Sine component of retrieved asymmetric tangential wind [m s-1]
+    real(c_double)       , optional :: VRRnc_r(nrot,size(r))  !! Cosine component of retrieved asymmetric tangential wind [m s-1]
+    real(c_double)       , optional :: zetans_r(nrot,size(r))  !! Sine amplitude of retrieved vorticity [s-1]
+    real(c_double)       , optional :: zetanc_r(nrot,size(r))  !! Cosine amplitude of retrieved vorticity [s-1]
 
     call Parallax_Correct( lon_pix, lat_pix, h_pix, lon_cor, lat_cor,  &
   &                        re, rp, hsat, psat, lsat, missing_value )
 
   end subroutine c_parallax_correct
-
 
   subroutine c_tri_interpolation_2d(n, m, l, k, x_in, y_in, iv, ivad,  &
   &                x_out, y_out, ov, ovad, missing_value, jflag )  &
