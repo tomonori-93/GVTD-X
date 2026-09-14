@@ -2,6 +2,7 @@ if [ -e lib ]; then
    rm -r lib
 fi
 cd src
+rm *.mod *.o
 mkdir ../lib
 gfortran -O3 -fPIC -c sub_mod.f90
 gfortran -O3 -fPIC -c gvtdx_main_mod.f90
