@@ -1,3 +1,7 @@
+!-----------------------------------------------------------------------
+!     Copyright (C) 2024-2024 Satoki Tsujino. All rights reserved.
+!-----------------------------------------------------------------------
+
 module GBVTD_main
 !! The main module of GBVTD based on Lee et al. (1999, MWR)
 

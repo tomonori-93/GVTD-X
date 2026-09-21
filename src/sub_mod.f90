@@ -1,3 +1,7 @@
+!-----------------------------------------------------------------------
+!     Copyright (C) 2024-2024 Satoki Tsujino. All rights reserved.
+!-----------------------------------------------------------------------
+
 module GVTDX_sub
 !! Sub module for GVTDX procedures.
   implicit none
