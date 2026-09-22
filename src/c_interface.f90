@@ -4,7 +4,7 @@
 
 module c_interface
   use iso_c_binding
-  use Retrieval_main
+  use Retrieval_control
   use GVTDX_sub
   use GVTDX_main
   use GVTD_main
@@ -14,10 +14,93 @@ module c_interface
 
 contains
 
-  subroutine c_Retrieval_control_main(  &
-               )  &
-  &          bind(C, name="c_Retrieval_control_main")
-  end subroutine c_Retrieval_control_main
+  subroutine c_Retrieval_control(  &
+  &            n, m, nrot, ndiv, nz, r_t, theta_ref_t, lon_tc, lat_tc,  &
+  &            usp, vsp, nthres_undef, skip_min_t, flag_GVTDX, missing_value,  &
+  &            lon_rdr, lat_rdr, Vra_in,  &
+  &            VTtot, VRtot, VRT0, VDR0, Vra, Vra_ret, VRTn, VRRn, phin, zetan,  &
+  &            VDTm, VDRm, Vn_0, Vra_Er, Vra_Er_ret, VTtot_Er, VRtot_Er, Uxtot_Er, Vytot_Er,  &
+  &            lond, latd, zeta0, zetatot, flag_datagap, umd, vmd, l, rdiv_t)  &
+  &          bind(C, name="c_Retrieval_control")
+    integer(c_int), value :: n, m
+    integer(c_int), value :: nrot              !! the rotating maximum wavenumber used in the retrieval
+    integer(c_int), value :: ndiv              !! the divergent maximum wavenumber used in the retrieval
+    integer(c_int), value :: nz                !! vertical grid number for the input Doppler velocity
+    real(c_double)        :: r_t(n)     !! radial coordinate on which Vra_in is defined [m]
+    real(c_double)        :: theta_ref_t(m)     !! azimuthal coordinate on which Vra_in is defined [rad]
+    real(c_double), value :: lon_tc   !! longitude of the TC center [degree]
+    real(c_double), value :: lat_tc   !! latitude of the TC center [degree]
+    real(c_double), value :: usp      !! zonal component of the moving velocity of the TC [m/s]
+    real(c_double), value :: vsp      !! meridional component of the moving velocity of the TC [m/s]
+    integer(c_int)        :: nthres_undef(2)   !! thresholds of the azimuthal sampling number to determine the (1) innermost and (2) outermost radii, respectively
+    integer(c_int), value :: skip_min_t        !! threshold of the azimuthal sampling number to determine unused radii
+    integer(c_int), value :: flag_GVTDX        !! 1: GVTD-X, 2: GVTD, 3: GBVTD
+    real,           value :: missing_value             !! undefined value for the original Doppler radar data
+    real(c_double), value :: lon_rdr !! longitudinal position of the radar (degree)
+    real(c_double), value :: lat_rdr !! latitudinal position of the radar (degree)
+    real                  :: Vra_in(n,m,nz)  !! input Doppler velocity [m/s]
+    real(c_double)        :: VTtot(n,m,nz)  !! retrieved total tangential wind [m s-1]
+    real(c_double)        :: VRtot(n,m,nz)  !! retrieved total radial wind [m s-1]
+    real(c_double)        :: VRT0(n,m,nz)  !! retrieved axisymmetric tangential wind [m s-1]
+    real(c_double)        :: VDR0(n,m,nz)  !! retrieved axisymmetric radial wind [m s-1]
+    real(c_double)        :: Vra(n,m,nz)      !! storm-relative input Doppler velocity [m s-1]
+    real(c_double)        :: Vra_ret(n,m,nz)  !! storm-relative retrieved Doppler velocity [m s-1]
+    real(c_double)        :: VRTn(nrot,n,m,nz)  !! retrieved wavenumber-N rotational-tangential wind [m s-1]
+    real(c_double)        :: VRRn(nrot,n,m,nz)  !! retrieved wavenumber-N rotational-radial wind [m s-1]
+    real(c_double)        :: phin(nrot,n,m,nz)  !! retrieved wavenumber-N streamfunction [m2 s-1]
+    real(c_double)        :: zetan(nrot,n,m,nz)  !! retrieved wavenumber-N vorticity [s-1]
+    real(c_double)        :: VDTm(ndiv,n,m,nz)  !! retrieved wavenumber-M divergent-tangential wind [m s-1]
+    real(c_double)        :: VDRm(ndiv,n,m,nz)  !! retrieved wavenumber-M divergent-radial wind [m s-1]
+    real(c_double)        :: Vn_0(n,m,nz)  !! storm-relative mean wind normal to line of sight [m s-1]
+    real(c_double)        :: Vra_Er(n,m,nz)  !! earth-relative Doppler velocity [m s-1]
+    real(c_double)        :: Vra_Er_ret(n,m,nz)  !! earth-relative retrieved Doppler velocity [m s-1]
+    real(c_double)        :: VTtot_Er(n,m,nz)  !! earth-relative retrieved total tangential wind [m s-1]
+    real(c_double)        :: VRtot_Er(n,m,nz)  !! earth-relative retrieved total radial wind [m s-1]
+    real(c_double)        :: Uxtot_Er(n,m,nz)  !! earth-relative retrieved total zonal wind [m s-1]
+    real(c_double)        :: Vytot_Er(n,m,nz)  !! earth-relative retrieved total meridional wind [m s-1]
+    real(c_double)        :: lond(n,m)  !! Longitude [degree]
+    real(c_double)        :: latd(n,m)  !! Latitude [degree]
+    real(c_double)        :: zeta0(n,m,nz)  !! retrieved axisymmetric vorticity [s-1]
+    real(c_double)        :: zetatot(n,m,nz)  !! retrieved total vorticity [s-1]
+    logical(c_bool),       optional :: flag_datagap !! Flag for use of optimal wavenumber from data gap (Lee et al. 2000)
+    real(c_double),        optional :: umd(nz)  !! zonal component of mean wind [m s-1]
+    real(c_double),        optional :: vmd(nz)  !! meridional component of mean wind [m s-1]
+    integer(c_int), value, optional :: nrdiv             !! radial grid number where the divergence is defined
+    real(c_double),        optional :: rdiv_t(nrdiv)  !! radial grids where the divergence is defined
+
+    !-- internal arrays for working
+    real(c_double) :: tmp_umd(nz)
+    real(c_double) :: tmp_vmd(nz)
+    real(c_double) :: tmp_rdiv_t(nrdiv)
+    logical(c_bool) :: tmp_flag_datagap
+
+    tmp_umd = 0.0d0
+    tmp_umd = 0.0d0
+    tmp_flag_datagap = .false.
+
+    if(present(umd)) tmp_umd = umd
+    if(present(vmd)) tmp_vmd = vmd
+    if(present(flag_datagap)) tmp_flag_datagap = flag_datagap
+
+    if(present(nrdiv))then
+       call Retrieve_velocity( nrot, ndiv, nz, r_t, theta_ref_t, lon_tc, lat_tc,  &
+  &                  usp, vsp, nthres_undef, skip_min_t, flag_GVTDX, missing_value,  &
+  &                  lon_rdr, lat_rdr, Vra_in,  &
+  &                  VTtot, VRtot, VRT0, VDR0, Vra, Vra_ret, VRTn, VRRn, phin, zetan,  &
+  &                  VDTm, VDRm, Vn_0, Vra_Er, Vra_Er_ret, VTtot_Er, VRtot_Er, Uxtot_Er, Vytot_Er,  &
+  &                  lond, latd, zeta0, zetatot, flag_datagap=tmp_flag_datagap,  &
+  &                  umd=tmp_umd, vmd=tmp_vmd, nrdiv=nrdiv, rdiv_t=rdiv_t )
+    else
+       call Retrieve_velocity( nrot, ndiv, nz, r_t, theta_ref_t, lon_tc, lat_tc,  &
+  &                  usp, vsp, nthres_undef, skip_min_t, flag_GVTDX, missing_value,  &
+  &                  lon_rdr, lat_rdr, Vra_in,  &
+  &                  VTtot, VRtot, VRT0, VDR0, Vra, Vra_ret, VRTn, VRRn, phin, zetan,  &
+  &                  VDTm, VDRm, Vn_0, Vra_Er, Vra_Er_ret, VTtot_Er, VRtot_Er, Uxtot_Er, Vytot_Er,  &
+  &                  lond, latd, zeta0, zetatot, flag_datagap=tmp_flag_datagap,  &
+  &                  umd=tmp_umd, vmd=tmp_vmd )
+    end if
+
+  end subroutine c_Retrieval_control
 
 
   subroutine c_Retrieve_velocity_GVTDX(  &
@@ -89,17 +172,17 @@ contains
   &                               VRTns_r, VRTnc_r, VRRns_r, VRRnc_r,  &
   &                               zetans_r, zetanc_r )
 
-    if(present(tmp_phin))      phin      = tmp_phin
-    if(present(tmp_zetan))     zetan     = tmp_zetan
-    if(present(tmp_VRT0_GVTD)) VRT0_GVTD = tmp_VRT0_GVTD
-    if(present(tmp_VDR0_GVTD)) VDR0_GVTD = tmp_VDR0_GVTD
-    if(present(tmp_Vn_0))      Vn_0      = tmp_Vn_0
-    if(present(tmp_VRTns_r))   VRTns_r   = tmp_VRTns_r
-    if(present(tmp_VRTnc_r))   VRTnc_r   = tmp_VRTnc_r
-    if(present(tmp_VRRns_r))   VRRns_r   = tmp_VRRns_r
-    if(present(tmp_VRRnc_r))   VRRnc_r   = tmp_VRRnc_r
-    if(present(tmp_zetans_r))  zetans_r  = tmp_zetans_r
-    if(present(tmp_zetanc_r))  zetanc_r  = tmp_zetanc_r
+    if(present(phin))      phin      = tmp_phin
+    if(present(zetan))     zetan     = tmp_zetan
+    if(present(VRT0_GVTD)) VRT0_GVTD = tmp_VRT0_GVTD
+    if(present(VDR0_GVTD)) VDR0_GVTD = tmp_VDR0_GVTD
+    if(present(Vn_0))      Vn_0      = tmp_Vn_0
+    if(present(VRTns_r))   VRTns_r   = tmp_VRTns_r
+    if(present(VRTnc_r))   VRTnc_r   = tmp_VRTnc_r
+    if(present(VRRns_r))   VRRns_r   = tmp_VRRns_r
+    if(present(VRRnc_r))   VRRnc_r   = tmp_VRRnc_r
+    if(present(zetans_r))  zetans_r  = tmp_zetans_r
+    if(present(zetanc_r))  zetanc_r  = tmp_zetanc_r
 
   end subroutine c_Retrieve_velocity_GVTDX
 
