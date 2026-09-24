@@ -170,6 +170,8 @@
   write(out_fnum(1),'(a32)') "'Time'          'Vm-SR'         "
   write(out_fnum(1),'(a32)') "'s'             'ms-1'          "
 
+           write(out_fnum(1),'(1P2E16.8)') real(i), dvm  ! Output storm-relative mean wind
+
 !-- Output GrADS control file for *.GVTDX files
   open(unit=out_fnum(2),file='GVTDX.ctl',status='unknown')
   call write_file_text_add( out_fnum(2), "title GVTDX output file (please edit filenames and time)" )

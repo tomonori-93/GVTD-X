@@ -1,8 +1,10 @@
 gvtdx_main_mod.o	: gvtdx_sub.mod
 gvtd_main_mod.o		: gvtdx_sub.mod
 gbvtd_main_mod.o	: gvtdx_sub.mod
+retrieval_control.o	: gvtdx_sub.mod gvtdx_main.mod gvtd_main.mod gbvtd_main.mod tool_sub.mod
 gvtdx_sub.mod		: sub_mod.o
 gvtdx_main.mod		: gvtdx_main_mod.o
 gvtd_main.mod		: gvtd_main_mod.o
 gbvtd_main.mod		: gbvtd_main_mod.o
+retrieval_control.mod	: retrieval_control.o
 tools_sub.mod		: tools_sub.o

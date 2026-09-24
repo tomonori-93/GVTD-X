@@ -384,7 +384,9 @@ subroutine recover_undef_rad( nrotmin, nrot, ndivmin, ndiv,  &
   double precision, dimension(nrotmin:nrot,nr_in:nr_out_org), intent(inout) :: zetanc_r
 
   integer :: rcounter, tcounter, ii, jj
-  double precision, dimension(nr_in:nr_out_org,1:nt) :: VTtot_skp_rt_t, VRtot_skp_rt_t, VRT0_skp_rt_t, VDR0_skp_rt_t, VRT0_GVTD_skp_rt_t, VDR0_GVTD_skp_rt_t, Vn_0_skp_rt_t
+  double precision, dimension(nr_in:nr_out_org,1:nt) :: VTtot_skp_rt_t, VRtot_skp_rt_t
+  double precision, dimension(nr_in:nr_out_org,1:nt) :: VRT0_skp_rt_t, VDR0_skp_rt_t
+  double precision, dimension(nr_in:nr_out_org,1:nt) :: VRT0_GVTD_skp_rt_t, VDR0_GVTD_skp_rt_t, Vn_0_skp_rt_t
   double precision, dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt) :: VRTn_skp_rt_t, VRRn_skp_rt_t
   double precision, dimension(nrotmin:nrot,nr_in:nr_out_org) :: VRTns_skp_r, VRTnc_skp_r, VRRns_skp_r, VRRnc_skp_r
   double precision, dimension(nrotmin:nrot,nr_in:nr_out_org,1:nt) :: phin_skp_rt_t, zetan_skp_rt_t
