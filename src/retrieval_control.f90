@@ -17,23 +17,26 @@ module Retrieval_control
 
 contains
 
-subroutine Retrieval_velocity( nrot, ndiv, nrdiv, nz, r_ref_t, theta_ref_t, rdiv_t, lon_tc, lat_tc,  &
+subroutine Retrieve_velocity( nrot, nz, r_ref_t, theta_ref_t, lon_tc, lat_tc,  &
+!subroutine Retrieval_velocity( nrot, ndiv, nrdiv, nz, r_ref_t, theta_ref_t, rdiv_t, lon_tc, lat_tc,  &  ! not used for asym div in this function
   &                  usp, vsp, nthres_undef, skip_min_t, flag_GVTDX, missing_value,  &
   &                  lon_rdr, lat_rdr, Vra_in,  &
-  &                  VTtot, VRtot, VRT0, VDR0, Vra, Vra_ret, VRTn, VRRn, phin, zetan,  &
-  &                  VDTm, VDRm, Vn_0, Vra_Er, Vra_Er_ret, VTtot_Er, VRtot_Er, Uxtot_Er, Vytot_Er,  &
-  &                  lond, latd, zeta0, zetatot, flag_datagap, umd, vmd )
+  &                  VTtot, VRtot, VRT0, VDR0, Vra, Vra_ret, VRTn, VRRn,  & !phin, zetan, Vn_0,  &
+  &                  Vra_Er, Vra_Er_ret, VTtot_Er, VRtot_Er, Uxtot_Er, Vytot_Er,  &
+!  &                  VDTm, VDRm, Vn_0, Vra_Er, Vra_Er_ret, VTtot_Er, VRtot_Er, Uxtot_Er, Vytot_Er,  &  ! not used for asym div in this function
+  &                  lond, latd, flag_datagap, umd, vmd )
+!  &                  lond, latd, zeta0, zetatot, flag_datagap, umd, vmd )
 
   implicit none
 
   !-- namelist variables
   integer, intent(in) :: nrot              !! the rotating maximum wavenumber used in the retrieval
-  integer, intent(in) :: ndiv              !! the divergent maximum wavenumber used in the retrieval
-  integer, intent(in) :: nrdiv             !! radial grid number where the divergence is defined
+!  integer, intent(in) :: ndiv              !! the divergent maximum wavenumber used in the retrieval
+!  integer, intent(in) :: nrdiv             !! radial grid number where the divergence is defined
   integer, intent(in) :: nz                !! vertical grid number for the input Doppler velocity
   double precision, intent(in) :: r_ref_t(:)     !! radial coordinate on which Vra_in is defined [m]
   double precision, intent(in) :: theta_ref_t(:)     !! azimuthal coordinate on which Vra_in is defined [rad]
-  double precision, dimension(nrdiv), intent(in) :: rdiv_t  !! radial grids where the divergence is defined
+!  double precision, dimension(nrdiv), intent(in) :: rdiv_t  !! radial grids where the divergence is defined
   double precision, intent(in) :: lon_tc   !! longitude of the TC center [degree]
   double precision, intent(in) :: lat_tc   !! latitude of the TC center [degree]
   double precision, intent(in) :: usp      !! zonal component of the moving velocity of the TC [m/s]
@@ -53,11 +56,11 @@ subroutine Retrieval_velocity( nrot, ndiv, nrdiv, nz, r_ref_t, theta_ref_t, rdiv
   double precision, dimension(size(r_ref_t),size(theta_ref_t),nz), intent(out) :: Vra_ret  !! storm-relative retrieved Doppler velocity [m s-1]
   double precision, dimension(nrot,size(r_ref_t),size(theta_ref_t),nz), intent(out) :: VRTn  !! retrieved wavenumber-N rotational-tangential wind [m s-1]
   double precision, dimension(nrot,size(r_ref_t),size(theta_ref_t),nz), intent(out) :: VRRn  !! retrieved wavenumber-N rotational-radial wind [m s-1]
-  double precision, dimension(nrot,size(r_ref_t),size(theta_ref_t),nz), intent(out) :: phin  !! retrieved wavenumber-N streamfunction [m2 s-1]
-  double precision, dimension(nrot,size(r_ref_t),size(theta_ref_t),nz), intent(out) :: zetan  !! retrieved wavenumber-N vorticity [s-1]
-  double precision, dimension(ndiv,size(r_ref_t),size(theta_ref_t),nz), intent(out) :: VDTm  !! retrieved wavenumber-M divergent-tangential wind [m s-1]
-  double precision, dimension(ndiv,size(r_ref_t),size(theta_ref_t),nz), intent(out) :: VDRm  !! retrieved wavenumber-M divergent-radial wind [m s-1]
-  double precision, dimension(size(r_ref_t),size(theta_ref_t),nz), intent(out) :: Vn_0  !! storm-relative mean wind normal to line of sight [m s-1]
+!  double precision, dimension(nrot,size(r_ref_t),size(theta_ref_t),nz), intent(out) :: phin  !! retrieved wavenumber-N streamfunction [m2 s-1]
+!  double precision, dimension(nrot,size(r_ref_t),size(theta_ref_t),nz), intent(out) :: zetan  !! retrieved wavenumber-N vorticity [s-1]
+!  double precision, dimension(ndiv,size(r_ref_t),size(theta_ref_t),nz), intent(out) :: VDTm  !! retrieved wavenumber-M divergent-tangential wind [m s-1]
+!  double precision, dimension(ndiv,size(r_ref_t),size(theta_ref_t),nz), intent(out) :: VDRm  !! retrieved wavenumber-M divergent-radial wind [m s-1]
+!  double precision, dimension(size(r_ref_t),size(theta_ref_t),nz), intent(out) :: Vn_0  !! storm-relative mean wind normal to line of sight [m s-1]
   double precision, dimension(size(r_ref_t),size(theta_ref_t),nz), intent(out) :: Vra_Er  !! earth-relative Doppler velocity [m s-1]
   double precision, dimension(size(r_ref_t),size(theta_ref_t),nz), intent(out) :: Vra_Er_ret  !! earth-relative retrieved Doppler velocity [m s-1]
   double precision, dimension(size(r_ref_t),size(theta_ref_t),nz), intent(out) :: VTtot_Er  !! earth-relative retrieved total tangential wind [m s-1]
@@ -66,13 +69,14 @@ subroutine Retrieval_velocity( nrot, ndiv, nrdiv, nz, r_ref_t, theta_ref_t, rdiv
   double precision, dimension(size(r_ref_t),size(theta_ref_t),nz), intent(out) :: Vytot_Er  !! earth-relative retrieved total meridional wind [m s-1]
   double precision, dimension(size(r_ref_t),size(theta_ref_t)), intent(out) :: lond  !! Longitude [degree]
   double precision, dimension(size(r_ref_t),size(theta_ref_t)), intent(out) :: latd  !! Latitude [degree]
-  double precision, dimension(size(r_ref_t),size(theta_ref_t),nz), intent(out) :: zeta0  !! retrieved axisymmetric vorticity [s-1]
-  double precision, dimension(size(r_ref_t),size(theta_ref_t),nz), intent(out) :: zetatot  !! retrieved total vorticity [s-1]
+!  double precision, dimension(size(r_ref_t),size(theta_ref_t),nz), intent(out) :: zeta0  !! retrieved axisymmetric vorticity [s-1]
+!  double precision, dimension(size(r_ref_t),size(theta_ref_t),nz), intent(out) :: zetatot  !! retrieved total vorticity [s-1]
   logical, intent(in), optional :: flag_datagap !! Flag for use of optimal wavenumber from data gap (Lee et al. 2000)
   double precision, dimension(nz), intent(in), optional :: umd  !! zonal component of mean wind [m s-1]
   double precision, dimension(nz), intent(in), optional :: vmd  !! meridional component of mean wind [m s-1]
 
   !-- internal variables
+  integer, parameter :: ndiv=0, nrdiv=1
   integer :: i, j, k, id, it, m, stat, nl
   integer :: nr, nt
   integer :: nrotmin, ndivmin
@@ -96,14 +100,16 @@ subroutine Retrieval_velocity( nrot, ndiv, nrdiv, nz, r_ref_t, theta_ref_t, rdiv
   double precision, dimension(size(r_ref_t),size(theta_ref_t)) :: projVRm_rt_t, projVTm_rt_t
 !  double precision, dimension(:,:,:) :: Wstot_Er
   double precision, dimension(size(r_ref_t),size(theta_ref_t)) :: VTtot_rt_t, VRtot_rt_t, VRT0_rt_t, VDR0_rt_t
-  double precision, dimension(size(r_ref_t),size(theta_ref_t)) :: Vn_0_rt_t
+!  double precision, dimension(size(r_ref_t),size(theta_ref_t)) :: Vn_0_rt_t
   double precision, dimension(size(r_ref_t),size(theta_ref_t)) :: dummy_2d
-  double precision, dimension(nrot,size(r_ref_t),size(theta_ref_t)) :: dummy_3d
+  double precision, allocatable, dimension(:,:) :: dummy_2n
+  double precision, allocatable, dimension(:,:,:) :: dummy_3d
 !  double precision, dimension(:,:,:) :: VRTns_2d, VRTnc_2d, VRRns_2d, VRRnc_2d
   double precision, dimension(size(r_ref_t),size(theta_ref_t)) :: Vra_rt_t, Vra_ref_rt_t
-  double precision, dimension(nrot,size(r_ref_t),size(theta_ref_t)) :: VRTn_rt_t, VRRn_rt_t, phin_rt_t, zetan_rt_t
-  double precision, dimension(ndiv,size(r_ref_t),size(theta_ref_t)) :: VDTm_rt_t, VDRm_rt_t
+  double precision, allocatable, dimension(:,:,:) :: VRTn_rt_t, VRRn_rt_t  !, phin_rt_t, zetan_rt_t
+  double precision, allocatable, dimension(:,:,:) :: VDTm_rt_t, VDRm_rt_t
   double precision, dimension(nz) :: umd_tmp, vmd_tmp
+  double precision, dimension(nrdiv) :: rdiv_t  !! radial grids where the divergence is defined
   logical, dimension(size(r_ref_t),size(theta_ref_t)) :: undef_grid
   logical, dimension(size(r_ref_t),nz) :: undef_grid_2d
   logical :: flag_datagap_in
@@ -116,9 +122,9 @@ subroutine Retrieval_velocity( nrot, ndiv, nrdiv, nz, r_ref_t, theta_ref_t, rdiv
 
   !-- Variables for amplitude of each component
 !  double precision, allocatable, dimension(:,:) :: VTtot_2d, VRtot_2d, VRT0_2d, VDR0_2d
-  double precision, allocatable, dimension(:,:,:) :: VRTn_2d, VRRn_2d, VDTm_2d, VDRm_2d
+!  double precision, allocatable, dimension(:,:,:) :: VRTn_2d, VRRn_2d, VDTm_2d, VDRm_2d
 !  double precision, allocatable, dimension(:,:,:) :: phin_2d
-  double precision, allocatable, dimension(:,:,:) :: zetans_2d, zetanc_2d
+!  double precision, allocatable, dimension(:,:,:) :: zetans_2d, zetanc_2d
 
   if(missing_value==0.0e0)then
      write(*,*) "*** WARNING (main) *** : namelist (missing_value) is not set."
@@ -175,6 +181,12 @@ subroutine Retrieval_velocity( nrot, ndiv, nrdiv, nz, r_ref_t, theta_ref_t, rdiv
   rh_ref_t(nr+1)=r_t(nr)+0.5d0*(r_t(nr)-r_t(nr-1))
   rh_t=rh_ref_t
 
+  allocate(dummy_3d(nrotmin:nrot,nr,nt))
+  allocate(dummy_2n(nrotmin:nrot,nr))
+  allocate(VRTn_rt_t(nrotmin:nrot,nr,nt))
+  allocate(VRRn_rt_t(nrotmin:nrot,nr,nt))
+  allocate(VDTm_rt_t(ndivmin:ndiv,nr,nt))
+  allocate(VDRm_rt_t(ndivmin:ndiv,nr,nt))
 !  allocate(VRTns_2d(nrotmin:nrot,nr,nz))
 !  allocate(VRTnc_2d(nrotmin:nrot,nr,nz))
 !  allocate(VRRns_2d(nrotmin:nrot,nr,nz))
@@ -201,21 +213,21 @@ subroutine Retrieval_velocity( nrot, ndiv, nrdiv, nz, r_ref_t, theta_ref_t, rdiv
   Uxtot_Er=missing_value
   Vytot_Er=missing_value
 !  Wstot_Er=missing_value
-  zetatot=missing_value
-  zeta0=missing_value
+!  zetatot=missing_value
+!  zeta0=missing_value
   VRT0=missing_value
   VDR0=missing_value
   VRTn=missing_value
   VRRn=missing_value
-  VDTm=missing_value
-  VDRm=missing_value
-  phin=missing_value
-  zetan=missing_value
+!  VDTm=missing_value
+!  VDRm=missing_value
+!  phin=missing_value
+!  zetan=missing_value
   Vra=missing_value
   Vra_ret=missing_value
   Vra_Er=missing_value
   Vra_Er_ret=missing_value
-  Vn_0=missing_value
+!  Vn_0=missing_value
 !  VRTns_2d=missing_value
 !  VRTnc_2d=missing_value
 !  VRRns_2d=missing_value
@@ -284,9 +296,12 @@ subroutine Retrieval_velocity( nrot, ndiv, nrdiv, nz, r_ref_t, theta_ref_t, rdiv
      VRRn_rt_t(nrotmin:nrot,1:nr,1:nt)=missing_value
      VDTm_rt_t(ndivmin:ndiv,1:nr,1:nt)=missing_value
      VDRm_rt_t(ndivmin:ndiv,1:nr,1:nt)=missing_value
-     phin_rt_t(nrotmin:nrot,1:nr,1:nt)=missing_value
-     zetan_rt_t(nrotmin:nrot,1:nr,1:nt)=missing_value
-     Vn_0_rt_t(1:nr,1:nt)=missing_value
+!     phin_rt_t(nrotmin:nrot,1:nr,1:nt)=missing_value
+!     zetan_rt_t(nrotmin:nrot,1:nr,1:nt)=missing_value
+     dummy_2d(1:nr,1:nt)=missing_value
+     dummy_3d(nrotmin:nrot,1:nr,1:nt)=missing_value
+     dummy_2n(nrotmin:nrot,1:nr)=missing_value
+!     Vn_0_rt_t(1:nr,1:nt)=missing_value
 
      !-- C. VD - projVs
      select case(flag_GVTDX)
@@ -369,29 +384,29 @@ subroutine Retrieval_velocity( nrot, ndiv, nrdiv, nz, r_ref_t, theta_ref_t, rdiv
            dvm=vdm-vds
 
            if(nr_in<nr_out)then
-           call Retrieve_velocity_GVTDX( nrot, ndiv, r_t(nr_in:nr_out), theta_t,  &
-  &                                      rh_t(nr_in:nr_out+1),  &
-  &                                      thetad_t(nr_in:nr_out,1:nt), rdiv_t(1:nrdiv),  &
-  &                                      Vra_rt_t(nr_in:nr_out,1:nt), dvm, RdTc,  &
-  &                                      VTtot_rt_t(nr_in:nr_out,1:nt),  &
-  &                                      VRtot_rt_t(nr_in:nr_out,1:nt),  &
-!  &                                      Vra_rt_t, (/Vsrn,0.0d0/), VTtot_rt_t, VRtot_rt_t,  &
-  &                                      VRT0_rt_t(nr_in:nr_out,1:nt),  &
-  &                                      VDR0_rt_t(nr_in:nr_out,1:nt),  &
-  &                                      VRTn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                      VRRn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                      VDTm_rt_t(ndivmin:ndiv,nr_in:nr_out,1:nt),  &
-  &                                      VDRm_rt_t(ndivmin:ndiv,nr_in:nr_out,1:nt),  &
-  &                                      missing_value,  &
-  &                                      phin=phin_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                      zetan=zetan_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
-  &                                      Vn_0=Vn_0_rt_t(nr_in:nr_out,1:nt) )  !,  &
-!  &                                      VRTns_r=VRTns_2d(nrotmin:nrot,nr_in:nr_out,k),  &
-!  &                                      VRTnc_r=VRTnc_2d(nrotmin:nrot,nr_in:nr_out,k),  &
-!  &                                      VRRns_r=VRRns_2d(nrotmin:nrot,nr_in:nr_out,k),  &
-!  &                                      VRRnc_r=VRRnc_2d(nrotmin:nrot,nr_in:nr_out,k),  &
-!  &                                      zetans_r=zetans_2d(nrotmin:nrot,nr_in:nr_out,k),  &
-!  &                                      zetanc_r=zetanc_2d(nrotmin:nrot,nr_in:nr_out,k) )
+              call Retrieve_velocity_GVTDX( nrot, ndiv, r_t(nr_in:nr_out), theta_t,  &
+  &                                         rh_t(nr_in:nr_out+1),  &
+  &                                         thetad_t(nr_in:nr_out,1:nt), rdiv_t(1:nrdiv),  &
+  &                                         Vra_rt_t(nr_in:nr_out,1:nt), dvm, RdTc,  &
+  &                                         VTtot_rt_t(nr_in:nr_out,1:nt),  &
+  &                                         VRtot_rt_t(nr_in:nr_out,1:nt),  &
+!  &                                         Vra_rt_t, (/Vsrn,0.0d0/), VTtot_rt_t, VRtot_rt_t,  &
+  &                                         VRT0_rt_t(nr_in:nr_out,1:nt),  &
+  &                                         VDR0_rt_t(nr_in:nr_out,1:nt),  &
+  &                                         VRTn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
+  &                                         VRRn_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
+  &                                         VDTm_rt_t(ndivmin:ndiv,nr_in:nr_out,1:nt),  &
+  &                                         VDRm_rt_t(ndivmin:ndiv,nr_in:nr_out,1:nt),  &
+  &                                         missing_value )  !,  &
+!  &                                         phin=phin_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
+!  &                                         zetan=zetan_rt_t(nrotmin:nrot,nr_in:nr_out,1:nt),  &
+!  &                                         Vn_0=Vn_0_rt_t(nr_in:nr_out,1:nt),  &
+!  &                                         VRTns_r=VRTns_2d(nrotmin:nrot,nr_in:nr_out,k),  &
+!  &                                         VRTnc_r=VRTnc_2d(nrotmin:nrot,nr_in:nr_out,k),  &
+!  &                                         VRRns_r=VRRns_2d(nrotmin:nrot,nr_in:nr_out,k),  &
+!  &                                         VRRnc_r=VRRnc_2d(nrotmin:nrot,nr_in:nr_out,k),  &
+!  &                                         zetans_r=zetans_2d(nrotmin:nrot,nr_in:nr_out,k),  &
+!  &                                         zetanc_r=zetanc_2d(nrotmin:nrot,nr_in:nr_out,k) )
            end if
 
         case (2)  ! Run GVTD
@@ -440,15 +455,15 @@ subroutine Retrieval_velocity( nrot, ndiv, nrdiv, nz, r_ref_t, theta_ref_t, rdiv
   &                                VDRm_rt_t(ndivmin:ndiv,nr_in:nr_ref_out,1:nt),  &
   &                                dummy_2d(nr_in:nr_ref_out,1:nt),  &  !VRT0_GVTD_rt_t(nr_in:nr_ref_out,1:nt),  &
   &                                dummy_2d(nr_in:nr_ref_out,1:nt),  &  !VDR0_GVTD_rt_t(nr_in:nr_ref_out,1:nt),  &
-  &                                dummy_3d(1:nrot,nr_in:nr_ref_out,1:nt),  &  !VRTns_2d(nrotmin:nrot,nr_in:nr_ref_out,k),  &
-  &                                dummy_3d(1:nrot,nr_in:nr_ref_out,1:nt),  &  !VRTnc_2d(nrotmin:nrot,nr_in:nr_ref_out,k),  &
-  &                                dummy_3d(1:nrot,nr_in:nr_ref_out,1:nt),  &  !VRRns_2d(nrotmin:nrot,nr_in:nr_ref_out,k),  &
-  &                                dummy_3d(1:nrot,nr_in:nr_ref_out,1:nt),  &  !VRRnc_2d(nrotmin:nrot,nr_in:nr_ref_out,k),  &
-  &                                Vn_0_rt_t(nr_in:nr_ref_out,1:nt),  &
-  &                                phin_rt_t(nrotmin:nrot,nr_in:nr_ref_out,1:nt),  &
-  &                                zetan_rt_t(nrotmin:nrot,nr_in:nr_ref_out,1:nt),  &
-  &                                zetans_2d(nrotmin:nrot,nr_in:nr_ref_out,k),  &
-  &                                zetanc_2d(nrotmin:nrot,nr_in:nr_ref_out,k) )
+  &                                dummy_3d(nrotmin:nrot,nr_in:nr_ref_out,1:nt),  &  !VRTns_2d(nrotmin:nrot,nr_in:nr_ref_out,k),  &
+  &                                dummy_3d(nrotmin:nrot,nr_in:nr_ref_out,1:nt),  &  !VRTnc_2d(nrotmin:nrot,nr_in:nr_ref_out,k),  &
+  &                                dummy_3d(nrotmin:nrot,nr_in:nr_ref_out,1:nt),  &  !VRRns_2d(nrotmin:nrot,nr_in:nr_ref_out,k),  &
+  &                                dummy_3d(nrotmin:nrot,nr_in:nr_ref_out,1:nt),  &  !VRRnc_2d(nrotmin:nrot,nr_in:nr_ref_out,k),  &
+  &                                dummy_2d(nr_in:nr_ref_out,1:nt),  &  !Vn_0_rt_t(nr_in:nr_ref_out,1:nt),  &
+  &                                dummy_3d(nrotmin:nrot,nr_in:nr_ref_out,1:nt),  &  !phin_rt_t(nrotmin:nrot,nr_in:nr_ref_out,1:nt),  &
+  &                                dummy_3d(nrotmin:nrot,nr_in:nr_ref_out,1:nt),  &  !zetan_rt_t(nrotmin:nrot,nr_in:nr_ref_out,1:nt),  &
+  &                                dummy_2n(nrotmin:nrot,nr_in:nr_ref_out),  &  !zetans_2d(nrotmin:nrot,nr_in:nr_ref_out,k),  &
+  &                                dummy_2n(nrotmin:nrot,nr_in:nr_ref_out) )    !zetanc_2d(nrotmin:nrot,nr_in:nr_ref_out,k) )
            nr_out=nr_ref_out
            r_t(nr_in:nr_ref_out)=r_ref_t(nr_in:nr_ref_out)
            rh_t(nr_in:nr_ref_out+1)=rh_ref_t(nr_in:nr_ref_out+1)
@@ -465,13 +480,13 @@ subroutine Retrieval_velocity( nrot, ndiv, nrdiv, nz, r_ref_t, theta_ref_t, rdiv
      VDR0(1:nr,1:nt,k)=VDR0_rt_t(1:nr,1:nt)
 !     VRT0_GVTD(1:nr,1:nt,k)=VRT0_GVTD_rt_t(1:nr,1:nt)
 !     VDR0_GVTD(1:nr,1:nt,k)=VDR0_GVTD_rt_t(1:nr,1:nt)
-     Vn_0(1:nr,1:nt,k)=Vn_0_rt_t(1:nr,1:nt)
+!     Vn_0(1:nr,1:nt,k)=Vn_0_rt_t(1:nr,1:nt)
      VRTn(nrotmin:nrot,1:nr,1:nt,k)=VRTn_rt_t(nrotmin:nrot,1:nr,1:nt)
      VRRn(nrotmin:nrot,1:nr,1:nt,k)=VRRn_rt_t(nrotmin:nrot,1:nr,1:nt)
-     VDTm(ndivmin:ndiv,1:nr,1:nt,k)=VDTm_rt_t(ndivmin:ndiv,1:nr,1:nt)
-     VDRm(ndivmin:ndiv,1:nr,1:nt,k)=VDRm_rt_t(ndivmin:ndiv,1:nr,1:nt)
-     phin(nrotmin:nrot,1:nr,1:nt,k)=phin_rt_t(nrotmin:nrot,1:nr,1:nt)
-     zetan(nrotmin:nrot,1:nr,1:nt,k)=zetan_rt_t(nrotmin:nrot,1:nr,1:nt)
+!     VDTm(ndivmin:ndiv,1:nr,1:nt,k)=VDTm_rt_t(ndivmin:ndiv,1:nr,1:nt)
+!     VDRm(ndivmin:ndiv,1:nr,1:nt,k)=VDRm_rt_t(ndivmin:ndiv,1:nr,1:nt)
+!     phin(nrotmin:nrot,1:nr,1:nt,k)=phin_rt_t(nrotmin:nrot,1:nr,1:nt)
+!     zetan(nrotmin:nrot,1:nr,1:nt,k)=zetan_rt_t(nrotmin:nrot,1:nr,1:nt)
      Vra(1:nr,1:nt,k)=Vra_rt_t(1:nr,1:nt)
 
      !-- calculate storm-relative Doppler velocity from retrieved winds
@@ -496,14 +511,16 @@ subroutine Retrieval_velocity( nrot, ndiv, nrdiv, nz, r_ref_t, theta_ref_t, rdiv
 !  &               Wstot_Er(1:nr,1:nt,k), missing_value )
 
      !-- calculate additional variables for analyses
-     call calc_zeta_ax( nrot, r_t(1:nr), theta_t(1:nt), VRT0(1:nr,1:nt,k),  &
-  &                     zeta0(1:nr,1:nt,k), zetan(nrotmin:nrot,1:nr,1:nt,k),  &
-  &                     zetatot(1:nr,1:nt,k), missing_value )
+!     call calc_zeta_ax( nrot, r_t(1:nr), theta_t(1:nt), VRT0(1:nr,1:nt,k),  &
+!  &                     zeta0(1:nr,1:nt,k), zetan(nrotmin:nrot,1:nr,1:nt,k),  &
+!  &                     zetatot(1:nr,1:nt,k), missing_value )
+
+     call stdout( "Pass one level "//i2c_convert(k,forma='(i3)'), "Retrieve_velocity", 0 )
 
   end do
 
 !  call HistoryClose
 
-end subroutine Retrieval_velocity
+end subroutine Retrieve_velocity
 
 end module Retrieval_control

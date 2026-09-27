@@ -250,7 +250,7 @@ integer function check_data_fulfill( val, undef, nt_count, dir, ncount )
         end if
         exit
      end if
-write(*,*) "ntcheck", ntc, ntcmax
+!write(*,*) "ntcheck", ntc, ntcmax
   end do
 
   check_data_fulfill=ifirst
